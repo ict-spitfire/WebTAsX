@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>SPARQL Editor</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<style>
+	body {
+		padding-top:10px;
+	}
+	.container {
+		border: 2px solid #F9F9F9;
+		padding:5px;
+	}
+	.table-striped tbody tr td.marked {
+		background-color: #AACCAA;
+		cursor: pointer;
+	}
+	textarea {
+		font-family: monospace;
+	}
+	</style>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/urlencode.js"></script>
+	<script src="js/xml2json.js"></script>
+
+	<script>
+
+		var modul1 = {
+			title : "Sensors",
+			content : "Some text",
+			mapping : [
+				["?", "?rdf"]
+				["is_a", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
+				["lightSensor","?sensor . ?sensor <http://spitfire-project.eu/ontology/ns/obs>	<http://spitfire-project.eu/property/Light>"]
+			]
+		}
+
+		var modul2 = {
+			title : "Calendar",
+			content : "another text"
+		}
+
+		var modul3 = {
+			title : "Weather",
+			content : "one more text"
+		}
+
+		window.onload = function () {
+			document.getElementById('files').addEventListener('change', handleFileSelect, false);
+			addModules([modul1,modul2,modul3]);
+			document.getElementById('query-start').addEventListener('click', query_start, false);
+			document.getElementById('action-start').addEventListener('click', action_start, false);
+
+			var q = localStorage.getItem("query");
+			if(q != null) {
+				$('#query-text').val(q);
+			}
+		}
+
+		var modid = 0;
+
+		function addModules(modules) {
+			for(var i = 0; i < modules.length; i++) {
+				addModule(modules[i]);
+			}
+		}
+
+		function addModule(module) {
+			modid++;
+			$("#tab-tabs li:last").after('<li><a href="#tab' + modid + '" data-toggle="tab">' + module.title + '</a></li>');
+			$("#tab-content").append('<div class="tab-pane" id="tab' + modid +  '"><p class="tab-content"> ' + module.content + '</p></div>');
+		}
+
+		function handleFileSelect(evt) {
+			var files = evt.target.files;
+			var output = [];
+			for (var i = 0, f; f = files[i]; i++) {
+				output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+				f.size, ' bytes, last modified: ',
+				f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+				'</li>');
+			}
+			document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+		}
+
+		function action_start() {
+			console.log("RUN ACTION ON...")
+			var e = $("td.marked");
+			for (var i = 0, i; i < e.length; i++) {
+				var child = e[i];//.firstChild;
+				console.log(child.innerText);
+			}
+		}
+
+		function query_start() {
+			var url = "http://localhost:8080/openrdf-sesame/repositories/sensors?query=";
+			var query = $('#query-text').val();
+			localStorage.setItem("query", query);
+
+			var mapping = [
+				["\\?" , "?rdf"],
+
+				["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
+				["lightSensor","?sensor . ?sensor <http://spitfire-project.eu/ontology/ns/obs>	<http://spitfire-project.eu/property/Light> ."],
+
+				["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>"],
+				["room", "?room . ?room	<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>	<http://spitfire-project.eu/foi/Room> ."],
+				["room1", "<http://spitfire-project.eu/foi/room1> ."],
+
+				["ownedBy", "<http://spitfire-project.eu/ontology/ns/ownedBy>"],
+				["user", "<http://identi.ca/user/27521> ."],
+			]
+
+			for(var i=0; i<mapping.length; i++) {
+				console.log("Replace " + mapping[i][0] + " with " + mapping[i][1]);
+				query = query.replace(new RegExp("<" + mapping[i][0] + ">", "g"), mapping[i][1]);
+			}
+
+			query = "SELECT * WHERE { " + query + " }";
+			console.log(query);
+		
+
+
+
+//			var query = "SELECT ?ss ?o WHERE { ?ss <http://purl.oclc.org/NET/muo/muo#prefSymbol> ?o }";
+			var encoded = urlencode(query);
+			var path = url + encoded;
+
+			var xhr = new XMLHttpRequest();
+			xhr.responsetype = "text";
+			xhr.open('GET', path, true);
+			xhr.setRequestHeader("Accept", "application/xml");
+			xhr.onload = function(e) {
+				if (this.status == 200) {
+					var res = this.response;
+					var dom = new DOMParser().parseFromString(res,'text/xml');
+
+					var title = [];
+					var variables = dom.getElementsByTagName("variable");
+					for(var i = 0; i < variables.length; i++) {
+						var variable = variables[i];
+						title.push(variable.getAttribute("name"));
+					}
+					//console.log(title);
+					
+					var data = [];
+					var results = dom.getElementsByTagName("result");
+					for(var i = 0; i < results.length; i++) {
+						var result = results[i];
+						var bindings = result.getElementsByTagName("binding");
+
+
+						var tmp = [];
+						for(var k = 0; k < bindings.length; k++) {
+							var binding = bindings[k];
+							var children = binding.childNodes;
+							for(var j = 0; j < children.length; j++) {
+								var child = children[j];
+								if(child.nodeType != 3) {
+									var name = binding.getAttribute("name");
+									var index = title.indexOf(name); 
+									var c = child.firstChild;
+									tmp[index] = c.data;
+/*
+									if(child.nodeName == "uri") {
+										tmp[index] = "&#60;" + c.data + "&#62;";
+									} else {
+										tmp[index] = c.data;
+									}
+*/
+								}
+							}
+						}
+						data.push(tmp);
+					}
+					//console.log(data);
+
+					var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
+					var thead = $('<thead></thead>');
+					var tr = $('<tr></tr>');
+					for(i=0; i<title.length; i++){
+						var th = $('<th>' + title[i] + '</th>');
+						tr.append(th);
+					}
+					thead.append(tr);
+					table.append(thead);
+
+					var onClick = function(e) {
+						var t = $(this);						
+						if(t.hasClass("marked")) {
+							t.removeClass("marked"); // css("color", "red");
+						} else {
+							t.addClass("marked"); // css("color", "red");
+						}
+					}
+
+					var tbody = $('<tbody></tbody>');
+					for(i=0; i<data.length; i++){
+						tr = $('<tr></tr>');
+						//console.log(data[i]);
+						for(j=0; j<data[i].length; j++){
+							var td = null;
+							if(typeof(data[i][j]) === "undefined") {
+								td = $('<td></td>');
+							} else {
+								td = $('<td>' + data[i][j] + '</td>');
+							}
+							td.click(onClick);
+							tr.append(td);
+						}
+						if(data[i].length < title.length) {
+							var diff = title.length - data[i].length;
+							console.log(diff);
+							for(var y = 0; y< diff; y++) {
+								tr.append($('<td></td>'));
+							}
+						}
+
+						tbody.append(tr);
+
+						// title
+					}
+					table.append(tbody);
+					$('#query-result').html(table);
+				}
+			};
+
+			xhr.send();
+
+		}
+
+/*
+function processData(data) {
+  // taking care of data
+}
+
+function handler() {
+  if(this.readyState == this.DONE) {
+    if(this.status == 200 &&
+       this.responseXML != null &&
+       this.responseXML.getElementById('test').textContent) {
+      // success!
+      processData(this.responseXML.getElementById('test').textContent);
+      return;
+    }
+    // something went wrong
+    processData(null);
+  }
+}
+
+var client = new XMLHttpRequest();
+client.onreadystatechange = handler;
+client.open("GET", "unicorn.xml");
+client.send();
+
+If you just want to log a message to the server:
+
+function log(message) {
+  var client = new XMLHttpRequest();
+  client.open("POST", "/log");
+  client.send(message);
+}
+
+Or if you want to check the status of a document on the server:
+
+function fetchStatus(address) {
+  var client = new XMLHttpRequest();
+  client.onreadystatechange = function() {
+    // in case of network errors this might not give reliable results
+    if(this.readyState == this.DONE)
+      returnStatus(this.status);
+  }
+  client.open("HEAD", address);
+  client.send();
+}
+*/
+
+
+	</script>
+</head>
+<body>
+
+	<div class="container">
+			<ul class="nav nav-tabs" id="tab-tabs">
+				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
+				<li class="active"><a href="#tab-query" data-toggle="tab">Query</a></li>
+			</ul>
+			<div class="tab-content" id="tab-content">
+				<div class="tab-pane" id="tab-import">
+					<p class="tab-content">
+						<input type="file" id="files" name="files[]" multiple />
+						<output id="list"></output>
+					</p>
+				</div>
+
+				<div class="tab-pane active" id="tab-query">
+					<textarea id="query-text" style="width:97%;height:200px;"></textarea><br>
+					<p><input type="button" id="query-start" value="Run Query"></p>
+					<p id="query-result"></p>
+					<p><input type="button" id="action-start" value="Run Actuation"></p>
+				</div>
+
+			</div>
+	</div>
+</body>
+</html>
