@@ -22,37 +22,65 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<script src="http://code.jquery.com/jquery-latest.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+	<script src="js/config.js"></script>
 	<script src="js/urlencode.js"></script>
 	<script src="js/xml2json.js"></script>
 
 	<script>
 
-		var modul1 = {
+		var sensor_module = {
 			title : "Sensors",
 			content : "Some text",
 			mapping : [
-				["?", "?rdf"]
-				["is_a", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
-				["lightSensor","?sensor . ?sensor <http://spitfire-project.eu/ontology/ns/obs>	<http://spitfire-project.eu/property/Light>"]
+				["\\?" , 
+					[
+						["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
+							[
+								["\\?"],
+								["lightSensor", "?isALightSensor . ?isALightSensor <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> ."],
+							]
+						],
+						["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
+							[
+								["\\?"],
+								["room", "?isInRoom . ?isInRoom <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/foi/Room> ."],
+								["room1", "<http://spitfire-project.eu/foi/room1> ."],
+								["room2", "<http://spitfire-project.eu/foi/room2> ."],
+							]
+						],
+						["ownedBy", "<http://spitfire-project.eu/ontology/ns/ownedBy>",
+							[
+								["\\?"],
+								["user", "<http://identi.ca/user/27521> ."],
+							]
+						],
+					]
+				]
 			]
 		}
 
 		var modul2 = {
 			title : "Calendar",
-			content : "another text"
+			content : "another text",
+			mapping : []
 		}
 
 		var modul3 = {
 			title : "Weather",
-			content : "one more text"
+			content : "one more text",
+			mapping : []
 		}
 
 		window.onload = function () {
+			// Add modules
+			addModules([sensor_module,modul2,modul3]);
+
+			// Add event listeners
 			document.getElementById('files').addEventListener('change', handleFileSelect, false);
-			addModules([modul1,modul2,modul3]);
 			document.getElementById('query-start').addEventListener('click', query_start, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
 
+			// Get the last SPARQL query
 			var q = localStorage.getItem("query");
 			if(q != null) {
 				$('#query-text').val(q);
@@ -60,7 +88,6 @@
 		}
 
 		var modid = 0;
-
 		function addModules(modules) {
 			for(var i = 0; i < modules.length; i++) {
 				addModule(modules[i]);
@@ -69,6 +96,9 @@
 
 		function addModule(module) {
 			modid++;
+			//console.log(module.mapping);
+			// TODO: 
+			// - generate S, P and O elements rekursive
 			$("#tab-tabs li:last").after('<li><a href="#tab' + modid + '" data-toggle="tab">' + module.title + '</a></li>');
 			$("#tab-content").append('<div class="tab-pane" id="tab' + modid +  '"><p class="tab-content"> ' + module.content + '</p></div>');
 		}
@@ -85,17 +115,60 @@
 			document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
 		}
 
+		function action_request(url) {
+			console.log("RUN ACTION ON " + url + " :: " + $('#action-value').val());
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', url, true);
+			xhr.responsetype = "text";
+
+			xhr.onload = function(e) {
+				clearTimeout(xmlHttpTimeout); 
+				lastStatus = this.status;
+				console.log("onload == " + this.status);
+				/*
+				if ( == 200) {
+					console.log(url + " DONE");
+					var res = this.response;
+				} else {
+					console.log(url + " ERROR");
+				}
+				*/ 
+			}
+
+			xhr.onreadystatechange = function () {
+				//console.log("onreadystatechange == " + xhr.readyState);
+				if(xhr.readyState == 4) {
+					console.log("Connection closed!")
+				}
+			}
+
+			var data = new FormData();
+			data.append('value', $('#action-value').val());
+			//xhr.send(data);
+			xhr.send($('#action-value').val());
+
+			// Workarount to get a timeout
+			//@see: http://stackoverflow.com/a/1018731
+			var xmlHttpTimeout=setTimeout( function (){ xhr.abort(); } , 5000);
+		}
+
 		function action_start() {
-			console.log("RUN ACTION ON...")
+
+			//action_request("http://fd00-db08-0-c0a1-215-8d00-14-2304.coap1.wisebed.itm.uni-luebeck.de:8080/fan");
+			//action_request("http://fd00-db08-0-c0a1-215-8d00-14-8ed8.coap1.wisebed.itm.uni-luebeck.de:8080/switch");
+
+			//http://fd00-db08-0-c0a1-215-8d00-14-8ed3.coap1.wisebed.itm.uni-luebeck.de:8080/fan	
+			//http://fd00-db08-0-c0a1-215-8d00-14-8ed2.coap1.wisebed.itm.uni-luebeck.de:8080/switch
+
 			var e = $("td.marked");
 			for (var i = 0, i; i < e.length; i++) {
-				var child = e[i];//.firstChild;
-				console.log(child.innerText);
+				var child = e[i].firstChild;
+				action_request(child.data);
 			}
 		}
 
 		function query_start() {
-			var url = "http://localhost:8080/openrdf-sesame/repositories/sensors?query=";
+			var url = sparqlEndpoint + "?query=";
 			var query = $('#query-text').val();
 			localStorage.setItem("query", query);
 
@@ -103,22 +176,33 @@
 				["\\?" , "?rdf"],
 
 				["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
-				["lightSensor","?sensor . ?sensor <http://spitfire-project.eu/ontology/ns/obs>	<http://spitfire-project.eu/property/Light> ."],
+				["lightSensor","?lightSensor . ?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light> ."],
+				["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan> ."],
 
 				["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>"],
-				["room", "?room . ?room	<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>	<http://spitfire-project.eu/foi/Room> ."],
+				["room", "?room . ?room <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>       <http://spitfire-project.eu/foi/Room> ."],
 				["room1", "<http://spitfire-project.eu/foi/room1> ."],
+				["room2", "<http://spitfire-project.eu/foi/room2> ."],
 
+				["hasValue", "<http://spitfire-project.eu/ontology/ns/value>"],
+
+				["hasType", "<http://www.w3.org/2000/01/rdf-schema#type>"],
+				["fan", "<http://purl.oclc.org/NET/ssnx/ssn#Fan> ."],
+			
 				["ownedBy", "<http://spitfire-project.eu/ontology/ns/ownedBy>"],
 				["user", "<http://identi.ca/user/27521> ."],
+
+				["time_start", "<http://spitfire-project.eu/ontology/ns/sn/time_start>"],
+				["time_end", "<http://spitfire-project.eu/ontology/ns/sn/time_end>"],
+
 			]
 
 			for(var i=0; i<mapping.length; i++) {
-				console.log("Replace " + mapping[i][0] + " with " + mapping[i][1]);
+				//console.log("Replace " + mapping[i][0] + " with " + mapping[i][1]);
 				query = query.replace(new RegExp("<" + mapping[i][0] + ">", "g"), mapping[i][1]);
 			}
 
-			query = "SELECT * WHERE { " + query + " }";
+			//query = "SELECT * WHERE { " + query + " }";
 			console.log(query);
 		
 
@@ -296,10 +380,30 @@ function fetchStatus(address) {
 				</div>
 
 				<div class="tab-pane active" id="tab-query">
-					<textarea id="query-text" style="width:97%;height:200px;"></textarea><br>
+					<h3>Query</h3>
+					<textarea id="query-text" style="width:97%;height:350px;"></textarea><br>
 					<p><input type="button" id="query-start" value="Run Query"></p>
+					<h3>Actuation</h3>
 					<p id="query-result"></p>
-					<p><input type="button" id="action-start" value="Run Actuation"></p>
+					<p>
+						<select id="action-value">
+						  <option value="on">on</option>
+						  <option value="off">off</option>
+						</select>
+<!--
+						<input type="text" id="action-value" value="">
+						<select id="action-type">
+						  <option>POST</option>
+						  <option>GET</option>
+						  <option>PUT</option>
+						  <option>DELETE</option>
+						  <option>PATCH</option>
+						  <option>HEAD</option>
+						  <option>OPTIONS</option>
+						</select>
+-->
+						<input type="button" id="action-start" value="Run Actuation">
+					</p>
 				</div>
 
 			</div>
