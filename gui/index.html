@@ -17,11 +17,21 @@
 	}
 	textarea {
 		font-family: monospace;
+		tab-size:4;
+		-moz-tab-size:4;
 	}
 
 	div.query-spo {
-		border: 2px solid ;
+		/*border: 2px solid ;*/
 	}
+
+	#footer {
+		/*border-top: 2px solid darkgray;*/
+		position:absolute;
+		bottom:0;
+		width:100%;	
+	}
+
 	</style>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<script src="js/jquery-latest.js"></script>
@@ -36,10 +46,11 @@
 			title : "Sensors",
 			content : "Some text",
 			mapping :	[
-							["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
+							["hasA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 								[
 									["lightSensor","?lightSensor . ?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
-									["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"]
+									["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
+									["radioActor","?radioActor. ?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
 								]
 							],
 							["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
@@ -111,6 +122,8 @@
 		var valCnt = 0;
 
 		window.onload = function () {
+			$("#log-div").hide();
+			$("#log-hide").hide();
 			// Add modules
 			addModules([sensor_module]); //,modul2,modul3
 
@@ -118,6 +131,20 @@
 			document.getElementById('files').addEventListener('change', handleFileSelect, false);
 			document.getElementById('query-start').addEventListener('click', query_start, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
+			document.getElementById('log-show').addEventListener('click', function(){
+				$("#log-div").show();
+				$("#log-hide").show();
+				$("#log-show").hide();
+				$("#footer").css("border-top", "2px solid darkgray");
+			}, false);
+			document.getElementById('log-hide').addEventListener('click', function(){
+				$("#log-div").hide();
+				$("#log-hide").hide();
+				$("#log-show").show();
+				$("#footer").css("border-top", "");
+			}, false);
+
+
 
 			// Get the last SPARQL query
 			var q = localStorage.getItem("query");
@@ -222,7 +249,6 @@
 
 			var input = $("<input type=\"button\" value=\"+\">");
 			input.click(function(e) {
-				console.log("APPEND");
 				div.append(create(mapping));
 			});
 			div.append(input);
@@ -237,7 +263,7 @@
 					for(var j = 0; j < children.length; j++) {
 						var e = $(children[j].firstChild);
 						if(e.val() == "?") {
-							query += "\t?val" + (valCnt++) + " ";							
+							query += "\t?val" + (++valCnt) + " ";
 						} else {
 							query += "\t" + e.val() + " ";
 						}
@@ -246,6 +272,7 @@
 				}
 				query += "}";
 				console.log(query);
+				$("#log").append(query + "\n");
 				query_run(query);
 			});
 			div.append(input_generate);
@@ -537,32 +564,32 @@ function fetchStatus(address) {
 					<h3>Query</h3>
 					<textarea id="query-text" style="width:97%;height:350px;"></textarea><br>
 					<p><input type="button" id="query-start" value="Run Query"></p>
+				</div>
+				<div class="tab-pane" id="tab-result">
+					<h3>Result</h3>
+					<p id="query-result"></p>
 					<h3>Actuation</h3>
 					<p>
 						<select id="action-value">
 						  <option value="on">on</option>
 						  <option value="off">off</option>
 						</select>
-<!--
-						<input type="text" id="action-value" value="">
-						<select id="action-type">
-						  <option>POST</option>
-						  <option>GET</option>
-						  <option>PUT</option>
-						  <option>DELETE</option>
-						  <option>PATCH</option>
-						  <option>HEAD</option>
-						  <option>OPTIONS</option>
-						</select>
--->
 						<input type="button" id="action-start" value="Run Actuation">
 					</p>
-				</div>
-				<div class="tab-pane" id="tab-result">
-					<h3>Result</h3>
-					<p id="query-result"></p>
+
 				</div>
 			</div>
+	</div>
+	<div id="footer">
+		<img id="log-show" src="img/bullet_arrow_up.png">
+		<img id="log-hide" src="img/bullet_arrow_down.png">
+		<div id="log-div">
+			<textarea id="log" style="width:97%;height:150px;"></textarea>
+		</div>
+<!--
+/var/lib/tomcat6/webapps/ROOT/gui/img/bullet_arrow_down.png
+/var/lib/tomcat6/webapps/ROOT/gui/
+-->
 	</div>
 </body>
 </html>
