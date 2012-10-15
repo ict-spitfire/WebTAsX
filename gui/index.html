@@ -18,9 +18,13 @@
 	textarea {
 		font-family: monospace;
 	}
+
+	div.query-spo {
+		border: 2px solid ;
+	}
 	</style>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="js/jquery-latest.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/config.js"></script>
 	<script src="js/urlencode.js"></script>
@@ -31,6 +35,38 @@
 		var sensor_module = {
 			title : "Sensors",
 			content : "Some text",
+			mapping :	[
+							["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
+								[
+									["lightSensor","?lightSensor . ?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
+									["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"]
+								]
+							],
+							["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
+								[
+									["room1", "<http://spitfire-project.eu/foi/room1>"],
+									["room2", "<http://spitfire-project.eu/foi/room2>"]
+								]
+							],
+							["hasType", "<http://www.w3.org/2000/01/rdf-schema#type>",
+								[
+									["fan", "<http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
+									["switch", "<http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
+								]
+							]
+						],
+			isActive : true
+			
+			/*
+			["room", "?room . ?room <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>       <http://spitfire-project.eu/foi/Room> ."],
+			["hasValue", "<http://spitfire-project.eu/ontology/ns/value>"],
+			
+			["ownedBy", "<http://spitfire-project.eu/ontology/ns/ownedBy>"],
+			["user", "<http://identi.ca/user/27521> ."],
+
+			["time_start", "<http://spitfire-project.eu/ontology/ns/sn/time_start>"],
+			["time_end", "<http://spitfire-project.eu/ontology/ns/sn/time_end>"],
+
 			mapping : [
 				["\\?" , 
 					[
@@ -57,6 +93,7 @@
 					]
 				]
 			]
+			*/
 		}
 
 		var modul2 = {
@@ -71,9 +108,11 @@
 			mapping : []
 		}
 
+		var valCnt = 0;
+
 		window.onload = function () {
 			// Add modules
-			addModules([sensor_module,modul2,modul3]);
+			addModules([sensor_module]); //,modul2,modul3
 
 			// Add event listeners
 			document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -96,11 +135,122 @@
 
 		function addModule(module) {
 			modid++;
-			//console.log(module.mapping);
-			// TODO: 
-			// - generate S, P and O elements rekursive
-			$("#tab-tabs li:last").after('<li><a href="#tab' + modid + '" data-toggle="tab">' + module.title + '</a></li>');
-			$("#tab-content").append('<div class="tab-pane" id="tab' + modid +  '"><p class="tab-content"> ' + module.content + '</p></div>');
+
+			var create = function(mapping) {
+				// Main div
+				var div_spo = $("<div class=\"query-spo\"></div>");
+				
+				// SPO-divs
+				var div_s = $("<span></span>"); //  style=\"padding:2px; border: 2px solid red;\"
+				var div_p = $("<span></span>"); //  style=\"padding:2px; border: 2px solid blue;\"
+				var div_o = $("<span></span>"); //  style=\"padding:2px; border: 2px solid green;\"
+
+				// append SPO-divs to main div
+				div_spo.append(div_s);
+				div_spo.append(div_p);
+				div_spo.append(div_o);
+
+				// Select for S
+				var select_s = $('<select class="s"></select>');
+				select_s.append("<option value=\"?\">?</option>");
+				div_s.append(select_s);
+
+				// Select for P
+				var select_p = $('<select class="p"></select>');
+				select_p.append("<option value=\"?\">?</option>");
+				div_p.append(select_p);
+
+				// Empty select for O
+				var select_o = $('<select class="o"></select>');
+				select_o.append("<option value=\"?\">?</option>");
+
+				// Items for P
+				var select = [];
+				select_p.change(function(e){
+					var val = select_p.val();
+					for(var i = 0; i<select.length; i++) {
+						if(select[i][0] == val) {
+							// Select for O
+							div_o.html(select[i][1]);
+							return;
+						}
+					}
+					// Select for O
+					div_o.html(select_o);
+				});
+
+				// ################################################
+				for(var i = 0; i<mapping.length; i++) {
+					var p = mapping[i][0];
+					var map = mapping[i][1];
+
+					select_p.append("<option value=\"" + map + "\">" + p + "</option>");
+
+					var o = mapping[i][2];
+					var select_o2 = $('<select></select>');
+					select_o2.append("<option value=\"?\">?</option>");
+
+					for(var j = 0; j<o.length; j++) {
+						//console.log(p + " - " + o[j][0]);
+						select_o2.append("<option value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");
+					}
+					select_o2.change(function(e){
+					   	//console.log(select.val());
+					});
+					select_o2.trigger('change');
+
+					select[i] = [];
+					select[i][0] = map;
+					select[i][1] = select_o2;
+				}
+				select_p.trigger('change');
+				return div_spo;
+			}
+
+			var mapping = module.mapping;
+			var div = $("<div class=\"tab-pane\" id=\"tab" + modid +  "\"></div>");
+			if(module.isActive) {
+				div.addClass("active");
+			}
+
+			var li = $('<li><a href="#tab' + modid + '" data-toggle="tab">' + module.title + '</a></li>');
+			$("#tab-tabs li:last").after(li);
+
+			if(module.isActive) {
+				li.addClass("active");
+			}
+
+			var input = $("<input type=\"button\" value=\"+\">");
+			input.click(function(e) {
+				console.log("APPEND");
+				div.append(create(mapping));
+			});
+			div.append(input);
+
+			var input_generate = $("<input type=\"button\" value=\"Generate SPARQL\">");
+			input_generate.click(function(e) {
+				console.log("Generate Query");
+				var spo = $(".query-spo");
+				var query = "SELECT * WHERE {\n";
+				for(var i = 0; i < spo.length; i++) {
+					var children = spo[i].childNodes;
+					for(var j = 0; j < children.length; j++) {
+						var e = $(children[j].firstChild);
+						if(e.val() == "?") {
+							query += "\t?val" + (valCnt++) + " ";							
+						} else {
+							query += "\t" + e.val() + " ";
+						}
+					}
+					query += ". \n";
+				}
+				query += "}";
+				console.log(query);
+				query_run(query);
+			});
+			div.append(input_generate);
+
+			$("#tab-content").append(div);
 		}
 
 		function handleFileSelect(evt) {
@@ -168,9 +318,13 @@
 		}
 
 		function query_start() {
-			var url = sparqlEndpoint + "?query=";
 			var query = $('#query-text').val();
-			localStorage.setItem("query", query);
+			query_run(query);
+		}
+
+		function query_run(query) {
+			var url = sparqlEndpoint + "?query=";
+			//localStorage.setItem("query", query);
 
 			var mapping = [
 				["\\?" , "?rdf"],
@@ -202,11 +356,9 @@
 				console.log("Replace " + mapping[i][0] + " with " + mapping[i][1]);
 				query = query.replace(new RegExp("<" + mapping[i][0] + ">", "g"), mapping[i][1]);
 			}
-
+			
 			//query = "SELECT * WHERE { " + query + " }";
 			console.log(query);
-		
-
 
 
 //			var query = "SELECT ?ss ?o WHERE { ?ss <http://purl.oclc.org/NET/muo/muo#prefSymbol> ?o }";
@@ -370,7 +522,8 @@ function fetchStatus(address) {
 	<div class="container">
 			<ul class="nav nav-tabs" id="tab-tabs">
 				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
-				<li class="active"><a href="#tab-query" data-toggle="tab">Query</a></li>
+				<li><a href="#tab-query" data-toggle="tab">Query</a></li>
+				<li><a href="#tab-result" data-toggle="tab">Result</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
 				<div class="tab-pane" id="tab-import">
@@ -380,12 +533,11 @@ function fetchStatus(address) {
 					</p>
 				</div>
 
-				<div class="tab-pane active" id="tab-query">
+				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
 					<textarea id="query-text" style="width:97%;height:350px;"></textarea><br>
 					<p><input type="button" id="query-start" value="Run Query"></p>
 					<h3>Actuation</h3>
-					<p id="query-result"></p>
 					<p>
 						<select id="action-value">
 						  <option value="on">on</option>
@@ -406,7 +558,10 @@ function fetchStatus(address) {
 						<input type="button" id="action-start" value="Run Actuation">
 					</p>
 				</div>
-
+				<div class="tab-pane" id="tab-result">
+					<h3>Result</h3>
+					<p id="query-result"></p>
+				</div>
 			</div>
 	</div>
 </body>
