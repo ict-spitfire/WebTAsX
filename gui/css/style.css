@@ -1,0 +1,55 @@
+	body {
+		padding-top:10px;
+	}
+	.container {
+		border: 2px solid #F9F9F9;
+		padding:5px;
+	}
+	.table-striped tbody tr td.marked {
+		background-color: #AACCAA;
+		cursor: pointer;
+	}
+	textarea {
+		font-family: monospace;
+		tab-size:4;
+		-moz-tab-size:4;
+	}
+
+	#log {
+		font-size:10px;
+	}
+
+	div.query-spo {
+		/*border: 2px solid ;*/
+	}
+
+	#footer {
+		/*border-top: 2px solid darkgray;*/
+		position:absolute;
+		bottom:0;
+		width:100%;	
+	}
+
+	select {
+		text-align:center;
+		width:100%;
+		margin:0px;
+	}
+
+	#action-value {
+		width:100px;
+	}
+
+	.box {
+/*
+		border: 1px solid gray;
+		padding:25px 0px 25px 0px;
+*/
+		width: 230px;
+		display: inline-block;
+		margin-right: 5px;
+	}
+
+	.query-spo {
+		padding-bottom:8px;
+	}
