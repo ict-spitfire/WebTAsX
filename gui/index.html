@@ -23,35 +23,42 @@
 					["?", "?"],					
 					["fanSensor", "?fanSensor"],
 					["sensor", "?sensor"],
-					["lightSensor", "?lightSensor"],
+					["light", "?light"],
 				],
 			mapping :	[
 							["?", "?"],
-							["hasA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
+							["has a", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 								[
 									["?", "?attachedSystem"],
-									["lightSensor","?lightSensor .\n\t?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
+									["lightSensor","?light .\n\t?light <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
 									["fanActor","?fanActor.\n\t?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
 									["radioActor","?radioActor.\n\t?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
 								]
 							],
-							["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
+							["is in","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
 								[
 									["?", "?featureOfInterest"],
 									["room1", "<http://spitfire-project.eu/foi/room1>"],
 									["room2", "<http://spitfire-project.eu/foi/room2>"]
 								]
 							],
-							["hasType", "<http://www.w3.org/2000/01/rdf-schema#type>",
+							["has type", "<http://www.w3.org/2000/01/rdf-schema#type>",
 								[
 									["?", "?type"],
 									["fan", "<http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
 									["switch", "<http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
 								]
 							],
-							["hasValue", "<http://spitfire-project.eu/ontology/ns/value>",
+/*							["has value", "<http://spitfire-project.eu/ontology/ns/value>",
 								[
 									["?", "?value"]
+								]
+							],
+*/
+							["is", "<http://spitfire-project.eu/ontology/ns/value> ?lightValue . ",
+								[
+									["on",  "FILTER(?lightValue > '200')"],
+									["off", "FILTER(?lightValue < '200')"]
 								]
 							]
 						],
@@ -63,28 +70,110 @@
 			mapping : []
 		}
 
-		var forecast_module = {
-			title : "Weather Forecast",
+		var weather_module = {
+			title : "Weather",
 			s : [
-					["?", "?"],
-					["forecast", "?forecast"],
+					["temperatur", ""],
 				],
 			mapping :	[
-							["hasValue", "<http://spitfire-project.eu/ontology/ns/value>",
+							["is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
+								[
+									["10", "FILTER(?value > 10)"],
+									["11", "FILTER(?value > 11)"],
+									["12", "FILTER(?value > 12)"],
+									["13", "FILTER(?value > 13)"],
+									["14", "FILTER(?value > 14)"],
+									["15", "FILTER(?value > 15)"],
+									["16", "FILTER(?value > 16)"],
+									["17", "FILTER(?value > 17)"],
+									["18", "FILTER(?value > 18)"],
+									["19", "FILTER(?value > 19)"],
+									["20", "FILTER(?value > 20)"],
+									["21", "FILTER(?value > 21)"],
+									["22", "FILTER(?value > 22)"],
+									["23", "FILTER(?value > 23)"],
+									["24", "FILTER(?value > 24)"],
+									["25", "FILTER(?value > 25)"],
+									["26", "FILTER(?value > 26)"],
+									["27", "FILTER(?value > 27)"],
+									["28", "FILTER(?value > 28)"],
+									["29", "FILTER(?value > 29)"],
+									["30", "FILTER(?value > 30)"],
+								]
+							],
+						["is smaller than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time . ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast) ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast) ?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
+								[
+									["10", "FILTER(?value < 10)"],
+									["11", "FILTER(?value < 11)"],
+									["12", "FILTER(?value < 12)"],
+									["13", "FILTER(?value < 13)"],
+									["14", "FILTER(?value < 14)"],
+									["15", "FILTER(?value < 15)"],
+									["16", "FILTER(?value < 16)"],
+									["17", "FILTER(?value < 17)"],
+									["18", "FILTER(?value < 18)"],
+									["19", "FILTER(?value < 19)"],
+									["20", "FILTER(?value < 20)"],
+									["21", "FILTER(?value < 21)"],
+									["22", "FILTER(?value < 22)"],
+									["23", "FILTER(?value < 23)"],
+									["24", "FILTER(?value < 24)"],
+									["25", "FILTER(?value < 25)"],
+									["26", "FILTER(?value < 26)"],
+									["27", "FILTER(?value < 27)"],
+									["28", "FILTER(?value < 28)"],
+									["29", "FILTER(?value < 29)"],
+									["30", "FILTER(?value < 30)"],
+								]
+							],
+
+/*
+	SELECT *
+	WHERE
+	{
+		    <http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .
+		#
+		    ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .
+		  	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)
+		?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)
+	}
+*/
+
+
+
+/*
+#	<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .
+
+	?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . FILTER(?value > 15)
+        ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .
+      
+#	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)
+#	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)
+
+*/
+//	<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .
+//	?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . FILTER(?value > 15)
+//	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)
+//	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)
+
+
+							/*
+							["has value", "<http://spitfire-project.eu/ontology/ns/value>",
 								[
 									["?", "?forcastValue"],
 								]
 							],
-							["hasStartTime", "<http://spitfire-project.eu/ontology/ns/sn/time_start>",
+							["has start time", "<http://spitfire-project.eu/ontology/ns/sn/time_start>",
 								[
 									["?", "?startTime"],
 								]
 							],
-							["hasEndTime", "<http://spitfire-project.eu/ontology/ns/sn/time_end>",
+							["has end time", "<http://spitfire-project.eu/ontology/ns/sn/time_end>",
 								[
 									["?", "?endTime"],
 								]
 							],
+							*/
 						]
 		}
 
@@ -110,7 +199,7 @@
 			$("#log-div").hide();
 			$("#log-hide").hide();
 			// Add modules
-			addModules([sensor_module, forecast_module]); //,modul2,modul3
+			addModules([sensor_module, weather_module]); //,modul2,modul3
 
 			// Add event listeners
 			document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -222,13 +311,19 @@
 
 				// Empty select for P
 				var p_change = function(e){
-					var val = select_p.val();
+					var text = select_p.find("option:selected").text();
+					// http://stackoverflow.com/a/9138615
+					// http://stackoverflow.com/a/9769502
+					// $("option:selected", myVar).text()
+					// $('#yourdropdownid').find('option:selected').text();
+
+				
 					//console.log("Selected: " + val);
 					//console.log(mapping);
 					
 					var select_o = null;
 					for(var i = 0; i<mapping.length; i++) {
-						if(mapping[i][1] == val) {
+						if(mapping[i][0] == text) {
 							var change = function(e){
 								update("o");
 							};
@@ -366,7 +461,7 @@
 				["\\?" , "?rdf"],
 
 				["hasA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
-				["lightSensor","?lightSensor . ?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light> ."],
+				["light","?light . ?light <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light> ."],
 				["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan> ."],
 
 				["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>"],
