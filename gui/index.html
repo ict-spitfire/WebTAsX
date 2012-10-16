@@ -21,6 +21,10 @@
 		-moz-tab-size:4;
 	}
 
+	#log {
+		font-size:10px;
+	}
+
 	div.query-spo {
 		/*border: 2px solid ;*/
 	}
@@ -30,6 +34,30 @@
 		position:absolute;
 		bottom:0;
 		width:100%;	
+	}
+
+	select {
+		text-align:center;
+		width:100%;
+		margin:0px;
+	}
+
+	#action-value {
+		width:100px;
+	}
+
+	.box {
+/*
+		border: 1px solid gray;
+		padding:25px 0px 25px 0px;
+*/
+		width: 230px;
+		display: inline-block;
+		margin-right: 5px;
+	}
+
+	.query-spo {
+		padding-bottom:8px;
 	}
 
 	</style>
@@ -48,9 +76,9 @@
 			mapping :	[
 							["hasA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 								[
-									["lightSensor","?lightSensor . ?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
-									["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
-									["radioActor","?radioActor. ?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
+									["lightSensor","?lightSensor .\n\t?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
+									["fanActor","?fanActor.\n\t?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
+									["radioActor","?radioActor.\n\t?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
 								]
 							],
 							["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
@@ -67,44 +95,6 @@
 							]
 						],
 			isActive : true
-			
-			/*
-			["room", "?room . ?room <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>       <http://spitfire-project.eu/foi/Room> ."],
-			["hasValue", "<http://spitfire-project.eu/ontology/ns/value>"],
-			
-			["ownedBy", "<http://spitfire-project.eu/ontology/ns/ownedBy>"],
-			["user", "<http://identi.ca/user/27521> ."],
-
-			["time_start", "<http://spitfire-project.eu/ontology/ns/sn/time_start>"],
-			["time_end", "<http://spitfire-project.eu/ontology/ns/sn/time_end>"],
-
-			mapping : [
-				["\\?" , 
-					[
-						["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
-							[
-								["\\?"],
-								["lightSensor", "?isALightSensor . ?isALightSensor <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> ."],
-							]
-						],
-						["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
-							[
-								["\\?"],
-								["room", "?isInRoom . ?isInRoom <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/foi/Room> ."],
-								["room1", "<http://spitfire-project.eu/foi/room1> ."],
-								["room2", "<http://spitfire-project.eu/foi/room2> ."],
-							]
-						],
-						["ownedBy", "<http://spitfire-project.eu/ontology/ns/ownedBy>",
-							[
-								["\\?"],
-								["user", "<http://identi.ca/user/27521> ."],
-							]
-						],
-					]
-				]
-			]
-			*/
 		}
 
 		var modul2 = {
@@ -121,6 +111,22 @@
 
 		var valCnt = 0;
 
+		function showlog() {
+			$("#log-div").show();
+			$("#log-hide").show();
+			$("#log-show").hide();
+			$("#footer").css("border-top", "2px solid darkgray");
+			localStorage.setItem("showlog", true);
+		}
+
+		function hidelog() {
+			$("#log-div").hide();
+			$("#log-hide").hide();
+			$("#log-show").show();
+			$("#footer").css("border-top", "");
+			localStorage.setItem("showlog", false);
+		}
+
 		window.onload = function () {
 			$("#log-div").hide();
 			$("#log-hide").hide();
@@ -131,26 +137,23 @@
 			document.getElementById('files').addEventListener('change', handleFileSelect, false);
 			document.getElementById('query-start').addEventListener('click', query_start, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
-			document.getElementById('log-show').addEventListener('click', function(){
-				$("#log-div").show();
-				$("#log-hide").show();
-				$("#log-show").hide();
-				$("#footer").css("border-top", "2px solid darkgray");
-			}, false);
-			document.getElementById('log-hide').addEventListener('click', function(){
-				$("#log-div").hide();
-				$("#log-hide").hide();
-				$("#log-show").show();
-				$("#footer").css("border-top", "");
-			}, false);
-
-
+			document.getElementById('log-show').addEventListener('click', showlog, false);
+			document.getElementById('log-hide').addEventListener('click', hidelog, false);
 
 			// Get the last SPARQL query
 			var q = localStorage.getItem("query");
 			if(q != null) {
 				$('#query-text').val(q);
 			}
+
+			var show_log = localStorage.getItem("showlog");
+			if(show_log != null) {
+				if(show_log == true || show_log == "true") {
+					//showlog();
+					$("#log-show").click();
+				}
+			}
+
 		}
 
 		var modid = 0;
@@ -160,22 +163,61 @@
 			}
 		}
 
+		var query = null;
+
+		function update(x) {
+			console.log("UPDATE " + x);
+			var spo = $(".query-spo");
+			query = "SELECT * WHERE {\n";
+			for(var i = 0; i < spo.length; i++) {
+				var children = spo[i].childNodes;
+				for(var j = 0; j < children.length; j++) {
+					var e = $(children[j].firstChild);
+					if(e.val() == "?") {
+						query += "\t?val" + (++valCnt) + " ";
+					} else {
+						query += "\t" + e.val() + " ";
+					}
+				}
+				query += ". \n";
+			}
+			query += "}";
+			update_log(query);
+		}
+
+		function update_log(query) {
+			console.log(query);
+			$("#log").val(query);
+		}
+
 		function addModule(module) {
 			modid++;
 
+			var lineid = 0;
+
 			var create = function(mapping) {
-				// Main div
-				var div_spo = $("<div class=\"query-spo\"></div>");
+
+				var spo_id = "spo" + (lineid++);
+				var div_spo = $("<div id=\"" + spo_id + "\" class=\"query-spo\"></div>");
 				
 				// SPO-divs
-				var div_s = $("<span></span>"); //  style=\"padding:2px; border: 2px solid red;\"
-				var div_p = $("<span></span>"); //  style=\"padding:2px; border: 2px solid blue;\"
-				var div_o = $("<span></span>"); //  style=\"padding:2px; border: 2px solid green;\"
+				var div_s = $("<div class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid red;\"
+				var div_p = $("<div class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
+				var div_o = $("<div class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
+				var div_del = $("<span></span>"); //  style=\"padding:2px; border: 2px solid green;\"
+				
+				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
+				del_img.click(function() { 
+					$("#" + spo_id).remove();
+					update();
+				});
+				div_del.append(del_img);
 
 				// append SPO-divs to main div
 				div_spo.append(div_s);
 				div_spo.append(div_p);
 				div_spo.append(div_o);
+				div_spo.append(div_del);
 
 				// Select for S
 				var select_s = $('<select class="s"></select>');
@@ -191,6 +233,10 @@
 				var select_o = $('<select class="o"></select>');
 				select_o.append("<option value=\"?\">?</option>");
 
+				select_s.change(function(e){
+					update("s");
+				});
+
 				// Items for P
 				var select = [];
 				select_p.change(function(e){
@@ -199,11 +245,13 @@
 						if(select[i][0] == val) {
 							// Select for O
 							div_o.html(select[i][1]);
+							update("p1");
 							return;
 						}
 					}
 					// Select for O
 					div_o.html(select_o);
+					update("p2");
 				});
 
 				// ################################################
@@ -223,8 +271,9 @@
 					}
 					select_o2.change(function(e){
 					   	//console.log(select.val());
+						update("o");
 					});
-					select_o2.trigger('change');
+					//select_o2.trigger('change');
 
 					select[i] = [];
 					select[i][0] = map;
@@ -250,29 +299,12 @@
 			var input = $("<input type=\"button\" value=\"+\">");
 			input.click(function(e) {
 				div.append(create(mapping));
+				update("line");
 			});
 			div.append(input);
 
-			var input_generate = $("<input type=\"button\" value=\"Generate SPARQL\">");
+			var input_generate = $("<input type=\"button\" value=\"Run Query\">");
 			input_generate.click(function(e) {
-				console.log("Generate Query");
-				var spo = $(".query-spo");
-				var query = "SELECT * WHERE {\n";
-				for(var i = 0; i < spo.length; i++) {
-					var children = spo[i].childNodes;
-					for(var j = 0; j < children.length; j++) {
-						var e = $(children[j].firstChild);
-						if(e.val() == "?") {
-							query += "\t?val" + (++valCnt) + " ";
-						} else {
-							query += "\t" + e.val() + " ";
-						}
-					}
-					query += ". \n";
-				}
-				query += "}";
-				console.log(query);
-				$("#log").append(query + "\n");
 				query_run(query);
 			});
 			div.append(input_generate);
@@ -356,7 +388,7 @@
 			var mapping = [
 				["\\?" , "?rdf"],
 
-				["isA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
+				["hasA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>"],
 				["lightSensor","?lightSensor . ?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light> ."],
 				["fanActor","?fanActor. ?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan> ."],
 
@@ -380,13 +412,12 @@
 			]
 
 			for(var i=0; i<mapping.length; i++) {
-				console.log("Replace " + mapping[i][0] + " with " + mapping[i][1]);
+				//console.log("Replace " + mapping[i][0] + " with " + mapping[i][1]);
 				query = query.replace(new RegExp("<" + mapping[i][0] + ">", "g"), mapping[i][1]);
 			}
 			
 			//query = "SELECT * WHERE { " + query + " }";
-			console.log(query);
-
+			update_log(query);
 
 //			var query = "SELECT ?ss ?o WHERE { ?ss <http://purl.oclc.org/NET/muo/muo#prefSymbol> ?o }";
 			var encoded = urlencode(query);
@@ -493,6 +524,9 @@
 
 			xhr.send();
 
+			//var tabs = $("#tab-tabs").find('a[data-toggle="tab"]');
+			$("#tab-result-link").click();
+			console.log();
 		}
 
 /*
@@ -550,7 +584,7 @@ function fetchStatus(address) {
 			<ul class="nav nav-tabs" id="tab-tabs">
 				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
 				<li><a href="#tab-query" data-toggle="tab">Query</a></li>
-				<li><a href="#tab-result" data-toggle="tab">Result</a></li>
+				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
 				<div class="tab-pane" id="tab-import">
@@ -574,6 +608,7 @@ function fetchStatus(address) {
 						  <option value="on">on</option>
 						  <option value="off">off</option>
 						</select>
+						<br>
 						<input type="button" id="action-start" value="Run Actuation">
 					</p>
 
