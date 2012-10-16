@@ -19,10 +19,17 @@
 
 		var sensor_module = {
 			title : "Sensors",
-			content : "Some text",
+			s : [
+					["?", "?"],					
+					["fanSensor", "?fanSensor"],
+					["sensor", "?sensor"],
+					["lightSensor", "?lightSensor"],
+				],
 			mapping :	[
+							["?", "?"],
 							["hasA", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 								[
+									["?", "?attachedSystem"],
 									["lightSensor","?lightSensor .\n\t?lightSensor <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
 									["fanActor","?fanActor.\n\t?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
 									["radioActor","?radioActor.\n\t?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
@@ -30,14 +37,21 @@
 							],
 							["isIn","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
 								[
+									["?", "?featureOfInterest"],
 									["room1", "<http://spitfire-project.eu/foi/room1>"],
 									["room2", "<http://spitfire-project.eu/foi/room2>"]
 								]
 							],
 							["hasType", "<http://www.w3.org/2000/01/rdf-schema#type>",
 								[
+									["?", "?type"],
 									["fan", "<http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
 									["switch", "<http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
+								]
+							],
+							["hasValue", "<http://spitfire-project.eu/ontology/ns/value>",
+								[
+									["?", "?value"]
 								]
 							]
 						],
@@ -46,14 +60,32 @@
 
 		var modul2 = {
 			title : "Calendar",
-			content : "another text",
 			mapping : []
 		}
 
-		var modul3 = {
-			title : "Weather",
-			content : "one more text",
-			mapping : []
+		var forecast_module = {
+			title : "Weather Forecast",
+			s : [
+					["?", "?"],
+					["forecast", "?forecast"],
+				],
+			mapping :	[
+							["hasValue", "<http://spitfire-project.eu/ontology/ns/value>",
+								[
+									["?", "?forcastValue"],
+								]
+							],
+							["hasStartTime", "<http://spitfire-project.eu/ontology/ns/sn/time_start>",
+								[
+									["?", "?startTime"],
+								]
+							],
+							["hasEndTime", "<http://spitfire-project.eu/ontology/ns/sn/time_end>",
+								[
+									["?", "?endTime"],
+								]
+							],
+						]
 		}
 
 		var valCnt = 0;
@@ -78,7 +110,7 @@
 			$("#log-div").hide();
 			$("#log-hide").hide();
 			// Add modules
-			addModules([sensor_module]); //,modul2,modul3
+			addModules([sensor_module, forecast_module]); //,modul2,modul3
 
 			// Add event listeners
 			document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -108,6 +140,24 @@
 			for(var i = 0; i < modules.length; i++) {
 				addModule(modules[i]);
 			}
+		}
+
+		// data[0] what to show
+		// data[1] what to map
+		// event changeevent
+		function generate_select(o, event) {
+			console.log("generate_select")
+
+			var select = $('<select></select>');
+			//select.append("<option value=\"?\">?</option>");
+
+			for(var j = 0; j<o.length; j++) {
+				select.append("<option value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");
+			}
+			if(typeof(event) == "function") {
+				select.change(event);
+			}
+			return select;
 		}
 
 		var query = null;
@@ -142,7 +192,7 @@
 
 			var lineid = 0;
 
-			var create = function(mapping) {
+			var create = function(mapping, s) {
 
 				var spo_id = "spo" + (lineid++);
 				var div_spo = $("<div id=\"" + spo_id + "\" class=\"query-spo\"></div>");
@@ -167,65 +217,44 @@
 				div_spo.append(div_del);
 
 				// Select for S
-				var select_s = $('<select class="s"></select>');
-				select_s.append("<option value=\"?\">?</option>");
+				var select_s = generate_select(s, function(e){update("s");} );
 				div_s.append(select_s);
 
-				// Select for P
-				var select_p = $('<select class="p"></select>');
-				select_p.append("<option value=\"?\">?</option>");
+				// Empty select for P
+				var p_change = function(e){
+					var val = select_p.val();
+					//console.log("Selected: " + val);
+					//console.log(mapping);
+					
+					var select_o = null;
+					for(var i = 0; i<mapping.length; i++) {
+						if(mapping[i][1] == val) {
+							var change = function(e){
+								update("o");
+							};
+							var map = mapping[i][2];
+
+							if(typeof(map) == "undefined") {
+								select_o = generate_select([["?","?"]], change);
+							} else {
+								select_o = generate_select(map, change);
+							}
+						}
+					}
+					// Select for O
+					div_o.html(select_o);
+					update("p2");
+				};
+
+				var select_p = generate_select(mapping, p_change);
 				div_p.append(select_p);
 
 				// Empty select for O
 				var select_o = $('<select class="o"></select>');
 				select_o.append("<option value=\"?\">?</option>");
 
-				select_s.change(function(e){
-					update("s");
-				});
+				//select_p.change();
 
-				// Items for P
-				var select = [];
-				select_p.change(function(e){
-					var val = select_p.val();
-					for(var i = 0; i<select.length; i++) {
-						if(select[i][0] == val) {
-							// Select for O
-							div_o.html(select[i][1]);
-							update("p1");
-							return;
-						}
-					}
-					// Select for O
-					div_o.html(select_o);
-					update("p2");
-				});
-
-				// ################################################
-				for(var i = 0; i<mapping.length; i++) {
-					var p = mapping[i][0];
-					var map = mapping[i][1];
-
-					select_p.append("<option value=\"" + map + "\">" + p + "</option>");
-
-					var o = mapping[i][2];
-					var select_o2 = $('<select></select>');
-					select_o2.append("<option value=\"?\">?</option>");
-
-					for(var j = 0; j<o.length; j++) {
-						//console.log(p + " - " + o[j][0]);
-						select_o2.append("<option value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");
-					}
-					select_o2.change(function(e){
-					   	//console.log(select.val());
-						update("o");
-					});
-					//select_o2.trigger('change');
-
-					select[i] = [];
-					select[i][0] = map;
-					select[i][1] = select_o2;
-				}
 				select_p.trigger('change');
 				return div_spo;
 			}
@@ -245,7 +274,7 @@
 
 			var input = $("<input type=\"button\" value=\"+\">");
 			input.click(function(e) {
-				div.append(create(mapping));
+				div.append(create(module.mapping, module.s));
 				update("line");
 			});
 			div.append(input);
@@ -330,7 +359,8 @@
 
 		function query_run(query) {
 			var url = sparqlEndpoint + "?query=";
-			//localStorage.setItem("query", query);
+			localStorage.setItem("query", query);
+			$("#query-text").val(query);
 
 			var mapping = [
 				["\\?" , "?rdf"],
