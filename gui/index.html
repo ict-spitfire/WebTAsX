@@ -524,57 +524,9 @@
 
 			xhr.send();
 
-			//var tabs = $("#tab-tabs").find('a[data-toggle="tab"]');
 			$("#tab-result-link").click();
 			console.log();
 		}
-
-/*
-function processData(data) {
-  // taking care of data
-}
-
-function handler() {
-  if(this.readyState == this.DONE) {
-    if(this.status == 200 &&
-       this.responseXML != null &&
-       this.responseXML.getElementById('test').textContent) {
-      // success!
-      processData(this.responseXML.getElementById('test').textContent);
-      return;
-    }
-    // something went wrong
-    processData(null);
-  }
-}
-
-var client = new XMLHttpRequest();
-client.onreadystatechange = handler;
-client.open("GET", "unicorn.xml");
-client.send();
-
-If you just want to log a message to the server:
-
-function log(message) {
-  var client = new XMLHttpRequest();
-  client.open("POST", "/log");
-  client.send(message);
-}
-
-Or if you want to check the status of a document on the server:
-
-function fetchStatus(address) {
-  var client = new XMLHttpRequest();
-  client.onreadystatechange = function() {
-    // in case of network errors this might not give reliable results
-    if(this.readyState == this.DONE)
-      returnStatus(this.status);
-  }
-  client.open("HEAD", address);
-  client.send();
-}
-*/
-
 
 	</script>
 </head>
@@ -621,10 +573,6 @@ function fetchStatus(address) {
 		<div id="log-div">
 			<textarea id="log" style="width:97%;height:150px;"></textarea>
 		</div>
-<!--
-/var/lib/tomcat6/webapps/ROOT/gui/img/bullet_arrow_down.png
-/var/lib/tomcat6/webapps/ROOT/gui/
--->
 	</div>
 </body>
 </html>
