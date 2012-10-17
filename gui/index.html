@@ -18,13 +18,14 @@
 	<script>
 
 		var sensor_module = {
-			title : "Sensors",
+			title : "Query-GUI",
 			s : [
 					["?", "?"],					
 					["sensor 1", "?sensor1"],
 					["sensor 2", "?sensor2"],
 					["sensor 3", "?sensor3"],
 					["light", "?light"],
+					["weather", "?weather"],
 				],
 			mapping :	[
 							["?", "?"],
@@ -59,13 +60,68 @@
 								]
 							],
 */
-							["is", "<http://spitfire-project.eu/ontology/ns/value> ?lightValue . ",
+							["is turned", "<http://spitfire-project.eu/ontology/ns/value> ?lightValue . ",
 								[
 									["?", "", "?lightValue"],
 									["on",  "FILTER(?lightValue > '200')"],
 									["off", "FILTER(?lightValue < '200')"]
 								]
-							]
+							],
+							["is", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time . ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast) ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast) ?forecast <http://spitfire-project.eu/ontology/ns/value>", 
+								[
+									["?" , "?value2", "?value2"]
+								]
+							],
+							["is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
+								[
+									["10", "FILTER(?value > 10)"],
+									["11", "FILTER(?value > 11)"],
+									["12", "FILTER(?value > 12)"],
+									["13", "FILTER(?value > 13)"],
+									["14", "FILTER(?value > 14)"],
+									["15", "FILTER(?value > 15)"],
+									["16", "FILTER(?value > 16)"],
+									["17", "FILTER(?value > 17)"],
+									["18", "FILTER(?value > 18)"],
+									["19", "FILTER(?value > 19)"],
+									["20", "FILTER(?value > 20)"],
+									["21", "FILTER(?value > 21)"],
+									["22", "FILTER(?value > 22)"],
+									["23", "FILTER(?value > 23)"],
+									["24", "FILTER(?value > 24)"],
+									["25", "FILTER(?value > 25)"],
+									["26", "FILTER(?value > 26)"],
+									["27", "FILTER(?value > 27)"],
+									["28", "FILTER(?value > 28)"],
+									["29", "FILTER(?value > 29)"],
+									["30", "FILTER(?value > 30)"],
+								]
+							],
+							["is smaller than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time . ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast) ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast) ?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
+								[
+									["10", "FILTER(?value < 10)"],
+									["11", "FILTER(?value < 11)"],
+									["12", "FILTER(?value < 12)"],
+									["13", "FILTER(?value < 13)"],
+									["14", "FILTER(?value < 14)"],
+									["15", "FILTER(?value < 15)"],
+									["16", "FILTER(?value < 16)"],
+									["17", "FILTER(?value < 17)"],
+									["18", "FILTER(?value < 18)"],
+									["19", "FILTER(?value < 19)"],
+									["20", "FILTER(?value < 20)"],
+									["21", "FILTER(?value < 21)"],
+									["22", "FILTER(?value < 22)"],
+									["23", "FILTER(?value < 23)"],
+									["24", "FILTER(?value < 24)"],
+									["25", "FILTER(?value < 25)"],
+									["26", "FILTER(?value < 26)"],
+									["27", "FILTER(?value < 27)"],
+									["28", "FILTER(?value < 28)"],
+									["29", "FILTER(?value < 29)"],
+									["30", "FILTER(?value < 30)"],
+								]
+							],
 						],
 			isActive : true
 		}
@@ -139,6 +195,15 @@
 						]
 		}
 
+		// @see: http://stackoverflow.com/a/9815010
+		// Array Remove - By John Resig (MIT Licensed)
+		Array.prototype.remove = function(from, to) {
+		  var rest = this.slice((to || from) + 1 || this.length);
+		  this.length = from < 0 ? this.length + from : from;
+		  return this.push.apply(this, rest);
+		};
+
+
 		var valCnt = 0;
 
 		function showlog() {
@@ -161,11 +226,12 @@
 			$("#log-div").hide();
 			$("#log-hide").hide();
 			// Add modules
-			addModules([sensor_module, weather_module]); //,modul2,modul3
+			addModules([sensor_module]); //weather_module,modul2,modul3
 
 			// Add event listeners
-			document.getElementById('files').addEventListener('change', handleFileSelect, false);
+			//document.getElementById('files').addEventListener('change', handleFileSelect, false);
 			document.getElementById('query-start').addEventListener('click', query_start, false);
+			//document.getElementById('query-save').addEventListener('click', query_save, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
 			document.getElementById('log-show').addEventListener('click', showlog, false);
 			document.getElementById('log-hide').addEventListener('click', hidelog, false);
@@ -184,6 +250,37 @@
 				}
 			}
 
+			var saved_queries = localStorage.getItem("saved_queries");
+			if(saved_queries != null && saved_queries != "null") {
+				queries = JSON.parse(saved_queries);
+				update_storage();
+			}
+
+		}
+
+		function update_storage() {
+			var ul = $("<ul>");
+			for(var i = 0; i < queries.length; i++) {
+				var q = queries[i];
+
+				// Generate LI
+				var li = $("<li>");
+				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
+				var onClick = function(i) {
+					return function() { 
+						queries.remove(i);
+						localStorage['saved_queries'] = JSON.stringify(queries);
+						update_storage();
+					}
+				};
+
+				del_img.click(onClick(i));
+				li.append(del_img);
+				li.append(q[1]);
+				// Add LI
+				ul.append(li);
+			}
+			$("#storage").html(ul);
 		}
 
 		var modid = 0;
@@ -218,7 +315,7 @@
 		var query = null;
 
 		function update(x) {
-			console.log("UPDATE " + x);
+			//console.log("UPDATE " + x);
 			var spo = $(".query-spo");
 			query = "{\n";
 			var actors = []; 
@@ -252,7 +349,7 @@
 		}
 
 		function update_log(query) {
-			console.log(query);
+			//console.log(query);
 			$("#log").val(query);
 		}
 
@@ -347,19 +444,43 @@
 				li.addClass("active");
 			}
 
-			var input = $("<input type=\"button\" value=\"+\">");
+			var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
 			input.click(function(e) {
-				div.append(create(module.mapping, module.s));
+				div2.append(create(module.mapping, module.s));
 				update("line");
 			});
 			div.append(input);
 
-			var input_generate = $("<input type=\"button\" value=\"Run Query\">");
+			var input_generate = $("<input class=\"btn\" type=\"button\" value=\"Run Query\">");
 			input_generate.click(function(e) {
 				query_run(query);
 			});
+
+			var div2 = $("<div style=\"margin-top:5px;\"></div>");
+			div.append(div2);		
+
 			div.append(input_generate);
 
+			var div3 = $("<div style=\"margin-top:5px;\" class=\"input-append\"></div>");
+
+			var input_text = $("<input type=\"text\" placeholder=\"Rule name...\" class=\"span8\">");
+			var input_save = $("<button class=\"btn\" type=\"button\">Save Query</button>");
+
+			div.append(div3);
+			div3.append(input_text);
+			div3.append(input_save);
+
+			function query_save() {
+				if(query == null) {
+					alert("You need at least one rule to save the query.");
+				}
+				queries.push([query, input_text.val()]);
+				localStorage['saved_queries'] = JSON.stringify(queries);
+				update_storage()
+				//console.log(queries);
+			}
+
+			input_save.click(query_save);
 			$("#tab-content").append(div);
 		}
 
@@ -431,6 +552,8 @@
 			var query = $('#query-text').val();
 			query_run(query);
 		}
+
+		var queries = [];
 
 		function query_run(query) {
 			var url = sparqlEndpoint + "?query=";
@@ -606,20 +729,6 @@
 
 		function error(text) {
 			return '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>ERROR!</strong>' + text + '</div>';
-/*
-			<div class="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>
-			  <strong>Warning!</strong> Best check yo self, you're not looking too good.
-			</div>
-
-    <div class="alert alert-error">
-    ...
-    </div>
-
-    <div class="alert alert-success">
-    ...
-    </div>
-*/
-
 		}
 
 	</script>
@@ -631,7 +740,8 @@
 				<!--
 				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
 				-->
-				<li><a href="#tab-query" data-toggle="tab">Query</a></li>
+				<li><a href="#tab-query" data-toggle="tab">Query-Textbox</a></li>
+				<li><a href="#tab-storage" data-toggle="tab">Query-Storage</a></li>
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
@@ -647,6 +757,11 @@
 					<h3>Query</h3>
 					<textarea id="query-text" style="width:97%;height:350px;"></textarea><br>
 					<p><input type="button" id="query-start" value="Run Query"></p>
+					<p><input type="button" id="query-save" value="Save Query"></p>
+				</div>
+				<div class="tab-pane" id="tab-storage">
+					<h3>Storage</h3>
+					<p id="storage">...</p>
 				</div>
 				<div class="tab-pane" id="tab-result">
 					<h3>Result</h3>
