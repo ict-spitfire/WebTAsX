@@ -136,54 +136,6 @@
 									["30", "FILTER(?value < 30)"],
 								]
 							],
-
-/*
-	SELECT *
-	WHERE
-	{
-		    <http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .
-		#
-		    ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .
-		  	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)
-		?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)
-	}
-*/
-
-
-
-/*
-#	<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .
-
-	?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . FILTER(?value > 15)
-        ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .
-      
-#	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)
-#	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)
-
-*/
-//	<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .
-//	?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . FILTER(?value > 15)
-//	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)
-//	?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)
-
-
-							/*
-							["has value", "<http://spitfire-project.eu/ontology/ns/value>",
-								[
-									["?", "?forcastValue"],
-								]
-							],
-							["has start time", "<http://spitfire-project.eu/ontology/ns/sn/time_start>",
-								[
-									["?", "?startTime"],
-								]
-							],
-							["has end time", "<http://spitfire-project.eu/ontology/ns/sn/time_end>",
-								[
-									["?", "?endTime"],
-								]
-							],
-							*/
 						]
 		}
 
@@ -457,7 +409,7 @@
 
 			// Workarount to get a timeout
 			//@see: http://stackoverflow.com/a/1018731
-			var xmlHttpTimeout=setTimeout( function (){ console.log("TIMEOUT"); xhr.abort(); } , 5000);
+			var xmlHttpTimeout=setTimeout( function (){ console.log("TIMEOUT"); xhr.abort(); } , 20000);
 		}
 
 		function action_start() {
@@ -676,18 +628,21 @@
 
 	<div class="container">
 			<ul class="nav nav-tabs" id="tab-tabs">
+				<!--
 				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
+				-->
 				<li><a href="#tab-query" data-toggle="tab">Query</a></li>
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
+				<!--
 				<div class="tab-pane" id="tab-import">
 					<p class="tab-content">
 						<input type="file" id="files" name="files[]" multiple />
 						<output id="list"></output>
 					</p>
 				</div>
-
+				-->
 				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
 					<textarea id="query-text" style="width:97%;height:350px;"></textarea><br>
