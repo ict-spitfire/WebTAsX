@@ -30,10 +30,10 @@
 							["?", "?"],
 							["has a", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 								[
-									["?", "?attachedSystem"],
+									["?", "?attachedSystem", "?attachedSystem"],
 									["light sensor","?light .\n\t?light <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
-									["fan","?fanActor.\n\t?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
-									["radio","?radioActor.\n\t?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
+									["fan","?fanActor.\n\t?fanActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>", "?fanActor"],
+									["radio","?radioActor.\n\t?radioActor <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>", "?radioActor"]
 								]
 							],
 							["is in","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
@@ -45,6 +45,7 @@
 									["living room", "<http://spitfire-project.eu/foi/livingroom>"]
 								]
 							],
+/*
 							["has type", "<http://www.w3.org/2000/01/rdf-schema#type>",
 								[
 									["?", "?type"],
@@ -52,7 +53,7 @@
 									["switch", "<http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
 								]
 							],
-/*							["has value", "<http://spitfire-project.eu/ontology/ns/value>",
+							["has value", "<http://spitfire-project.eu/ontology/ns/value>",
 								[
 									["?", "?value"]
 								]
@@ -237,14 +238,18 @@
 		// data[0] what to show
 		// data[1] what to map
 		// event changeevent
-		function generate_select(o, event) {
+		function generate_select(o, event, str) {
 			console.log("generate_select")
 
 			var select = $('<select></select>');
 			//select.append("<option value=\"?\">?</option>");
 
 			for(var j = 0; j<o.length; j++) {
-				select.append("<option value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");
+				if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
+					select.append("<option " + str + "=\"" + o[j][2] + "\" value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");					
+				} else {
+					select.append("<option value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");
+				}
 			}
 			if(typeof(event) == "function") {
 				select.change(event);
@@ -257,11 +262,17 @@
 		function update(x) {
 			console.log("UPDATE " + x);
 			var spo = $(".query-spo");
-			query = "SELECT * WHERE {\n";
+			query = "{\n";
+			var actors = []; 
 			for(var i = 0; i < spo.length; i++) {
 				var children = spo[i].childNodes;
 				for(var j = 0; j < children.length; j++) {
 					var e = $(children[j].firstChild);
+					var option = e.find("option:selected");
+					var actor = option.attr("actors");
+					if(typeof(actor) == "string") {
+						actors.push(actor);
+					}
 					if(e.val() == "?") {
 						query += "\t?val" + (++valCnt) + " ";
 					} else {
@@ -270,7 +281,15 @@
 				}
 				query += ". \n";
 			}
+
 			query += "}";
+
+			if(actors.length == 0) {
+				console.log("Query does not contain any actor!");
+				query = "SELECT * WHERE " + query;
+			} else {
+				query = "SELECT " + actors.join(" ") + " WHERE " + query;
+			}
 			update_log(query);
 		}
 
@@ -309,7 +328,7 @@
 				div_spo.append(div_del);
 
 				// Select for S
-				var select_s = generate_select(s, function(e){update("s");} );
+				var select_s = generate_select(s, function(e){update("s");}, "actors");
 				div_s.append(select_s);
 
 				// Empty select for P
@@ -335,7 +354,7 @@
 							if(typeof(map) == "undefined") {
 								select_o = generate_select([["?","?"]], change);
 							} else {
-								select_o = generate_select(map, change);
+								select_o = generate_select(map, change, "actors");
 							}
 						}
 					}
@@ -344,7 +363,7 @@
 					update("p2");
 				};
 
-				var select_p = generate_select(mapping, p_change);
+				var select_p = generate_select(mapping, p_change, "actors");
 				div_p.append(select_p);
 
 				// Empty select for O
