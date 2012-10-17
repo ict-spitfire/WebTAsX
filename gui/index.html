@@ -61,7 +61,7 @@
 */
 							["is", "<http://spitfire-project.eu/ontology/ns/value> ?lightValue . ",
 								[
-									["?", ""],
+									["?", "", "?lightValue"],
 									["on",  "FILTER(?lightValue > '200')"],
 									["off", "FILTER(?lightValue < '200')"]
 								]
@@ -81,6 +81,11 @@
 					["temperatur", ""],
 				],
 			mapping :	[
+							["is", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time . ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast) ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast) ?forecast <http://spitfire-project.eu/ontology/ns/value>", 
+								[
+									["?" , "?value2", "?value2"]
+								]
+							],
 							["is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
 								[
 									["10", "FILTER(?value > 10)"],
