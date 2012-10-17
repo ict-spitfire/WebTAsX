@@ -457,7 +457,7 @@
 
 			// Workarount to get a timeout
 			//@see: http://stackoverflow.com/a/1018731
-			var xmlHttpTimeout=setTimeout( function (){ xhr.abort(); } , 5000);
+			var xmlHttpTimeout=setTimeout( function (){ console.log("TIMEOUT"); xhr.abort(); } , 5000);
 		}
 
 		function action_start() {
@@ -529,6 +529,8 @@
 			xhr.setRequestHeader("Accept", "application/xml");
 			xhr.onload = function(e) {
 				if (this.status == 200) {
+					$('#query-result').html(success("Query successful."));
+
 					var res = this.response;
 					var dom = new DOMParser().parseFromString(res,'text/xml');
 
@@ -542,6 +544,7 @@
 					
 					var data = [];
 					var results = dom.getElementsByTagName("result");
+
 					for(var i = 0; i < results.length; i++) {
 						var result = results[i];
 						var bindings = result.getElementsByTagName("binding");
@@ -618,14 +621,53 @@
 						// title
 					}
 					table.append(tbody);
-					$('#query-result').html(table);
+
+					if(data.length == 0) {
+						$('#query-result').append(itm_alert("No data are matching the query."));
+					} else {
+						$('#query-result').append(table);
+					}
+				} else if (this.status == 504) {
+					$('#query-result').html(error("CoAP timeout."));
+				} else {
+					$('#query-result').html(error("HTTP-Status: " + this.status));
 				}
 			};
 
-			xhr.send();
-
+			$('#query-result').html(info("Query is running..."));
 			$("#tab-result-link").click();
-			console.log();
+			xhr.send(null);
+			console.log("ASYNC...")
+		}
+
+		function success(text) {
+			return '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
+		}
+
+		function info(text) {
+			return '<div class="alert alert-info"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
+		}
+
+		function itm_alert(text) {
+			return '<div class="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
+		}
+
+		function error(text) {
+			return '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>ERROR!</strong>' + text + '</div>';
+/*
+			<div class="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>
+			  <strong>Warning!</strong> Best check yo self, you're not looking too good.
+			</div>
+
+    <div class="alert alert-error">
+    ...
+    </div>
+
+    <div class="alert alert-success">
+    ...
+    </div>
+*/
+
 		}
 
 	</script>
