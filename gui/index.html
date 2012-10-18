@@ -554,10 +554,7 @@
 				}
 			}
 
-			var data = new FormData();
-			data.append('value', $('#action-value').val());
-			//xhr.send(data);
-			xhr.send($('#action-value').val());
+			xhr.send(action);
 
 			// Workarount to get a timeout
 			//@see: http://stackoverflow.com/a/1018731
@@ -731,8 +728,6 @@
 
 	
 		function success_periodically(res, action) {
-			$('#query-result').html(success("Query successful."));
-
 			var dom = new DOMParser().parseFromString(res,'text/xml');
 		
 			var data = [];
