@@ -25,7 +25,7 @@
 					["sensor 2", "?sensor2"],
 					["sensor 3", "?sensor3"],
 					["light", "?light"],
-					["weather", "?weather"],
+					["weather", ""],
 				],
 			mapping :	[
 							["?", "?"],
@@ -33,7 +33,7 @@
 								[
 									["?", "?hasA", "?hasA"],
 									["light sensor","?light .\n\t?light <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
-									["fan","?fan.\n\t?fan <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>", "?fan"],
+									["fan","?fan .\n\t?fan <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>", "?fan"],
 									["radio","?radio.\n\t?radio <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>", "?radio"]
 								]
 							],
@@ -60,14 +60,14 @@
 								]
 							],
 */
-							["is turned", "<http://spitfire-project.eu/ontology/ns/value> ?lightValue . ",
+							["is turned", "<http://spitfire-project.eu/ontology/ns/value>  ",
 								[
-									["?", "", "?lightValue"],
-									["on",  "FILTER(?lightValue > '200')"],
-									["off", "FILTER(?lightValue < '200')"]
+									["?",   "?lightValue", "?lightValue"],
+									["on",  "?lightValue . FILTER(?lightValue > 500)"], // "200"^^xsd:int
+									["off", "?lightValue . FILTER(?lightValue < 500)"]
 								]
 							],
-							["is", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time . ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast) ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast) ?forecast <http://spitfire-project.eu/ontology/ns/value>", 
+							["is", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value>", 
 								[
 									["?" , "?value2", "?value2"]
 								]
@@ -315,37 +315,46 @@
 		var query = null;
 
 		function update(x) {
-			//console.log("UPDATE " + x);
+			console.log("UPDATE " + x);
 			var spo = $(".query-spo");
-			query = "{\n";
-			var actors = []; 
-			for(var i = 0; i < spo.length; i++) {
-				var children = spo[i].childNodes;
-				for(var j = 0; j < children.length; j++) {
-					var e = $(children[j].firstChild);
-					var option = e.find("option:selected");
-					var actor = option.attr("actors");
-					if(typeof(actor) == "string") {
-						actors.push(actor);
-					}
-					if(e.val() == "?") {
-						query += "\t?val" + (++valCnt) + " ";
-					} else {
-						query += "\t" + e.val() + " ";
-					}
-				}
-				query += ". \n";
-			}
-
-			query += "}";
-
-			if(actors.length == 0) {
-				console.log("Query does not contain any actor!");
-				query = "SELECT * WHERE " + query;
+			if(spo.length == 0) {
+				query = null;
+				var e = $("#no-rule-msg");
+				e.show();
 			} else {
-				query = "SELECT " + actors.join(" ") + " WHERE " + query;
+
+				query = "{\n";
+				var actors = []; 
+				for(var i = 0; i < spo.length; i++) {
+					var children = spo[i].childNodes;
+					for(var j = 0; j < children.length; j++) {
+						var e = $(children[j].firstChild);
+						if(e.is("img")) break;
+						var option = e.find("option:selected");
+						var actor = option.attr("actors");
+						if(typeof(actor) == "string") {
+							actors.push(actor);
+						}
+						if(e.val() == "?") {
+							query += "\t?val" + (++valCnt) + " ";
+						} else {
+							query += "\t" + e.val() + " ";
+						}
+					}
+					query += ". \n";
+				}
+
+				query += "}";
+
+				if(actors.length == 0) {
+					console.log("Query does not contain any actor!");
+					query = "SELECT * WHERE " + query;
+				} else {
+					query = "SELECT " + actors.join(" ") + " WHERE " + query;
+				}
+				update_log(query);
 			}
-			update_log(query);
+
 		}
 
 		function update_log(query) {
@@ -416,6 +425,7 @@
 					// Select for O
 					div_o.html(select_o);
 					update("p2");
+					info_msg.hide();
 				};
 
 				var select_p = generate_select(mapping, p_change, "actors");
@@ -446,7 +456,7 @@
 
 			var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
 			input.click(function(e) {
-				div2.append(create(module.mapping, module.s));
+				div_rules.append(create(module.mapping, module.s));
 				update("line");
 			});
 			div.append(input);
@@ -456,8 +466,10 @@
 				query_run(query);
 			});
 
-			var div2 = $("<div style=\"margin-top:5px;\"></div>");
-			div.append(div2);		
+			var div_rules = $("<div style=\"margin-top:5px;\"></div>");
+			var info_msg = $(info("No rule selected yet. Click the [+] button.", "no-rule-msg", false));
+			div_rules.append(info_msg);
+			div.append(div_rules);		
 
 			div.append(input_generate);
 
@@ -556,6 +568,11 @@
 		var queries = [];
 
 		function query_run(query) {
+
+			if(query == null) {
+				alert("You need at least one rule to run the query.");
+			}
+
 			var url = sparqlEndpoint + "?query=";
 			localStorage.setItem("query", query);
 			$("#query-text").val(query);
@@ -719,8 +736,17 @@
 			return '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
 		}
 
-		function info(text) {
-			return '<div class="alert alert-info"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
+		function info(text, id, showClose) {
+			var x = '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+			if(showClose == false) {
+				x = "";
+			}
+
+			if(typeof(id) == "string") {
+				return '<div id=\"' + id + '\" class="alert alert-info">' + x + text + '</div>';
+			} else {
+				return '<div class="alert alert-info">' + x + text + '</div>';
+			}
 		}
 
 		function itm_alert(text) {
@@ -730,7 +756,6 @@
 		function error(text) {
 			return '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>ERROR!</strong>' + text + '</div>';
 		}
-
 	</script>
 </head>
 <body>
