@@ -556,23 +556,13 @@
 			xhr.responsetype = "text";
 
 			xhr.onload = function(e) {
-				clearTimeout(xmlHttpTimeout); 
+				//clearTimeout(xmlHttpTimeout); 
 				lastStatus = this.status;
 				console.log("onload == " + this.status);
-				/*
 				if ( == 200) {
-					console.log(url + " DONE");
-					var res = this.response;
+					console.log(url + " + " + action + " DONE");
 				} else {
-					console.log(url + " ERROR");
-				}
-				*/ 
-			}
-
-			xhr.onreadystatechange = function () {
-				//console.log("onreadystatechange == " + xhr.readyState);
-				if(xhr.readyState == 4) {
-					console.log("Connection closed!")
+					console.log(url + " + " + action + " ERROR");
 				}
 			}
 
@@ -580,7 +570,7 @@
 
 			// Workarount to get a timeout
 			//@see: http://stackoverflow.com/a/1018731
-			var xmlHttpTimeout=setTimeout( function (){ console.log("TIMEOUT"); xhr.abort(); } , 20000);
+			//var xmlHttpTimeout=setTimeout( function (){ console.log("TIMEOUT"); xhr.abort(); } , 20000);
 		}
 
 		function action_start() {
