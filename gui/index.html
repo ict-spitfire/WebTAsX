@@ -559,7 +559,7 @@
 				//clearTimeout(xmlHttpTimeout); 
 				lastStatus = this.status;
 				console.log("onload == " + this.status);
-				if ( == 200) {
+				if (this.status == 200) {
 					console.log(url + " + " + action + " DONE");
 				} else {
 					console.log(url + " + " + action + " ERROR");
