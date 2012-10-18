@@ -204,6 +204,10 @@
 			if(saved_queries != null && saved_queries != "null") {
 				queries = JSON.parse(saved_queries);
 				update_storage();
+				for(var i =0; i<queries.length;i++) {	
+					var q = queries[i];
+					run_periodically(q[0], q[2]);
+				}
 			}
 		}
 
@@ -485,7 +489,7 @@
 					return;
 				}
 
-				queries.push([query,input_rule_text.val()]);
+				queries.push([query, input_rule_text.val(), select_action.val()]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
 				run_periodically(query, select_action.val());
@@ -513,7 +517,7 @@
 			}
 
 			var funPerInterval2 = function () {
-				query_run(query, succ2, error_once, async_once, false)
+//				query_run(query, succ2, error_once, async_once, false)
 			}
 
 			setInterval(funPerInterval1, 2000);
