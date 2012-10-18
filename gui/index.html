@@ -75,8 +75,8 @@
 									["is turned", "<http://spitfire-project.eu/ontology/ns/value>  ",
 										[
 											["?",   "?lightValue", "?lightValue"],
-											["on",  "?lightValue . FILTER(?lightValue > " + config["light_threshhold"] + ")"], // "200"^^xsd:int
-											["off", "?lightValue . FILTER(?lightValue < " + config["light_threshhold"] + ")"]
+											["on",  "?lightValue . FILTER(?lightValue <bigger>= " + config["light_threshhold"] + ")"], // "200"^^xsd:int
+											["off", "?lightValue . FILTER(?lightValue <smaller> " + config["light_threshhold"] + ")"]
 										]
 									],
 								]
@@ -243,7 +243,7 @@
 		// data[1] what to map
 		// event changeevent
 		function generate_select(o, event, str) {
-			console.log("generate_select")
+			//console.log("generate_select")
 
 			var select = $('<select></select>');
 			//select.append("<option value=\"?\">?</option>");
@@ -264,7 +264,7 @@
 		var query = null;
 
 		function update(x) {
-			console.log("UPDATE " + x);
+			//console.log("UPDATE " + x);
 			var spo = $(".query-spo");
 			if(spo.length == 0) {
 				query = null;
@@ -496,15 +496,33 @@
 
 		function run_periodically(query, action) {
 
-			function succ(res) {
+			function succ1(res) {
 				success_periodically(res, action)
 			}
 
-			var funPerInterval = function () {
-				query_run(query, succ, error_once, async_once)
+			function succ2(res) {
+				if(action == "on") {
+					success_periodically(res, "off");
+				} else {
+					success_periodically(res, "on");
+				}
 			}
 
-			var tid = setInterval(funPerInterval, 2000);
+			var funPerInterval1 = function () {
+				query_run(query, succ1, error_once, async_once)
+			}
+
+			var funPerInterval2 = function () {
+				query_run(query, succ2, error_once, async_once, false)
+			}
+
+			setInterval(funPerInterval1, 2000);
+
+			var startLater = function() {
+				setInterval(funPerInterval2, 2000);
+			}
+
+			setTimeout(startLater,1000);
 			
 			/*
 				function abortTimer() { // to be called when you want to stop the timer
@@ -576,10 +594,21 @@
 
 		var queries = [];
 
-		function query_run(query, onsuccess, onerror, onasync) {
+		function query_run(query, onsuccess, onerror, onasync, filter) {
+
 
 			if(query == null) {
 				alert("You need at least one rule to run the query.");
+			}
+
+			if(typeof(filter) == "boolean" && !filter) {
+				query = query.replace(new RegExp("<filter>", "g"), "FILTER NOT EXISTS");
+				query = query.replace(new RegExp("<bigger>", "g"), "<");
+				query = query.replace(new RegExp("<smaller>", "g"), ">");
+			} else {
+				query = query.replace(new RegExp("<filter>", "g"), "FILTER");
+				query = query.replace(new RegExp("<bigger>", "g"), ">");
+				query = query.replace(new RegExp("<smaller>", "g"), "<");
 			}
 
 			var url = sparqlEndpoint + "?query=";
