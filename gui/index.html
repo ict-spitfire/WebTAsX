@@ -311,9 +311,6 @@
 			$("#log").val(query);
 		}
 
-
-//////////////// TODO /////////////////////////
-
 		function addModule(module) {
 			modid++;
 
@@ -394,8 +391,6 @@
 				return div_spo;
 			}
 
-			/// END-FUN ///
-
 			var mapping = module.mapping;
 
 			// Add new menu
@@ -405,6 +400,9 @@
 			// Add new content pane
 			var div = $("<div class=\"tab-pane\" id=\"tab" + modid +  "\"></div>");
 			$("#tab-content").append(div);
+
+			// RUles
+			div.append("<h4>Rules</h4>");
 
 			// Set to active, if configured
 			if(module.isActive) {
@@ -427,47 +425,95 @@
 			div_rules.append(info_msg);
 			div.append(div_rules);		
 
+			div.append("<h4>Run once</h4>");
+
 			// Add [Run Query]-Button to the content pane
-			var input_generate = $("<input class=\"btn\" type=\"button\" value=\"Run Query Once\">");
+			var input_generate = $("<input class=\"btn\" type=\"button\" value=\"Run Query\">");
 			input_generate.click(function(e) {
-				query_run(query);
+				query_run(query, success_once, error_once, async_once);
 			});
 			div.append(input_generate);
 
+			/*
 			// Add [Run Query Peridically]-Button to the content pane
-			var input_peridically = $("<input class=\"btn\" type=\"button\" value=\"Run Query Peridically\"> ");
-			input_peridically.click(function(e) {
+			var input_periodically = $("<input class=\"btn\" type=\"button\" value=\"Run Query Periodically in the background\"> ");
+			input_periodically.click(function(e) {
 				console.log("Run periodically");
 				//query_run(query);
 			});
-			div.append(input_peridically);
+			div.append(input_periodically);
+			*/
 
-
+			div.append("<h4>Run periodically in the background</h4>");
 
 			// Create a div to keep the save stuff and add it to the content pane
-			var div_save = $("<div style=\"margin-top:5px;\" class=\"input-append\"></div>");
-			var input_text = $("<input type=\"text\" placeholder=\"Rule name...\" class=\"span8\">");
-			var input_save = $("<button class=\"btn\" type=\"button\">Save Query</button>");
+			var form = $('<form class="form-horizontal">');
+			div.append(form);
+			
+			var div_rule = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Rule Name:</label></div>");
+			var div_rule_controls = $('<div class="controls"></div>');
+			var input_rule_text = $("<input type=\"text\" placeholder=\"Rule name...\" class=\"span6\">");
+			form.append(div_rule)
+			div_rule.append(div_rule_controls);
+			div_rule_controls.append(input_rule_text);
 
-			div.append(div_save);
-			div_save.append(input_text);
-			div_save.append(input_save);
+			var div_action = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Action:</label></div>");
+			var div_action_controls = $('<div class="controls"></div>');
+			var select_action = $("<select id=\"action-value\"></select>");
+			select_action.append($("<option value=\"on\">on</option>"));
+			select_action.append($("<option value=\"off\">off</option>"));
+			form.append(div_action)
+			div_action.append(div_action_controls);
+			div_action_controls.append(select_action);
+
+			var div_button = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>");
+			var div_button_controls = $('<div class="controls"></div>');
+			var input_button_text = $("<button class=\"btn\" type=\"button\">Run Query</button>");
+			form.append(div_button)
+			div_button.append(div_button_controls);
+			div_button_controls.append(input_button_text);
+
+			var input_save = $();
 
 			function query_save() {
 				if(query == null) {
-					alert("You need at least one rule to save the query.");
+					alert("You need at least one rule to run the query.");
+					return;
 				}
-				queries.push([query, input_text.val()]);
-				localStorage['saved_queries'] = JSON.stringify(queries);
-				update_storage()
-				//console.log(queries);
-			}
+				if(input_rule_text.val().length == 0) {
+					alert("You need a rule name to run the query.");
+					return;
+				}
 
-			input_save.click(query_save);
+				queries.push([query,input_rule_text.val()]);
+				localStorage['saved_queries'] = JSON.stringify(queries);
+				update_storage();
+				run_periodically(query, select_action.val());
+			}
+			input_button_text.click(query_save);
 
 		}
 
-//////////////// TODO /////////////////////////
+		function run_periodically(query, action) {
+
+			function succ(res) {
+				success_periodically(res, action)
+			}
+
+			var funPerInterval = function () {
+				query_run(query, succ, error_once, async_once)
+			}
+
+			var tid = setInterval(funPerInterval, 2000);
+			
+			/*
+				function abortTimer() { // to be called when you want to stop the timer
+				  clearInterval(tid);
+				}
+			*/			
+			
+		}
+
 
 		function handleFileSelect(evt) {
 			var files = evt.target.files;
@@ -481,8 +527,8 @@
 			document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
 		}
 
-		function action_request(url) {
-			console.log("RUN ACTION ON " + url + " :: " + $('#action-value').val());
+		function action_request(url, action) {
+			console.log("RUN ACTION ON " + url + " :: " + action);
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST', url, true);
 			xhr.responsetype = "text";
@@ -519,28 +565,21 @@
 		}
 
 		function action_start() {
-
-			//action_request("http://fd00-db08-0-c0a1-215-8d00-14-2304.coap1.wisebed.itm.uni-luebeck.de:8080/fan");
-			//action_request("http://fd00-db08-0-c0a1-215-8d00-14-8ed8.coap1.wisebed.itm.uni-luebeck.de:8080/switch");
-
-			//http://fd00-db08-0-c0a1-215-8d00-14-8ed3.coap1.wisebed.itm.uni-luebeck.de:8080/fan	
-			//http://fd00-db08-0-c0a1-215-8d00-14-8ed2.coap1.wisebed.itm.uni-luebeck.de:8080/switch
-
 			var e = $("td.marked");
 			for (var i = 0, i; i < e.length; i++) {
 				var child = e[i].firstChild;
-				action_request(child.data);
+				action_request(child.data, $('#action-value').val());
 			}
 		}
 
 		function query_start() {
 			var query = $('#query-text').val();
-			query_run(query);
+			query_run(query, success_once, error_once, async_once);
 		}
 
 		var queries = [];
 
-		function query_run(query) {
+		function query_run(query, onsuccess, onerror, onasync) {
 
 			if(query == null) {
 				alert("You need at least one rule to run the query.");
@@ -563,115 +602,159 @@
 			xhr.setRequestHeader("Accept", "application/xml");
 			xhr.onload = function(e) {
 				if (this.status == 200) {
-					$('#query-result').html(success("Query successful."));
-
-					var res = this.response;
-					var dom = new DOMParser().parseFromString(res,'text/xml');
-
-					var title = [];
-					var variables = dom.getElementsByTagName("variable");
-					for(var i = 0; i < variables.length; i++) {
-						var variable = variables[i];
-						title.push(variable.getAttribute("name"));
-					}
-					//console.log(title);
-					
-					var data = [];
-					var results = dom.getElementsByTagName("result");
-
-					for(var i = 0; i < results.length; i++) {
-						var result = results[i];
-						var bindings = result.getElementsByTagName("binding");
-
-
-						var tmp = [];
-						for(var k = 0; k < bindings.length; k++) {
-							var binding = bindings[k];
-							var children = binding.childNodes;
-							for(var j = 0; j < children.length; j++) {
-								var child = children[j];
-								if(child.nodeType != 3) {
-									var name = binding.getAttribute("name");
-									var index = title.indexOf(name); 
-									var c = child.firstChild;
-									tmp[index] = c.data;
-/*
-									if(child.nodeName == "uri") {
-										tmp[index] = "&#60;" + c.data + "&#62;";
-									} else {
-										tmp[index] = c.data;
-									}
-*/
-								}
-							}
-						}
-						data.push(tmp);
-					}
-					//console.log(data);
-
-					var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
-					var thead = $('<thead></thead>');
-					var tr = $('<tr></tr>');
-					for(i=0; i<title.length; i++){
-						var th = $('<th>' + title[i] + '</th>');
-						tr.append(th);
-					}
-					thead.append(tr);
-					table.append(thead);
-
-					var onClick = function(e) {
-						var t = $(this);						
-						if(t.hasClass("marked")) {
-							t.removeClass("marked"); // css("color", "red");
-						} else {
-							t.addClass("marked"); // css("color", "red");
-						}
-					}
-
-					var tbody = $('<tbody></tbody>');
-					for(i=0; i<data.length; i++){
-						tr = $('<tr></tr>');
-						//console.log(data[i]);
-						for(j=0; j<data[i].length; j++){
-							var td = null;
-							if(typeof(data[i][j]) === "undefined") {
-								td = $('<td></td>');
-							} else {
-								td = $('<td>' + data[i][j] + '</td>');
-							}
-							td.click(onClick);
-							tr.append(td);
-						}
-						if(data[i].length < title.length) {
-							var diff = title.length - data[i].length;
-							console.log(diff);
-							for(var y = 0; y< diff; y++) {
-								tr.append($('<td></td>'));
-							}
-						}
-
-						tbody.append(tr);
-
-						// title
-					}
-					table.append(tbody);
-
-					if(data.length == 0) {
-						$('#query-result').append(itm_alert("No data are matching the query."));
-					} else {
-						$('#query-result').append(table);
+					if(typeof(onsuccess) == "function") {
+						onsuccess(this.response);
 					}
 				} else if (this.status == 504) {
-					$('#query-result').html(error("CoAP timeout."));
+					if(typeof(onerror) == "function") {
+						onerror("CoAP timeout.");
+					}
 				} else {
-					$('#query-result').html(error("HTTP-Status: " + this.status));
-				}
-			};
+					if(typeof(onerror) == "function") {
+						onerror("HTTP-Status: " + this.status);
+					}
+				} 
+			}
 
+			xhr.send(null);
+			if(typeof(onasync) == "function") {
+				onasync();
+			}
+		}
+
+		function async_once() {
 			$('#query-result').html(info("Query is running..."));
 			$("#tab-result-link").click();
-			xhr.send(null);
-			console.log("ASYNC...")
+		}
+
+		function error_once(msg) {
+			$('#query-result').html(error(msg));
+		}
+
+		function success_once(res) {
+			$('#query-result').html(success("Query successful."));
+			var dom = new DOMParser().parseFromString(res,'text/xml');
+
+			var title = [];
+			var variables = dom.getElementsByTagName("variable");
+			for(var i = 0; i < variables.length; i++) {
+				var variable = variables[i];
+				title.push(variable.getAttribute("name"));
+			}
+			//console.log(title);
+		
+			var data = [];
+			var results = dom.getElementsByTagName("result");
+
+			for(var i = 0; i < results.length; i++) {
+				var result = results[i];
+				var bindings = result.getElementsByTagName("binding");
+
+				var tmp = [];
+				for(var k = 0; k < bindings.length; k++) {
+					var binding = bindings[k];
+					var children = binding.childNodes;
+					for(var j = 0; j < children.length; j++) {
+						var child = children[j];
+						if(child.nodeType != 3) {
+							var name = binding.getAttribute("name");
+							var index = title.indexOf(name); 
+							var c = child.firstChild;
+							tmp[index] = c.data;
+/*
+							if(child.nodeName == "uri") {
+								tmp[index] = "&#60;" + c.data + "&#62;";
+							} else {
+								tmp[index] = c.data;
+							}
+*/
+						}
+					}
+				}
+				data.push(tmp);
+			}
+			//console.log(data);
+
+			var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
+			var thead = $('<thead></thead>');
+			var tr = $('<tr></tr>');
+			for(i=0; i<title.length; i++){
+				var th = $('<th>' + title[i] + '</th>');
+				tr.append(th);
+			}
+			thead.append(tr);
+			table.append(thead);
+
+			var onClick = function(e) {
+				var t = $(this);						
+				if(t.hasClass("marked")) {
+					t.removeClass("marked"); // css("color", "red");
+				} else {
+					t.addClass("marked"); // css("color", "red");
+				}
+			}
+
+			var tbody = $('<tbody></tbody>');
+			for(i=0; i<data.length; i++){
+				tr = $('<tr></tr>');
+				//console.log(data[i]);
+				for(j=0; j<data[i].length; j++){
+					var td = null;
+					if(typeof(data[i][j]) === "undefined") {
+						td = $('<td></td>');
+					} else {
+						td = $('<td>' + data[i][j] + '</td>');
+					}
+					td.click(onClick);
+					tr.append(td);
+				}
+				if(data[i].length < title.length) {
+					var diff = title.length - data[i].length;
+					console.log(diff);
+					for(var y = 0; y< diff; y++) {
+						tr.append($('<td></td>'));
+					}
+				}
+
+				tbody.append(tr);
+
+				// title
+			}
+			table.append(tbody);
+
+			if(data.length == 0) {
+				$('#query-result').append(itm_alert("No data are matching the query."));
+			} else {
+				$('#query-result').append(table);
+			}
+		}
+
+	
+		function success_periodically(res, action) {
+			$('#query-result').html(success("Query successful."));
+
+			var dom = new DOMParser().parseFromString(res,'text/xml');
+		
+			var data = [];
+			var results = dom.getElementsByTagName("result");
+
+			for(var i = 0; i < results.length; i++) {
+				var result = results[i];
+				var bindings = result.getElementsByTagName("binding");
+
+				var tmp = [];
+				for(var k = 0; k < bindings.length; k++) {
+					var binding = bindings[k];
+					var children = binding.childNodes;
+					for(var j = 0; j < children.length; j++) {
+						var child = children[j];
+						if(child.nodeType != 3) {
+							var c = child.firstChild;
+							action_request(c.data, action);
+						}
+					}
+				}
+			}
 		}
 
 		function success(text) {
