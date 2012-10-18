@@ -17,6 +17,9 @@
 
 	<script>
 
+		var config = [];
+		config["light_threshhold"] = 3000;
+
 		var sensor_module = {
 			title : "Query-GUI",
 			mapping :
@@ -72,8 +75,8 @@
 									["is turned", "<http://spitfire-project.eu/ontology/ns/value>  ",
 										[
 											["?",   "?lightValue", "?lightValue"],
-											["on",  "?lightValue . FILTER(?lightValue > 500)"], // "200"^^xsd:int
-											["off", "?lightValue . FILTER(?lightValue < 500)"]
+											["on",  "?lightValue . FILTER(?lightValue > " + config["light_threshhold"] + ")"], // "200"^^xsd:int
+											["off", "?lightValue . FILTER(?lightValue < " + config["light_threshhold"] + ")"]
 										]
 									],
 								]
