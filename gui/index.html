@@ -225,9 +225,13 @@
 			//document.getElementById('log-hide').addEventListener('click', hidelog, false);
 
 			// Get the last SPARQL query
-			var q = localStorage.getItem("query");
-			if(q != null) {
-				$('#query-text').val(q);
+			var q1 = localStorage.getItem("query1");
+			if(q1 != null) {
+				$('#query-text1').val(q1);
+			}
+			var q2 = localStorage.getItem("query2");
+			if(q2 != null) {
+				$('#query-text2').val(q2);
 			}
 /*
 			var show_log = localStorage.getItem("showlog");
@@ -902,8 +906,8 @@
 				xhr.send(null);
 			}
 
-			xhr(url, query[0].query, onsuccessRules);
-			xhr(url, query[1].query, onsuccessAction);
+			if(query[0].length > 0) xhr(url, query[0].query, onsuccessRules);
+			if(query[1].length > 0) xhr(url, query[1].query, onsuccessAction);
 
 			if(typeof(onasync) == "function") {
 				onasync();
