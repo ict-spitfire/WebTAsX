@@ -906,8 +906,8 @@
 				xhr.send(null);
 			}
 
-			if(query[0].length > 0) xhr(url, query[0].query, onsuccessRules);
-			if(query[1].length > 0) xhr(url, query[1].query, onsuccessAction);
+			if(query[0].query.length > 0) xhr(url, query[0].query, onsuccessRules);
+			if(query[1].query..length > 0) xhr(url, query[1].query, onsuccessAction);
 
 			if(typeof(onasync) == "function") {
 				onasync();
