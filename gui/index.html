@@ -218,6 +218,7 @@
 			// Add event listeners
 			//document.getElementById('files').addEventListener('change', handleFileSelect, false);
 			document.getElementById('query-start').addEventListener('click', query_start, false);
+			document.getElementById('query-restart').addEventListener('click', query_start, false);
 			//document.getElementById('query-save').addEventListener('click', query_save, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
 			//document.getElementById('log-show').addEventListener('click', showlog, false);
@@ -1148,6 +1149,7 @@
 				</div>
 				<div class="tab-pane" id="tab-result">
 					<h3>Result</h3>
+					<p><input type="button" id="query-restart" value="Run Query"></p>
 					<h4>Result rules</h4>
 					<p id="query-result-rules"></p>
 
