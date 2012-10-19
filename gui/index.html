@@ -18,7 +18,6 @@
 	<script>
 
 		var config = [];
-		config["light_threshhold"] = 3000;
 
 		var sensor_module = {
 			title : "Query-GUI",
@@ -89,56 +88,70 @@
 											["?" , "?value2", "?value2"]
 										]
 									],
-									["temperatur is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
+									["temperatur is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value> ",
 										[
-											["10°C", "FILTER(?value > 10)"],
-											["11°C", "FILTER(?value > 11)"],
-											["12°C", "FILTER(?value > 12)"],
-											["13°C", "FILTER(?value > 13)"],
-											["14°C", "FILTER(?value > 14)"],
-											["15°C", "FILTER(?value > 15)"],
-											["16°C", "FILTER(?value > 16)"],
-											["17°C", "FILTER(?value > 17)"],
-											["18°C", "FILTER(?value > 18)"],
-											["19°C", "FILTER(?value > 19)"],
-											["20°C", "FILTER(?value > 20)"],
-											["21°C", "FILTER(?value > 21)"],
-											["22°C", "FILTER(?value > 22)"],
-											["23°C", "FILTER(?value > 23)"],
-											["24°C", "FILTER(?value > 24)"],
-											["25°C", "FILTER(?value > 25)"],
-											["26°C", "FILTER(?value > 26)"],
-											["27°C", "FILTER(?value > 27)"],
-											["28°C", "FILTER(?value > 28)"],
-											["29°C", "FILTER(?value > 29)"],
-											["30°C", "FILTER(?value > 30)"],
+											["?", "?temperatur", "?temperatur"],
+											["10°C", "?value . FILTER(?value > 10)"],
+											["11°C", "?value . FILTER(?value > 11)"],
+											["12°C", "?value . FILTER(?value > 12)"],
+											["13°C", "?value . FILTER(?value > 13)"],
+											["14°C", "?value . FILTER(?value > 14)"],
+											["15°C", "?value . FILTER(?value > 15)"],
+											["16°C", "?value . FILTER(?value > 16)"],
+											["17°C", "?value . FILTER(?value > 17)"],
+											["18°C", "?value . FILTER(?value > 18)"],
+											["19°C", "?value . FILTER(?value > 19)"],
+											["20°C", "?value . FILTER(?value > 20)"],
+											["21°C", "?value . FILTER(?value > 21)"],
+											["22°C", "?value . FILTER(?value > 22)"],
+											["23°C", "?value . FILTER(?value > 23)"],
+											["24°C", "?value . FILTER(?value > 24)"],
+											["25°C", "?value . FILTER(?value > 25)"],
+											["26°C", "?value . FILTER(?value > 26)"],
+											["27°C", "?value . FILTER(?value > 27)"],
+											["28°C", "?value . FILTER(?value > 28)"],
+											["29°C", "?value . FILTER(?value > 29)"],
+											["30°C", "?value . FILTER(?value > 30)"],
 										]
 									],
 									["temperatur is smaller than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time . ?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast) ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast) ?forecast <http://spitfire-project.eu/ontology/ns/value> ?value . ",
 										[
-											["10°C", "FILTER(?value < 10)"],
-											["11°C", "FILTER(?value < 11)"],
-											["12°C", "FILTER(?value < 12)"],
-											["13°C", "FILTER(?value < 13)"],
-											["14°C", "FILTER(?value < 14)"],
-											["15°C", "FILTER(?value < 15)"],
-											["16°C", "FILTER(?value < 16)"],
-											["17°C", "FILTER(?value < 17)"],
-											["18°C", "FILTER(?value < 18)"],
-											["19°C", "FILTER(?value < 19)"],
-											["20°C", "FILTER(?value < 20)"],
-											["21°C", "FILTER(?value < 21)"],
-											["22°C", "FILTER(?value < 22)"],
-											["23°C", "FILTER(?value < 23)"],
-											["24°C", "FILTER(?value < 24)"],
-											["25°C", "FILTER(?value < 25)"],
-											["26°C", "FILTER(?value < 26)"],
-											["27°C", "FILTER(?value < 27)"],
-											["28°C", "FILTER(?value < 28)"],
-											["29°C", "FILTER(?value < 29)"],
-											["30°C", "FILTER(?value < 30)"],
+											["?", "?temperatur", "?temperatur"],
+											["10°C", "?value . FILTER(?value < 10)"],
+											["11°C", "?value . FILTER(?value < 11)"],
+											["12°C", "?value . FILTER(?value < 12)"],
+											["13°C", "?value . FILTER(?value < 13)"],
+											["14°C", "?value . FILTER(?value < 14)"],
+											["15°C", "?value . FILTER(?value < 15)"],
+											["16°C", "?value . FILTER(?value < 16)"],
+											["17°C", "?value . FILTER(?value < 17)"],
+											["18°C", "?value . FILTER(?value < 18)"],
+											["19°C", "?value . FILTER(?value < 19)"],
+											["20°C", "?value . FILTER(?value < 20)"],
+											["21°C", "?value . FILTER(?value < 21)"],
+											["22°C", "?value . FILTER(?value < 22)"],
+											["23°C", "?value . FILTER(?value < 23)"],
+											["24°C", "?value . FILTER(?value < 24)"],
+											["25°C", "?value . FILTER(?value < 25)"],
+											["26°C", "?value . FILTER(?value < 26)"],
+											["27°C", "?value . FILTER(?value < 27)"],
+											["28°C", "?value . FILTER(?value < 28)"],
+											["29°C", "?value . FILTER(?value < 29)"],
+											["30°C", "?value . FILTER(?value < 30)"],
 										]
 									],
+								]
+							],[
+								"calendar", "",
+								[
+									["has event", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> ?time .\n\t ?event <http://spitfire-project.eu/ontology/ns/start> ?startCalendar . 		FILTER( ?time >= ?startCalendar)\n\t ?event <http://spitfire-project.eu/ontology/ns/end> ?endCalendar . 			FILTER( ?time >= ?endCalendar)\n\t ?event <http://spitfire-project.eu/ontology/ns/subject>", 
+										[
+											["?", "?event", "?event"],
+											["radio","?eventSubject . FILTER regex(?eventSubject, 'Radio', 'i')"],
+											["fan","?eventSubject . FILTER regex(?eventSubject, 'fan', 'i')"],
+											["meeting","?eventSubject . FILTER regex(?eventSubject, 'meeting', 'i\'"],
+										]
+									]
 								]
 							]
 						], 
@@ -209,6 +222,18 @@
 					run_periodically(q[0], q[2]);
 				}
 			}
+
+			var threshold = localStorage.getItem("threshold");
+			if(threshold != null) {
+				config["light_threshhold"] = threshold;
+			} else {
+				config["light_threshhold"] = 3000;
+			}
+			$("#inputThreshold").val(config["light_threshhold"]);
+			$("#saveConfig").click(function() {
+				var val = $("#inputThreshold").val();
+				console.log(val);
+			});
 		}
 
 		function update_storage() {
@@ -1053,6 +1078,7 @@
 				<!--
 				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
 				-->
+				<li><a href="#tab-config" data-toggle="tab">Config</a></li>
 				<li><a href="#tab-query" data-toggle="tab">Query-Textbox</a></li>
 				<li><a href="#tab-storage" data-toggle="tab">Query-Storage</a></li>
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
@@ -1076,6 +1102,22 @@
 				<div class="tab-pane" id="tab-storage">
 					<h3>Storage</h3>
 					<p id="storage">...</p>
+				</div>
+				<div class="tab-pane" id="tab-config">
+					<h3>Configuration</h3>
+					<form class="form-horizontal">
+					  <div class="control-group">
+						<label for="inputThreshold" class="control-label">Threshold</label>
+						<div class="controls">
+						  <input type="text" placeholder="Threshold" id="inputThreshold">
+						</div>
+					  </div>
+					  <div class="control-group">
+						<div class="controls">
+						  <button id="saveConfig"class="btn" type="submit">Save</button>
+						</div>
+					  </div>
+					</form>					
 				</div>
 				<div class="tab-pane" id="tab-result">
 					<h3>Result</h3>
