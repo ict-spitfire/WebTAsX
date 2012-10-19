@@ -697,11 +697,11 @@
 			}
 
 			var funPerInterval1 = function () {
-				query_run(query, succ1, error_once, async_once)
+				query_run(query, succ1, error_once, function() {})
 			}
 
 			var funPerInterval2 = function () {
-				query_run(query, succ2, error_once, async_once, false)
+				query_run(query, succ2, error_once, function() {}, false)
 			}
 
 			setInterval(funPerInterval1, 2000);
@@ -774,7 +774,6 @@
 
 		function query_run(query, onsuccess, onerror, onasync, filter) {
 
-
 			if(query == null) {
 				alert("You need at least one rule to run the query.");
 			}
@@ -827,6 +826,8 @@
 		}
 
 		function async_once() {
+			$('#query-result').html(info("Query is running..."));  
+			$("#tab-result-link").click();
 		}
 
 		function error_once(msg) {
