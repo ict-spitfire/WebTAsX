@@ -175,7 +175,7 @@
 
 
 		var valCnt = 0;
-
+/*
 		function showlog() {
 			$("#log-div").show();
 			$("#log-hide").show();
@@ -191,7 +191,7 @@
 			$("#footer").css("border-top", "");
 			localStorage.setItem("showlog", false);
 		}
-
+*/
 		window.onload = function () {
 
 			var threshold = localStorage.getItem("light_threshold");
@@ -210,8 +210,8 @@
 			});
 			init_modules();
 
-			$("#log-div").hide();
-			$("#log-hide").hide();
+			//$("#log-div").hide();
+			//$("#log-hide").hide();
 			// Add modules
 			addModules([sensor_module]); //weather_module,modul2,modul3
 
@@ -220,15 +220,15 @@
 			document.getElementById('query-start').addEventListener('click', query_start, false);
 			//document.getElementById('query-save').addEventListener('click', query_save, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
-			document.getElementById('log-show').addEventListener('click', showlog, false);
-			document.getElementById('log-hide').addEventListener('click', hidelog, false);
+			//document.getElementById('log-show').addEventListener('click', showlog, false);
+			//document.getElementById('log-hide').addEventListener('click', hidelog, false);
 
 			// Get the last SPARQL query
 			var q = localStorage.getItem("query");
 			if(q != null) {
 				$('#query-text').val(q);
 			}
-
+/*
 			var show_log = localStorage.getItem("showlog");
 			if(show_log != null) {
 				if(show_log == true || show_log == "true") {
@@ -236,7 +236,7 @@
 					$("#log-show").click();
 				}
 			}
-
+*/
 			var saved_queries = localStorage.getItem("saved_queries");
 			if(saved_queries != null && saved_queries != "null") {
 				queries = JSON.parse(saved_queries);
@@ -311,6 +311,10 @@
 			//console.log("UPDATE " + x);
 			query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
 			query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
+
+			$("#query-text1").val(query_rules.query);
+			$("#query-text2").val(query_actions.query);
+
 			query = [query_rules,query_actions];
 		}
 
@@ -720,7 +724,7 @@
 			div_button_controls.append(input_button_once);
 
 			var input_save = $();
-
+/*
 			function query_save() {
 				if(query == null) {
 					alert("You need at least one rule to run the query.");
@@ -737,6 +741,7 @@
 				run_periodically(query, select_action.val());
 			}
 			input_button_text.click(query_save);
+*/
 
 		}
 
@@ -806,8 +811,17 @@
 		}
 
 		function query_start() {
-			var query = $('#query-text').val();
-			query_run(query, success_once, error_once, async_once);
+			var q1 = new Object();
+			q1.query = $("#query-text1").val();
+
+			var q2 = new Object();
+			q2.query = $("#query-text2").val();
+			q2.hasActuator = true;
+
+			query_run([q1,q2], success_once, error_once, async_once);
+
+//			var query = $('#query-text').val();
+//			query_run(query, success_once, error_once, async_once);
 		}
  
 		var queries = [];
@@ -840,8 +854,6 @@
 			var url = sparqlEndpoint + "?query=";
 			localStorage.setItem("query1", query[0].query);
 			localStorage.setItem("query2", query[1].query);
-			$("#query-text1").val(query[0].query);
-			$("#query-text2").val(query[1].query);
 			
 			//query = "SELECT * WHERE { " + query + " }";
 			update_log(query[0].query + "\n\n==================================================\n\n" + query[1].query);
@@ -1107,10 +1119,12 @@
 				-->
 				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
-					<textarea id="query-text1" style="width:97%;height:350px;"></textarea><br>
-					<textarea id="query-text2" style="width:97%;height:350px;"></textarea><br>
+					<textarea id="query-text1" style="width:97%;height:150px;"></textarea><br>
+					<textarea id="query-text2" style="width:97%;height:150px;"></textarea><br>
 					<p><input type="button" id="query-start" value="Run Query"></p>
+<!--
 					<p><input type="button" id="query-save" value="Save Query"></p>
+-->
 				</div>
 				<div class="tab-pane" id="tab-storage">
 					<h3>Storage</h3>
@@ -1152,6 +1166,7 @@
 				</div>
 			</div>
 	</div>
+<!--
 	<div id="footer">
 		<img id="log-show" src="img/bullet_arrow_up.png">
 		<img id="log-hide" src="img/bullet_arrow_down.png">
@@ -1159,5 +1174,6 @@
 			<textarea id="log" style="width:97%;height:150px;"></textarea>
 		</div>
 	</div>
+-->
 </body>
 </html>
