@@ -1,3 +1,10 @@
+	[draggable] {
+	  -moz-user-select: none;
+	  -khtml-user-select: none;
+	  -webkit-user-select: none;
+	  user-select: none;
+	}
+
 	body {
 		padding-top:10px;
 	}
@@ -32,7 +39,7 @@
 
 	select {
 		text-align:center;
-		width:100%;
+		width:200px;
 		margin:0px;
 	}
 
@@ -41,6 +48,9 @@
 	}
 
 	.box {
+		background-image:url(../img/arrow_in.png);
+		background-repeat:no-repeat;
+		background-position: 5px 6px;
 /*
 		border: 1px solid gray;
 		padding:25px 0px 25px 0px;
@@ -48,8 +58,17 @@
 		width: 230px;
 		display: inline-block;
 		margin-right: 5px;
+		text-align:right;
 	}
 
 	.query-spo {
 		padding-bottom:8px;
+	}
+
+	img.dnd {
+		margin-right:5px;
+	}
+
+	.over {
+		border: 1px dashed #000;
 	}

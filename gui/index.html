@@ -35,20 +35,20 @@
 								]
 							],
 							[
-								"sensor", "?sensor",
+								"sensor", "<val>",
 								[
 									["?", "?"],
 									["has a", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 										[
 											["?", "?hasA", "?hasA"],
-											["light sensor","?light .\n\t?light <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
+											["light sensor","<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
 											["fan","?fan .\n\t?fan <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>", "?fan"],
 											["radio","?radio.\n\t?radio <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>", "?radio"]
 										]
 									],
 									["is in","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
 										[
-											["?", "?featureOfInterest"],
+											["?", "?featureOfInterest", "?featureOfInterest"],
 											["kitchen", "<http://spitfire-project.eu/foi/kitchen>"],
 											["living room", "<http://spitfire-project.eu/foi/livingroom>"]
 										]
@@ -70,7 +70,7 @@
 								],
 							],
 							[
-								"light", "?light",
+								"light", "<val>",
 								[
 									["is turned", "<http://spitfire-project.eu/ontology/ns/value>  ",
 										[
@@ -276,22 +276,41 @@
 				e.show();
 			} else {
 
+				var ids = [];
+				
+				//var tmp_lines = lines;
+				//tmp_lines[0] = null;
+
 				query = "{\n";
 				var actors = []; 
 				for(var i = 0; i < spo.length; i++) {
 					var children = spo[i].childNodes;
 					for(var j = 0; j < children.length; j++) {
-						var e = $(children[j].firstChild);
+						var c = children[j];
+						var v = $(c).attr("var");
+						var e = $(c.firstChild);
 						if(e.is("img")) break;
 						var option = e.find("option:selected");
 						var actor = option.attr("actors");
 						if(typeof(actor) == "string") {
 							actors.push(actor);
 						}
-						if(e.val() == "?") {
+
+						var val = e.val();
+
+						if(val.indexOf("<val>") >= 0) {
+							if(typeof(v) == "string") {
+								query += val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
+								continue;
+							}
+						}
+
+						if (val == "?") {
 							query += "\t?val" + (++valCnt) + " ";
+						} else if (val.indexOf("<val>") >= 0) {
+							query += val.replace(new RegExp("<val>", "g"), "\t?val" + (++valCnt) + " ");
 						} else {
-							query += "\t" + e.val() + " ";
+							query += "\t" + val + " ";
 						}
 					}
 					query += ". \n";
@@ -301,9 +320,9 @@
 
 				if(actors.length == 0) {
 					console.log("Query does not contain any actor!");
-					query = "SELECT * WHERE " + query;
+					query = "SELECT DISTINCT * WHERE " + query;
 				} else {
-					query = "SELECT " + actors.join(" ") + " WHERE " + query;
+					query = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + query;
 				}
 				update_log(query);
 			}
@@ -315,6 +334,139 @@
 			$("#log").val(query);
 		}
 
+		var dragedObject = null;
+		var lines = [];
+
+		var colors = ["#FFFF00","#FF00FF","#FF0000","#C0C0C0","#80808","#808000","#800080","#800000","#00FFFF","#00FF00","#008080","#008000","#0000FF","#000080","#000000"];
+		var colorID = 0;
+		var varIndex = 0;
+
+		function drawLine(from_, to_) {
+			if(from_ == to_) return;
+
+			var id_from = $('#' + from_);
+			var id_to = $('#' + to_);
+
+			console.log("CONNECT " + from_ + " with " + to_);
+
+			//var from = Math.min(from_, to_);
+			//var to = Math.max(from_, to_);
+
+			var from = from_;
+			var to = to_
+			if(to_ > from_) {
+				from = to_;
+				to = from_;
+			} 
+
+			for(var i = 0; i < lines.length; i++) {
+				l = lines[i];
+				if(l[0] == from && l[1] == to) {
+					return false;
+				}
+			}
+
+			var exists = false;
+			for(var i = 0; i < lines.length; i++) {
+				l = lines[i];
+				if(l[0] == from || l[1] == to || l[1] == from || l[0] == to) {
+					exists = true;
+					break;
+				}
+			}
+	
+			if(exists) {
+				col = l[3];
+				v = l[2];
+				id_from.css("background-color", col);
+				id_to.css("background-color", col);
+				id_from.attr("var",v);
+				id_to.attr("var",v);
+			} else {
+				col = colors[colorID++];
+				v = "var" + (varIndex++);
+				id_from.css("background-color", col);
+				id_to.css("background-color", col);
+				id_from.attr("var",v);
+				id_to.attr("var",v);
+				if(colorID == colors.length) colorID = 0;
+			}
+
+			var arr = [];
+			arr[0] = from;
+			arr[1] = to;
+			arr[2] = v;
+			arr[3] = col;
+
+			lines.push(arr);
+			update();
+			return true;
+		}
+
+		function handleDragStart(e) {
+			//console.log("Drag of " + this.getAttribute('id') + " element starts");
+			dragedObject = {};
+			dragedObject.obj = this;
+			dragedObject.isSrc = true;
+			$(this).css("opacity", "0.6");
+
+
+			//$(this).css("background-color", "#CCC");
+
+			// Hack: to get drag working in FF
+			e.originalEvent.dataTransfer.setData('x', null);
+		}
+
+		function handleDragEnd(e) {
+			//console.log("Drag of " + dragedObject.obj.getAttribute('id') + " element ends");
+			$(this).css("opacity", "1");
+			//$(this).css("background-color", "#FFF");
+			dragedObject.obj = null;
+
+			var elem = document.querySelectorAll('.box');
+
+			[].forEach.call(elem, function (col) {
+				col.classList.remove('over');
+			});
+
+		}
+
+		function handleDragEnter(e) {
+			if(dragedObject.obj == null) return;
+			//this.classList.add('over');
+			//console.log("Drag " + dragedObject.obj.getAttribute('id') + " enters " + this.getAttribute('id'));
+			//this.classList.add('over');
+		}
+
+		function handleDragLeave(e) {
+			if(dragedObject.obj == null) return;
+			//this.classList.remove('over');
+			//console.log("Drag " + dragedObject.obj.getAttribute('id') + " leaves " + this.getAttribute('id'));
+			//this.classList.remove('over');
+		}
+
+		function handleDragOver(e) {
+			if(dragedObject.obj == null) return;
+			if (e.preventDefault) {
+				e.preventDefault();
+			}
+
+			//console.log("Drag " + dragedObject.obj.getAttribute('id') + " over " + this.getAttribute('id'));
+			//if (e.preventDefault) {
+			//	e.preventDefault();
+			//}
+			//return false;
+		}
+
+		function handleDrop(e) {
+//			console.log("handleDrop");
+			var id1 = dragedObject.obj.getAttribute("id");
+			var id2 = this.getAttribute("id");
+			var bool = drawLine(id1, id2);
+			console.log(bool);
+		}
+
+
 		function addModule(module) {
 			modid++;
 
@@ -325,10 +477,40 @@
 				var spo_id = "spo" + (lineid++);
 				var div_spo = $("<div id=\"" + spo_id + "\" class=\"query-spo\"></div>");
 				
+				createimg = function() {
+					var img = $("<img class=\"dnd\" src=\"img/arrow_in.png\">");
+					/*
+					img.mousedown(function(e){
+						e.stopPropagation();
+						e.preventDefault();
+					});
+					*/
+					//img.bind('dragstart', function(event) { event.preventDefault(); });
+					return img;
+				}
+
 				// SPO-divs
-				var div_s = $("<div class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid red;\"
-				var div_p = $("<div class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
-				var div_o = $("<div class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
+				var div_s = $("<div id=\"s" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid red;\"
+				var div_p = $("<div id=\"p" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
+				var div_o = $("<div id=\"o" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
+
+				//div_s.append(createimg);
+				//div_p.append(createimg);
+				//div_o.append(createimg);
+
+				var dnd = function(div) {
+					div.bind('dragstart', handleDragStart);		// OK
+					div.bind('dragend', handleDragEnd);			// OK
+					div.bind('dragenter', handleDragEnter);		// OK
+					div.bind('dragover', handleDragOver);		// OK
+					div.bind('dragleave', handleDragLeave);		// OK
+					div.bind('drop', handleDrop);
+				}  
+
+				dnd(div_s);
+				dnd(div_p);
+				dnd(div_o);
+
 				var div_del = $("<span></span>"); //  style=\"padding:2px; border: 2px solid green;\"
 				
 				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
@@ -369,11 +551,13 @@
 									}
 								}
 								div_o.empty();
+								//div_o.append(createimg);
 								div_o.append(select_o);
 								update("pp");
 							};
 							var select_p = generate_select(p_mapping, p_change, "actors");
 							div_p.empty();
+							//div_p.append(createimg);
 							div_p.append(select_p);
 
 							// Empty select for O
