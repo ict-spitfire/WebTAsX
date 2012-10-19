@@ -75,8 +75,8 @@
 									["is turned", "<http://spitfire-project.eu/ontology/ns/value>  ",
 										[
 											["?",   "?lightValue", "?lightValue"],
-											["on",  "?lightValue . FILTER(?lightValue <bigger>= " + config["light_threshhold"] + ")"], // "200"^^xsd:int
-											["off", "?lightValue . FILTER(?lightValue <smaller> " + config["light_threshhold"] + ")"]
+											["on",  "?lightValue . FILTER(?lightValue >= " + config["light_threshhold"] + ")"], // "200"^^xsd:int
+											["off", "?lightValue . FILTER(?lightValue <= " + config["light_threshhold"] + ")"]
 										]
 									],
 								]
@@ -265,14 +265,23 @@
 			return select;
 		}
 
-		var query = null;
+		var query;
+		var query_rules;
+		var query_actions;
 
 		function update(x) {
 			//console.log("UPDATE " + x);
-			var spo = $(".query-spo");
+			query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
+			query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
+			query = [query_rules,query_actions];
+		}
+
+		function generate_sparql(spo, e) {
+
+			var q = null;
+			var hasActuator = false;
+
 			if(spo.length == 0) {
-				query = null;
-				var e = $("#no-rule-msg");
 				e.show();
 			} else {
 
@@ -281,7 +290,7 @@
 				//var tmp_lines = lines;
 				//tmp_lines[0] = null;
 
-				query = "{\n";
+				q = "{\n";
 				var actors = []; 
 				for(var i = 0; i < spo.length; i++) {
 					var children = spo[i].childNodes;
@@ -300,38 +309,45 @@
 
 						if(val.indexOf("<val>") >= 0) {
 							if(typeof(v) == "string") {
-								query += val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
+								q += val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
 								continue;
 							}
 						}
 
 						if (val == "?") {
-							query += "\t?val" + (++valCnt) + " ";
+							q += "\t?val" + (++valCnt) + " ";
 						} else if (val.indexOf("<val>") >= 0) {
-							query += val.replace(new RegExp("<val>", "g"), "\t?val" + (++valCnt) + " ");
+							q += val.replace(new RegExp("<val>", "g"), "\t?val" + (++valCnt) + " ");
 						} else {
-							query += "\t" + val + " ";
+							q += "\t" + val + " ";
 						}
 					}
-					query += ". \n";
+					q += ". \n";
 				}
 
-				query += "}";
+				q += "}";
 
 				if(actors.length == 0) {
+					hasActuator = false;
 					console.log("Query does not contain any actor!");
-					query = "SELECT DISTINCT * WHERE " + query;
+					q = "SELECT DISTINCT * WHERE " + q;
 				} else {
-					query = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + query;
+					hasActuator = true;
+					q = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + q;
 				}
-				update_log(query);
+				console.log(q);
+				update_log(q);
 			}
 
+			var result = new Object();
+			result.hasActuator = hasActuator;
+			result.query = q;
+
+			return result;
 		}
 
-		function update_log(query) {
-			//console.log(query);
-			$("#log").val(query);
+		function update_log(q) {
+			$("#log").val(q);
 		}
 
 		var dragedObject = null;
@@ -602,27 +618,33 @@
 			var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
 			input.click(function(e) {
 				div_rules.append(create(module.mapping, module.s));
-				info_msg.hide();
+				info_msg_rules.hide();
 				update("line");
 			});
 			div.append(input);
 
 			// Create a div, to keep all rules and add it to the content pane
-			var div_rules = $("<div style=\"margin-top:5px;\"></div>");
-			var info_msg = $(info("No rule selected yet. Click the [+] button.", "no-rule-msg", false)); // Empty message
-			div_rules.append(info_msg);
+			var div_rules = $("<div id=\"rules\" style=\"margin-top:5px;\"></div>");
+			var info_msg_rules = $(info("No selection rule selected yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
+			div_rules.append(info_msg_rules);
 			div.append(div_rules);		
 
-			div.append("<h4>Run once</h4>");
+			div.append("<h4>Actuation</h4>");
 
-			// Add [Run Query]-Button to the content pane
-			var input_generate = $("<input class=\"btn\" type=\"button\" value=\"Run Query\">");
-			input_generate.click(function(e) {
-				query_run(query, success_once, error_once, async_once);
+			var input2 = $("<input class=\"btn\" type=\"button\" value=\"+\">");
+			input2.click(function(e) {
+				div_actuation.append(create(module.mapping, module.s));
+				info_msg_actuation.hide();
+				update("line");
 			});
-			div.append(input_generate);
+			div.append(input2);
 
-			div.append("<h4>Run periodically in the background</h4>");
+			var div_actuation = $("<div id=\"actuation\" style=\"margin-top:5px;\"></div>");
+			var info_msg_actuation = $(info("No actuation rules selected yet. Click the [+] button.", "no-rule-msg2", false)); // Empty message
+			div_actuation.append(info_msg_actuation);
+			div.append(div_actuation);		
+
+			div.append("<h4>Run query</h4>");
 
 			// Create a div to keep the save stuff and add it to the content pane
 			var form = $('<form class="form-horizontal">');
@@ -646,10 +668,18 @@
 
 			var div_button = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>");
 			var div_button_controls = $('<div class="controls"></div>');
-			var input_button_text = $("<button class=\"btn\" type=\"button\">Run Query</button>");
+			var input_button_text = $("<button class=\"btn\" type=\"button\">Run query periodically</button>");
+			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
+			input_button_once.click(function(e) {
+				update();
+				query_run(query, success_once, error_once, async_once);
+			});
+
 			form.append(div_button)
 			div_button.append(div_button_controls);
 			div_button_controls.append(input_button_text);
+			div_button_controls.append(" ");
+			div_button_controls.append(input_button_once);
 
 			var input_save = $();
 
@@ -678,33 +708,15 @@
 				success_periodically(res, action)
 			}
 
-			function succ2(res) {
-				if(action == "on") {
-					success_periodically(res, "off");
-				} else {
-					success_periodically(res, "on");
-				}
-			}
-
 			var funPerInterval1 = function () {
 				query_run(query, succ1, error_once, function() {})
 			}
 
-			var funPerInterval2 = function () {
-				query_run(query, succ2, error_once, function() {}, false)
-			}
-
 			setInterval(funPerInterval1, 2000);
 
-			var startLater = function() {
-				setInterval(funPerInterval2, 2000);
-			}
-
-			setTimeout(startLater,1000);
-			
 			/*
 				function abortTimer() { // to be called when you want to stop the timer
-				  clearInterval(tid);
+				clearInterval(tid);
 				}
 			*/			
 			
@@ -759,15 +771,23 @@
 			var query = $('#query-text').val();
 			query_run(query, success_once, error_once, async_once);
 		}
-
+ 
 		var queries = [];
+		var succData = null;
 
 		function query_run(query, onsuccess, onerror, onasync, filter) {
 
-			if(query == null) {
-				alert("You need at least one rule to run the query.");
+			if(query[0].query == null) {
+				alert("You need at least one selection rule to run the query.");
+				return;				
+			} else if(query[1].query == null) {
+				alert("You need at least one actuation rule to run the query.");
+				return;				
+			} else if(!query[1].hasActuator) {
+				alert("You need to define at least one actuator.");
+				return;				
 			}
-
+/*
 			if(typeof(filter) == "boolean" && !filter) {
 				query = query.replace(new RegExp("<filter>", "g"), "FILTER NOT EXISTS");
 				query = query.replace(new RegExp("<bigger>", "g"), "<");
@@ -777,55 +797,91 @@
 				query = query.replace(new RegExp("<bigger>", "g"), ">");
 				query = query.replace(new RegExp("<smaller>", "g"), "<");
 			}
-
+*/
+			succData = new Object();
 			var url = sparqlEndpoint + "?query=";
-			localStorage.setItem("query", query);
-			$("#query-text").val(query);
+			localStorage.setItem("query1", query[0].query);
+			localStorage.setItem("query2", query[1].query);
+			$("#query-text1").val(query[0].query);
+			$("#query-text2").val(query[1].query);
 			
 			//query = "SELECT * WHERE { " + query + " }";
-			update_log(query);
+			update_log(query[0].query + "\n\n==================================================\n\n" + query[1].query);
 
-//			var query = "SELECT ?ss ?o WHERE { ?ss <http://purl.oclc.org/NET/muo/muo#prefSymbol> ?o }";
-			var encoded = urlencode(query);
-			var path = url + encoded;
-
-			var xhr = new XMLHttpRequest();
-			xhr.responsetype = "text";
-			xhr.open('GET', path, true);
-			xhr.setRequestHeader("Accept", "application/xml");
-			xhr.onload = function(e) {
-				if (this.status == 200) {
-					if(typeof(onsuccess) == "function") {
-						onsuccess(this.response);
-					}
-				} else if (this.status == 504) {
-					if(typeof(onerror) == "function") {
-						onerror("CoAP timeout.");
-					}
-				} else {
-					if(typeof(onerror) == "function") {
-						onerror("HTTP-Status: " + this.status);
-					}
-				} 
+			var onsuccessRules = function (res) {
+				console.log("GOT RESULT FOR RULES");
+				succData.rules = res;
+				onsuccess(succData);
 			}
 
-			xhr.send(null);
+			var onsuccessAction = function (res) {
+				console.log("GOT RESULT FOR ACTIONS");
+				succData.action = res;
+				onsuccess(succData);
+			}
+
+			var xhr = function (url, query, onsuccess) {
+
+				var encoded = urlencode(query);
+				var path = url + encoded;
+
+				var xhr = new XMLHttpRequest();
+				xhr.responsetype = "text";
+				xhr.open('GET', path, true);
+				xhr.setRequestHeader("Accept", "application/xml");
+				xhr.onload = function(e) {
+					if (this.status == 200) {
+						if(typeof(onsuccess) == "function") {
+							onsuccess(this.response);
+						}
+					} 
+					/*
+					TODO: Error handling
+					else if (this.status == 504) {
+						if(typeof(onerror) == "function") {
+							onerror("CoAP timeout.");
+						}
+					} else {
+						if(typeof(onerror) == "function") {
+							onerror("HTTP-Status: " + this.status);
+						}
+					} 
+					*/
+				}
+
+				xhr.send(null);
+			}
+
+			xhr(url, query[0].query, onsuccessRules);
+			xhr(url, query[1].query, onsuccessAction);
+
 			if(typeof(onasync) == "function") {
 				onasync();
 			}
 		}
 
 		function async_once() {
-			$('#query-result').html(info("Query is running..."));  
+			$('#query-result-rules').html(info("Query is running..."));  
+			$('#query-result-actors').html(info("Query is running..."));  
 			$("#tab-result-link").click();
 		}
 
 		function error_once(msg) {
-			$('#query-result').html(error(msg));
+			$('#query-result-rules').html(error(msg));
+			$('#query-result-actors').html(error(msg));
 		}
 
-		function success_once(res) {
-			$('#query-result').html(success("Query successful."));
+		function success_once(data) {
+			if(typeof(data.rules) == "string") {
+				generateTable($('#query-result-rules'), data.rules);
+			}
+			if(typeof(data.action) == "string") {
+				generateTable($('#query-result-actors'), data.action);
+			}
+		}
+
+		function generateTable(e, res) {
+			e.html(success("Query successful."));
 			var dom = new DOMParser().parseFromString(res,'text/xml');
 
 			var title = [];
@@ -916,16 +972,32 @@
 			table.append(tbody);
 
 			if(data.length == 0) {
-				$('#query-result').append(itm_alert("No data are matching the query."));
+				e.append(itm_alert("No data are matching the query."));
 			} else {
-				$('#query-result').append(table);
+				e.append(table);
 			}
 		}
 
 	
-		function success_periodically(res, action) {
-			var dom = new DOMParser().parseFromString(res,'text/xml');
-		
+		function success_periodically(data, action) {
+
+			if(typeof(data.rules) != "string" || typeof(data.action) != "string") {
+				return;
+			}
+
+			var dom1 = new DOMParser().parseFromString(data.rules,'text/xml');
+			var results1 = dom1.getElementsByTagName("result");
+			
+			if(results1.length == 0) {
+				if(action == "on") {
+					action == "off";
+				} else {
+					action == "on";
+				}
+			}	
+
+			var dom = new DOMParser().parseFromString(data.action,'text/xml');
+
 			var data = [];
 			var results = dom.getElementsByTagName("result");
 
@@ -996,7 +1068,8 @@
 				-->
 				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
-					<textarea id="query-text" style="width:97%;height:350px;"></textarea><br>
+					<textarea id="query-text1" style="width:97%;height:350px;"></textarea><br>
+					<textarea id="query-text2" style="width:97%;height:350px;"></textarea><br>
 					<p><input type="button" id="query-start" value="Run Query"></p>
 					<p><input type="button" id="query-save" value="Save Query"></p>
 				</div>
@@ -1006,7 +1079,11 @@
 				</div>
 				<div class="tab-pane" id="tab-result">
 					<h3>Result</h3>
-					<p id="query-result"></p>
+					<h4>Result rules</h4>
+					<p id="query-result-rules"></p>
+
+					<h4>Result actors</h4>
+					<p id="query-result-actors"></p>
 					<h3>Actuation</h3>
 					<p>
 						<select id="action-value">
