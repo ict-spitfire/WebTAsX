@@ -741,7 +741,7 @@
 				}
 
 				queries.push([query, input_rule_text.val(), select_action.val()]);
-				//localStorage['saved_queries'] = JSON.stringify(queries);
+				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
 				run_periodically(query, select_action.val());
 			}
