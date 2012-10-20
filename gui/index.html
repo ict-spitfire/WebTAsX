@@ -17,6 +17,8 @@
 
 	<script>
 
+		var lastAction = new Object();
+
 		var config = [];
 
 		var sensor_module = null;
@@ -386,7 +388,7 @@
 		var dragedObject = null;
 		var lines = [];
 
-		var colors = ["#FFFF00","#FF00FF","#FF0000","#C0C0C0","#80808","#808000","#800080","#800000","#00FFFF","#00FF00","#008080","#008000","#0000FF","#000080","#000000"];
+		var colors = ["#FF00FF","#FF0000","#808080","#808000","#800080","#800000","#00FFFF","#00FF00","#008080","#008000","#0000FF","#000080","#000000"];
 		var colorID = 0;
 		var varIndex = 0;
 
@@ -849,13 +851,13 @@
 			update_log(query[0].query + "\n\n==================================================\n\n" + query[1].query);
 
 			var onsuccessRules = function (res) {
-				console.log("GOT RESULT FOR RULES");
+				//console.log("GOT RESULT FOR RULES");
 				succData.rules = res;
 				onsuccess(succData);
 			}
 
 			var onsuccessAction = function (res) {
-				console.log("GOT RESULT FOR ACTIONS");
+				//console.log("GOT RESULT FOR ACTIONS");
 				succData.action = res;
 				onsuccess(succData);
 			}
@@ -1055,6 +1057,18 @@
 						var child = children[j];
 						if(child.nodeType != 3) {
 							var c = child.firstChild;
+							if(typeof(lastAction[c.data]) == "string") {
+								if(lastAction[c.data] != action) {
+									console.log("RUN NEW COMMAND");
+									action_request(c.data, action);
+									lastAction[c.data] = action;
+								} else {
+									console.log("SKIP ACTION (LAST ACTION WAS THE SAME)");
+								}
+								continue;
+							}
+							console.log("RUN ACTION FIRST TIME");
+							lastAction[c.data] = action;
 							action_request(c.data, action);
 						}
 					}
