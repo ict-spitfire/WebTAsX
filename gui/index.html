@@ -76,7 +76,7 @@
 												["17°C", "?temperatur . FILTER(?temperatur > 17)", "?temperatur"],
 												["18°C", "?temperatur . FILTER(?temperatur > 18)", "?temperatur"],
 												["19°C", "?temperatur . FILTER(?temperatur > 19)", "?temperatur"],
-												["20°C", "?temperatur . FILTER(?temperatur > 20)", "?temperatur"],
+												["20°C", "?temperatur . FILTER(?temperatur > 20)", "?temperatur", true],
 												["21°C", "?temperatur . FILTER(?temperatur > 21)", "?temperatur"],
 												["22°C", "?temperatur . FILTER(?temperatur > 22)", "?temperatur"],
 												["23°C", "?temperatur . FILTER(?temperatur > 23)", "?temperatur"],
@@ -101,7 +101,7 @@
 												["17°C", "?temperatur . FILTER(?temperatur < 17)", "?temperatur"],
 												["18°C", "?temperatur . FILTER(?temperatur < 18)", "?temperatur"],
 												["19°C", "?temperatur . FILTER(?temperatur < 19)", "?temperatur"],
-												["20°C", "?temperatur . FILTER(?temperatur < 20)", "?temperatur"],
+												["20°C", "?temperatur . FILTER(?temperatur < 20)", "?temperatur", true],
 												["21°C", "?temperatur . FILTER(?temperatur < 21)", "?temperatur"],
 												["22°C", "?temperatur . FILTER(?temperatur < 22)", "?temperatur"],
 												["23°C", "?temperatur . FILTER(?temperatur < 23)", "?temperatur"],
@@ -265,11 +265,17 @@
 			//select.append("<option value=\"?\">?</option>");
 
 			for(var j = 0; j<o.length; j++) {
+				var option = "<option value=\"" + o[j][1] + "\" ";
+
 				if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
-					select.append("<option " + str + "=\"" + o[j][2] + "\" value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");					
-				} else {
-					select.append("<option value=\"" + o[j][1] + "\">" + o[j][0] + "</option>");
+					option += "" + str + "=\"" + o[j][2] + "\" ";			
 				}
+
+				if(o[j][3] == true) {
+					option += " selected";
+				}
+				option += ">" + o[j][0] + "</option>";
+				select.append(option);
 			}
 			if(typeof(event) == "function") {
 				select.change(event);
@@ -1176,4 +1182,4 @@
 	</div>
 -->
 </body>
-</html>
+</html>				if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
