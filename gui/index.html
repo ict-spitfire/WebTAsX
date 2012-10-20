@@ -28,23 +28,19 @@
 				mapping :
 							[
 								[
-									"?", "?",
-									[
-										["?", "?",
-											[
-												["?", "?"]
-											]
-										]
-									]
-								],
-								[
-									"sensor", "<val>",
+									"node", "<val>",
 									[
 										["?", "?"],
-										["has a", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
+										["measures", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
+											[
+												["light ?",  "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue"],
+												["light on",  "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue FILTER(<val_>lightValue >= " + config["light_threshold"] + ")"],
+												["light off", "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue . FILTER(<val_>lightValue <= " + config["light_threshold"] + ")"],
+											]
+										],
+										["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 											[
 												["?", "?hasA", "?hasA"],
-												["light sensor","<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs>  <http://spitfire-project.eu/property/Light>"],
 												["fan","?fan .\n\t?fan <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Fan>", "?fan"],
 												["radio","?radio.\n\t?radio <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#Switch>", "?radio"]
 											]
@@ -56,45 +52,18 @@
 												["living room", "<http://spitfire-project.eu/foi/livingroom>"]
 											]
 										],
-			/*
-										["has type", "<http://www.w3.org/2000/01/rdf-schema#type>",
-											[
-												["?", "?type"],
-												["fan", "<http://purl.oclc.org/NET/ssnx/ssn#Fan>"],
-												["switch", "<http://purl.oclc.org/NET/ssnx/ssn#Switch>"]
-											]
-										],
-										["has value", "<http://spitfire-project.eu/ontology/ns/value>",
-											[
-												["?", "?value"]
-											]
-										],
-			*/
-									],
-								],
-								[
-									"light", "<val>",
-									[
-										["is turned", "<http://spitfire-project.eu/ontology/ns/value>  ",
-											[
-												["?",   "?lightValue", "?lightValue"],
-												["on",  "?lightValue . FILTER(?lightValue >= " + config["light_threshold"] + ")"], // "200"^^xsd:int
-												["off", "?lightValue . FILTER(?lightValue <= " + config["light_threshold"] + ")"]
-											]
-										],
 									]
 								],
 								[
 									"weather", "",
 									[
-										["is", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value>", 
+										["temperatur is",              "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value>", 
 											[
 												["?" , "?value2", "?value2"]
 											]
 										],
 										["temperatur is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time >= ?startForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time <= ?endForecast)\n\t?forecast <http://spitfire-project.eu/ontology/ns/value> ",
 											[
-												["?", "?temperatur", "?temperatur"],
 												["10°C", "?temperatur . FILTER(?temperatur > 10)", "?temperatur"],
 												["11°C", "?temperatur . FILTER(?temperatur > 11)", "?temperatur"],
 												["12°C", "?temperatur . FILTER(?temperatur > 12)", "?temperatur"],
@@ -120,7 +89,6 @@
 										],
 										["temperatur is smaller than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> ?time .\n\t?forecast <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . \n\t?forecast <http://spitfire-project.eu/ontology/ns/sn/time_start> ?startForecast . FILTER(?time > ?startForecast)\n\t ?forecast <http://spitfire-project.eu/ontology/ns/sn/time_end> ?endForecast . FILTER(?time < ?endForecast)\n\t ?forecast <http://spitfire-project.eu/ontology/ns/temperatur> ",
 											[
-												["?", "?temperatur", "?temperatur"],
 												["10°C", "?temperatur . FILTER(?temperatur < 10)", "?temperatur"],
 												["11°C", "?temperatur . FILTER(?temperatur < 11)", "?temperatur"],
 												["12°C", "?temperatur . FILTER(?temperatur < 12)", "?temperatur"],
@@ -161,8 +129,6 @@
 							], 
 				isActive : true
 			}
-
-
 		}
 
 		// @see: http://stackoverflow.com/a/9815010
@@ -354,21 +320,41 @@
 
 						var val = e.val();
 
-						if(val.indexOf("<val>") >= 0) {
-							if(typeof(v) == "string") {
-								q += val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
-								continue;
+						var cont = false;
+
+						if(typeof(v) == "string" && (val.indexOf("<val>") >= 0 || val.indexOf("<val_>") >= 0)) {
+
+							if(val.indexOf("<val>") >= 0) {
+								val = val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
 							}
+
+							if(val.indexOf("<val_>") >= 0) {
+								val = val.replace(new RegExp("<val_>", "g"), "?" + v);
+							}
+							q += val;
+							continue;
 						}
 
 						if (val == "?") {
 							q += "\t?val" + (++valCnt) + " ";
-						} else if (val.indexOf("<val>") >= 0) {
-							q += val.replace(new RegExp("<val>", "g"), "\t?val" + (++valCnt) + " ");
+						} else if (typeof(v) != "string" && (val.indexOf("<val>") >= 0 || val.indexOf("<val_>") >= 0)) {
+
+							var varx = "?val" + (++valCnt);
+
+							if(val.indexOf("<val>") >= 0) {
+								val = val.replace(new RegExp("<val>", "g"), "\t" + varx + " ");
+							}
+
+							if(val.indexOf("<val_>") >= 0) {
+								val = val.replace(new RegExp("<val_>", "g"), varx);
+							}
+
+							q += val;
 						} else {
 							q += "\t" + val + " ";
 						}
 					}
+
 					q += ". \n";
 				}
 
