@@ -216,7 +216,7 @@
 				update_storage();
 				for(var i =0; i<queries.length;i++) {	
 					var q = queries[i];
-					run_periodically(q[0], q[2]);
+					run_periodically(q[0], q[2], i);
 				}
 			}
 
@@ -231,7 +231,8 @@
 				var li = $("<li>");
 				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
 				var onClick = function(i) {
-					return function() { 
+					return function() {
+						clearInterval(queries[i][3]);
 						queries.remove(i);
 						localStorage['saved_queries'] = JSON.stringify(queries);
 						update_storage();
@@ -728,16 +729,16 @@
 					return;
 				}
 
-				queries.push([query, input_rule_text.val(), select_action.val()]);
+				var idx = queries.push([query, input_rule_text.val(), select_action.val()]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
-				run_periodically(query, select_action.val());
+				run_periodically(query, select_action.val(), idx-1);
 			}
 			input_button_text.click(query_save);
 
 		}
 
-		function run_periodically(query, action) {
+		function run_periodically(query, action, index) {
 
 			function succ1(res) {
 				success_periodically(res, action)
@@ -746,15 +747,8 @@
 			var funPerInterval1 = function () {
 				query_run(query, succ1, error_once, function() {})
 			}
-
-			setInterval(funPerInterval1, 2000);
-
-			/*
-				function abortTimer() { // to be called when you want to stop the timer
-				clearInterval(tid);
-				}
-			*/			
 			
+			queries[index][3] = setInterval(funPerInterval1, 2000);
 		}
 
 
@@ -1031,7 +1025,6 @@
 			var results1 = dom1.getElementsByTagName("result");
 			
 			if(results1.length == 0) {
-				console.log("No data for rules.");
 				if(action == "on") {
 					action = "off";
 				} else {
@@ -1047,7 +1040,7 @@
 
 			for(var i = 0; i < results.length; i++) {
 				var result = results[i];
-				var bindings = result.getElementsByTagName("binding");
+				var bindings = result.getElementsByTagName("binding");un:
 
 				var tmp = [];
 				for(var k = 0; k < bindings.length; k++) {
