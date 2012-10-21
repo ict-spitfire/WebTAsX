@@ -11,21 +11,25 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<script src="js/jquery-latest.js"></script>
 	<script src="js/bootstrap.min.js"></script>
-	<script src="js/config.js"></script>
 	<script src="js/urlencode.js"></script>
-	<script src="js/xml2json.js"></script>
+	<script src="js/config.js"></script>
 
 	<script>
 
+		// Keeps the last action on an actor
 		var lastAction = new Object();
 
-		var config = [];
+		// Keeps the modules to be loaded.
+		var modules = null;
+		
+		// 
 
-		var sensor_module = null;
+
+
 
 		function init_modules() {
 
-			sensor_module = {
+			modules = {
 				title : "Query-GUI",
 				mapping :
 							[
@@ -142,7 +146,7 @@
 		};
 
 
-		var valCnt = 0;
+
 /*
 		function showlog() {
 			$("#log-div").show();
@@ -181,7 +185,7 @@
 			//$("#log-div").hide();
 			//$("#log-hide").hide();
 			// Add modules
-			addModules([sensor_module]); //weather_module,modul2,modul3
+			addModules([modules]); //weather_module,modul2,modul3
 
 			// Add event listeners
 			//document.getElementById('files').addEventListener('change', handleFileSelect, false);
@@ -302,7 +306,7 @@
 
 			var q = null;
 			var hasActuator = false;
-
+			var valCnt = 0;
 			if(spo.length == 0) {
 				e.show();
 			} else {
@@ -843,7 +847,7 @@
 			}
 */
 			succData = new Object();
-			var url = sparqlEndpoint + "?query=";
+			var url = config['sparqlEndpoint'] + "?query=";
 			localStorage.setItem("query1", query[0].query);
 			localStorage.setItem("query2", query[1].query);
 			
