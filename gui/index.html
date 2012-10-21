@@ -632,7 +632,7 @@
 			q2.query = $("#query-text2").val();
 			q2.hasActuator = true;
 
-			run_query_once([q1,q2], success_once, error_once, async_once);
+			run_query_once([q1,q2], requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 		}
  
 		// Run a query once
