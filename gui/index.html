@@ -382,16 +382,17 @@
 				var div_p = $("<div id=\"p" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
 				var div_o = $("<div id=\"o" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
 
-				var dnd = function(div) {
-					div.bind('dragstart', handleDragStart);
-					div.bind('dragend', handleDragEnd);
-					div.bind('dragover', handleDragOver);
-					div.bind('drop', handleDrop);
+				var create_dnd = function(div) {
+					// By dnd.js file
+					div.bind('dragstart', dnd.handleDragStart);
+					div.bind('dragend', dnd.handleDragEnd);
+					div.bind('dragover', dnd.handleDragOver);
+					div.bind('drop', dnd.handleDrop);
 				}  
 
-				dnd(div_s);
-				dnd(div_p);
-				dnd(div_o);
+				create_dnd(div_s);
+				create_dnd(div_p);
+				create_dnd(div_o);
 
 				var div_del = $("<span></span>");
 				

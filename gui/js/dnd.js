@@ -5,7 +5,7 @@ dnd.varIndex = 0;
 dnd.dragedObject = null;
 dnd.lines = [];
 
-function handleDragStart(e) {
+dnd.handleDragStart = function (e) {
 	dnd.dragedObject = {};
 	dnd.dragedObject.obj = this;
 	dnd.dragedObject.isSrc = true;
@@ -13,9 +13,9 @@ function handleDragStart(e) {
 
 	// Hack: to get drag working in FF
 	e.originalEvent.dataTransfer.setData('x', null);
-}
+};
 
-function handleDragEnd(e) {
+dnd.handleDragEnd = function (e) {
 	$(this).css("opacity", "1");
 	dnd.dragedObject.obj = null;
 
@@ -25,17 +25,17 @@ function handleDragEnd(e) {
 		col.classList.remove('over');
 	});
 
-}
+};
 
-function handleDragOver(e) {
+dnd.handleDragOver = function(e) {
 	if(dnd.dragedObject.obj == null) return;
 	// Needed, to get the drop event listener working
 	if (e.preventDefault) {
 		e.preventDefault();
 	}
-}
+};
 
-function handleDrop(e) {
+dnd.handleDrop = function (e) {
 	var from_ = dnd.dragedObject.obj.getAttribute("id");
 	var to_ = this.getAttribute("id");
 
@@ -98,4 +98,4 @@ function handleDrop(e) {
 	dnd.lines.push(arr);
 	update();
 	return true;
-}
+};
