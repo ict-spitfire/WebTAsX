@@ -9,20 +9,28 @@
 
 	</style>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<!-- Page core -->
 	<script src="js/jquery-latest.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+	<!-- Help functions-->
 	<script src="js/urlencode.js"></script>
+	<script src="js/remove.js"></script>
+	<!-- Sparql GUI Setup-->
 	<script src="js/config.js"></script>
 
 	<script>
-
 		// Keeps the last action on an actor
 		var lastAction = new Object();
 
 		// Keeps the modules to be loaded.
 		var modules = null;
 		
-		// 
+		// Keeps all queries
+		// [x][0] The SPARQL query
+		// [x][1] Textual description
+		// [x][2] Action command, e.g. ON/OFF
+		// [x][3] Interval event
+		var queries = [];
 
 
 
@@ -137,30 +145,39 @@
 			}
 		}
 
-		// @see: http://stackoverflow.com/a/9815010
-		// Array Remove - By John Resig (MIT Licensed)
-		Array.prototype.remove = function(from, to) {
-		  var rest = this.slice((to || from) + 1 || this.length);
-		  this.length = from < 0 ? this.length + from : from;
-		  return this.push.apply(this, rest);
-		};
-
 		window.onload = function () {
 
+			// Get the config for the light threshold
 			var threshold = localStorage.getItem("light_threshold");
 			if(threshold != null) {
 				config["light_threshold"] = threshold;
 			} else {
 				config["light_threshold"] = 3000;
 			}
-
 			$("#inputThreshold").val(config["light_threshold"]);
-			$("#saveConfig").click(function() {
-				var val = $("#inputThreshold").val();
-				localStorage.setItem("light_threshold", val);
-				init_modules();
-				alert("Successful");
-			});
+
+			// Get the last SPARQL query
+			var query1 = localStorage.getItem("query1");
+			if(query1 != null) {
+				$('#query-text1').val(query1);
+			}
+			var query2 = localStorage.getItem("query2");
+			if(query2 != null) {
+				$('#query-text2').val(query2);
+			}
+
+			// Get all saves queries to rerun them
+			var saved_queries = localStorage.getItem("saved_queries");
+			if(saved_queries != null && saved_queries != "null") {
+				queries = JSON.parse(saved_queries);
+				update_storage();
+				for(var i =0; i<queries.length;i++) {	
+					var q = queries[i];
+					run_periodically(q[0], q[2], i);
+				}
+			}
+
+			// Init all modules
 			init_modules();
 
 			// Add modules
@@ -172,26 +189,12 @@
 			document.getElementById('query-restart').addEventListener('click', query_start, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
 
-			// Get the last SPARQL query
-			var q1 = localStorage.getItem("query1");
-			if(q1 != null) {
-				$('#query-text1').val(q1);
-			}
-			var q2 = localStorage.getItem("query2");
-			if(q2 != null) {
-				$('#query-text2').val(q2);
-			}
-
-			var saved_queries = localStorage.getItem("saved_queries");
-			if(saved_queries != null && saved_queries != "null") {
-				queries = JSON.parse(saved_queries);
-				update_storage();
-				for(var i =0; i<queries.length;i++) {	
-					var q = queries[i];
-					run_periodically(q[0], q[2], i);
-				}
-			}
-
+			$("#saveConfig").click(function() {
+				var val = $("#inputThreshold").val();
+				localStorage.setItem("light_threshold", val);
+				init_modules();
+				alert("Successful");
+			});
 		}
 
 		function update_storage() {
@@ -657,7 +660,7 @@
 					return;
 				}
 
-				var idx = queries.push([query, input_rule_text.val(), select_action.val()]);
+				var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
 				run_periodically(query, select_action.val(), idx-1);
@@ -730,8 +733,7 @@
 			query_run([q1,q2], success_once, error_once, async_once);
 		}
  
-		var queries = [];
-		var succData = null;
+
 
 		function query_run(query, onsuccess, onerror, onasync, filter) {
 
@@ -746,7 +748,7 @@
 				return;				
 			}
 
-			succData = new Object();
+			var succData = new Object();
 			var url = config['sparqlEndpoint'] + "?query=";
 			localStorage.setItem("query1", query[0].query);
 			localStorage.setItem("query2", query[1].query);
