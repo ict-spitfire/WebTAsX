@@ -16,6 +16,7 @@
 	<script src="js/urlencode.js"></script>
 	<script src="js/remove.js"></script>
 	<!-- Sparql GUI Setup-->
+	<script src="js/dnd.js"></script>
 	<script src="js/config.js"></script>
 
 	<script>
@@ -360,111 +361,6 @@
 			$("#log").val(q);
 		}
 
-		var dragedObject = null;
-		var lines = [];
-
-		var colors = ["#FF00FF","#FF0000","#808080","#808000","#800080","#800000","#00FFFF","#00FF00","#008080","#008000","#0000FF","#000080","#000000"];
-		var colorID = 0;
-		var varIndex = 0;
-
-		function drawLine(from_, to_) {
-			if(from_ == to_) return;
-
-			var id_from = $('#' + from_);
-			var id_to = $('#' + to_);
-
-			console.log("CONNECT " + from_ + " with " + to_);
-
-			//var from = Math.min(from_, to_);
-			//var to = Math.max(from_, to_);
-
-			var from = from_;
-			var to = to_
-			if(to_ > from_) {
-				from = to_;
-				to = from_;
-			} 
-
-			for(var i = 0; i < lines.length; i++) {
-				l = lines[i];
-				if(l[0] == from && l[1] == to) {
-					return false;
-				}
-			}
-
-			var exists = false;
-			for(var i = 0; i < lines.length; i++) {
-				l = lines[i];
-				if(l[0] == from || l[1] == to || l[1] == from || l[0] == to) {
-					exists = true;
-					break;
-				}
-			}
-	
-			if(exists) {
-				col = l[3];
-				v = l[2];
-				id_from.css("background-color", col);
-				id_to.css("background-color", col);
-				id_from.attr("var",v);
-				id_to.attr("var",v);
-			} else {
-				col = colors[colorID++];
-				v = "var" + (varIndex++);
-				id_from.css("background-color", col);
-				id_to.css("background-color", col);
-				id_from.attr("var",v);
-				id_to.attr("var",v);
-				if(colorID == colors.length) colorID = 0;
-			}
-
-			var arr = [];
-			arr[0] = from;
-			arr[1] = to;
-			arr[2] = v;
-			arr[3] = col;
-
-			lines.push(arr);
-			update();
-			return true;
-		}
-
-		function handleDragStart(e) {
-			dragedObject = {};
-			dragedObject.obj = this;
-			dragedObject.isSrc = true;
-			$(this).css("opacity", "0.6");
-
-			// Hack: to get drag working in FF
-			e.originalEvent.dataTransfer.setData('x', null);
-		}
-
-		function handleDragEnd(e) {
-			$(this).css("opacity", "1");
-			dragedObject.obj = null;
-
-			var elem = document.querySelectorAll('.box');
-
-			[].forEach.call(elem, function (col) {
-				col.classList.remove('over');
-			});
-
-		}
-
-		function handleDragOver(e) {
-			if(dragedObject.obj == null) return;
-			// Needed, to get the drop event listener working
-			if (e.preventDefault) {
-				e.preventDefault();
-			}
-		}
-
-		function handleDrop(e) {
-			var id1 = dragedObject.obj.getAttribute("id");
-			var id2 = this.getAttribute("id");
-			var bool = drawLine(id1, id2);
-			console.log(bool);
-		}
 
 
 		function addModule(module) {
