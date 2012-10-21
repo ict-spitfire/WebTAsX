@@ -28,6 +28,9 @@
 
 		// Keeps the modules to be loaded.
 		var modules = null;
+
+		// Keeps the last generated queries
+		var query = null;
 		
 		// Keeps all queries
 		// [x][0] The SPARQL query
@@ -35,8 +38,59 @@
 		// [x][2] Action command, e.g. ON/OFF
 		// [x][3] Interval event
 		var queries = [];
+		var modid = 0;
 
+		window.onload = function () {
 
+			// Get the config for the light threshold
+			var threshold = localStorage.getItem("light_threshold");
+			if(threshold != null) {
+				config["light_threshold"] = threshold;
+			} else {
+				config["light_threshold"] = 3000;
+			}
+			$("#inputThreshold").val(config["light_threshold"]);
+
+			// Get the last SPARQL query
+			var query1 = localStorage.getItem("query1");
+			if(query1 != null) {
+				$('#query-text1').val(query1);
+			}
+			var query2 = localStorage.getItem("query2");
+			if(query2 != null) {
+				$('#query-text2').val(query2);
+			}
+
+			// Get all saves queries to rerun them
+			var saved_queries = localStorage.getItem("saved_queries");
+			if(saved_queries != null && saved_queries != "null") {
+				queries = JSON.parse(saved_queries);
+				update_storage();
+				for(var i =0; i<queries.length;i++) {	
+					var q = queries[i];
+					run_query_periodically(q[0], q[2], i);
+				}
+			}
+
+			// Init all modules
+			init_modules();
+
+			// Add modules
+			addModules([modules]); //weather_module,modul2,modul3
+
+			// Add event listeners
+			//document.getElementById('files').addEventListener('change', handleFileSelect, false);
+			document.getElementById('query-start').addEventListener('click', query_start, false);
+			document.getElementById('query-restart').addEventListener('click', query_start, false);
+			document.getElementById('action-start').addEventListener('click', action_start, false);
+
+			$("#saveConfig").click(function() {
+				var val = $("#inputThreshold").val();
+				localStorage.setItem("light_threshold", val);
+				init_modules();
+				alert("Successful");
+			});
+		}
 
 		function init_modules() {
 
@@ -148,58 +202,6 @@
 			}
 		}
 
-		window.onload = function () {
-
-			// Get the config for the light threshold
-			var threshold = localStorage.getItem("light_threshold");
-			if(threshold != null) {
-				config["light_threshold"] = threshold;
-			} else {
-				config["light_threshold"] = 3000;
-			}
-			$("#inputThreshold").val(config["light_threshold"]);
-
-			// Get the last SPARQL query
-			var query1 = localStorage.getItem("query1");
-			if(query1 != null) {
-				$('#query-text1').val(query1);
-			}
-			var query2 = localStorage.getItem("query2");
-			if(query2 != null) {
-				$('#query-text2').val(query2);
-			}
-
-			// Get all saves queries to rerun them
-			var saved_queries = localStorage.getItem("saved_queries");
-			if(saved_queries != null && saved_queries != "null") {
-				queries = JSON.parse(saved_queries);
-				update_storage();
-				for(var i =0; i<queries.length;i++) {	
-					var q = queries[i];
-					run_periodically(q[0], q[2], i);
-				}
-			}
-
-			// Init all modules
-			init_modules();
-
-			// Add modules
-			addModules([modules]); //weather_module,modul2,modul3
-
-			// Add event listeners
-			//document.getElementById('files').addEventListener('change', handleFileSelect, false);
-			document.getElementById('query-start').addEventListener('click', query_start, false);
-			document.getElementById('query-restart').addEventListener('click', query_start, false);
-			document.getElementById('action-start').addEventListener('click', action_start, false);
-
-			$("#saveConfig").click(function() {
-				var val = $("#inputThreshold").val();
-				localStorage.setItem("light_threshold", val);
-				init_modules();
-				alert("Successful");
-			});
-		}
-
 		function update_storage() {
 			var ul = $("<ul>");
 			for(var i = 0; i < queries.length; i++) {
@@ -226,15 +228,22 @@
 			$("#storage").html(ul);
 		}
 
-		var modid = 0;
-		function addModules(modules) {
-			for(var i = 0; i < modules.length; i++) {
-				addModule(modules[i]);
-			}
+		function update(x) {
+			var query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
+			var query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
+
+			// Update the text field
+			$("#query-text1").val(query_rules.query);
+			$("#query-text2").val(query_actions.query);
+
+			// 
+			query = [query_rules, query_actions];
 		}
 
-		// data[0] what to show
-		// data[1] what to map
+		// o[0] what to show
+		// o[1] what to map
+		// o[2] 
+		// o[3] preselected
 		// event changeevent
 		function generate_select(o, event, str) {
 			var select = $('<select></select>');
@@ -258,104 +267,10 @@
 			return select;
 		}
 
-		var query;
-		var query_rules;
-		var query_actions;
-
-		function update(x) {
-			query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
-			query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
-
-			$("#query-text1").val(query_rules.query);
-			$("#query-text2").val(query_actions.query);
-
-			query = [query_rules,query_actions];
-		}
-
-		function generate_sparql(spo, e) {
-
-			var q = null;
-			var hasActuator = false;
-			var valCnt = 0;
-			if(spo.length == 0) {
-				e.show();
-			} else {
-
-				var ids = [];
-				
-				q = "{\n";
-				var actors = []; 
-				for(var i = 0; i < spo.length; i++) {
-					var children = spo[i].childNodes;
-					for(var j = 0; j < children.length; j++) {
-						var c = children[j];
-						var v = $(c).attr("var");
-						var e = $(c.firstChild);
-						if(e.is("img")) break;
-						var option = e.find("option:selected");
-						var actor = option.attr("actors");
-						if(typeof(actor) == "string") {
-							actors.push(actor);
-						}
-
-						var val = e.val();
-
-						var cont = false;
-
-						if(typeof(v) == "string" && (val.indexOf("<val>") >= 0 || val.indexOf("<val_>") >= 0)) {
-
-							if(val.indexOf("<val>") >= 0) {
-								val = val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
-							}
-
-							if(val.indexOf("<val_>") >= 0) {
-								val = val.replace(new RegExp("<val_>", "g"), "?" + v);
-							}
-							q += val;
-							continue;
-						}
-
-						if (val == "?") {
-							q += "\t?val" + (++valCnt) + " ";
-						} else if (typeof(v) != "string" && (val.indexOf("<val>") >= 0 || val.indexOf("<val_>") >= 0)) {
-
-							var varx = "?val" + (++valCnt);
-
-							if(val.indexOf("<val>") >= 0) {
-								val = val.replace(new RegExp("<val>", "g"), "\t" + varx + " ");
-							}
-
-							if(val.indexOf("<val_>") >= 0) {
-								val = val.replace(new RegExp("<val_>", "g"), varx);
-							}
-
-							q += val;
-						} else {
-							q += "\t" + val + " ";
-						}
-					}
-
-					q += ". \n";
-				}
-
-				q += "}";
-
-				if(actors.length == 0) {
-					hasActuator = false;
-					console.log("Query does not contain any actor!");
-					q = "SELECT DISTINCT * WHERE " + q;
-				} else {
-					hasActuator = true;
-					q = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + q;
-				}
-				console.log(q);
+		function addModules(modules) {
+			for(var i = 0; i < modules.length; i++) {
+				addModule(modules[i]);
 			}
-
-			var result = new Object();
-			result.hasActuator = hasActuator;
-			result.query = q;
-
-			return result;
 		}
 
 		function addModule(module) {
@@ -531,7 +446,7 @@
 			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
 			input_button_once.click(function(e) {
 				update();
-				query_run(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+				run_query_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 			});
 
 			form.append(div_button)
@@ -555,26 +470,111 @@
 				var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
-				run_periodically(query, select_action.val(), idx-1);
+				run_query_periodically(query, select_action.val(), idx-1);
 			}
 			input_button_text.click(query_save);
 
 		}
 
-		function run_periodically(query, action, index) {
+		function generate_sparql(spo, e) {
+
+			var q = null;
+			var hasActuator = false;
+			var valCnt = 0;
+			if(spo.length == 0) {
+				e.show();
+			} else {
+
+				var ids = [];
+				
+				q = "{\n";
+				var actors = []; 
+				for(var i = 0; i < spo.length; i++) {
+					var children = spo[i].childNodes;
+					for(var j = 0; j < children.length; j++) {
+						var c = children[j];
+						var v = $(c).attr("var");
+						var e = $(c.firstChild);
+						if(e.is("img")) break;
+						var option = e.find("option:selected");
+						var actor = option.attr("actors");
+						if(typeof(actor) == "string") {
+							actors.push(actor);
+						}
+
+						var val = e.val();
+
+						var cont = false;
+
+						if(typeof(v) == "string" && (val.indexOf("<val>") >= 0 || val.indexOf("<val_>") >= 0)) {
+
+							if(val.indexOf("<val>") >= 0) {
+								val = val.replace(new RegExp("<val>", "g"), "\t?" + v + " ");
+							}
+
+							if(val.indexOf("<val_>") >= 0) {
+								val = val.replace(new RegExp("<val_>", "g"), "?" + v);
+							}
+							q += val;
+							continue;
+						}
+
+						if (val == "?") {
+							q += "\t?val" + (++valCnt) + " ";
+						} else if (typeof(v) != "string" && (val.indexOf("<val>") >= 0 || val.indexOf("<val_>") >= 0)) {
+
+							var varx = "?val" + (++valCnt);
+
+							if(val.indexOf("<val>") >= 0) {
+								val = val.replace(new RegExp("<val>", "g"), "\t" + varx + " ");
+							}
+
+							if(val.indexOf("<val_>") >= 0) {
+								val = val.replace(new RegExp("<val_>", "g"), varx);
+							}
+
+							q += val;
+						} else {
+							q += "\t" + val + " ";
+						}
+					}
+
+					q += ". \n";
+				}
+
+				q += "}";
+
+				if(actors.length == 0) {
+					hasActuator = false;
+					console.log("Query does not contain any actor!");
+					q = "SELECT DISTINCT * WHERE " + q;
+				} else {
+					hasActuator = true;
+					q = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + q;
+				}
+				console.log(q);
+			}
+
+			var result = new Object();
+			result.hasActuator = hasActuator;
+			result.query = q;
+
+			return result;
+		}
+
+		function run_query_periodically(query, action, index) {
 
 			function succ1(res) {
 				success_periodically(res, action)
 			}
 
 			var funPerInterval1 = function () {
-				query_run(query, succ1, error_periodically, function() {})
+				run_query_once(query, succ1, error_periodically, function() {})
 			}
 			
 			queries[index][3] = setInterval(funPerInterval1, 2000);
 		}
-
-
+/*
 		function handleFileSelect(evt) {
 			var files = evt.target.files;
 			var output = [];
@@ -586,7 +586,9 @@
 			}
 			document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
 		}
+*/
 
+		// Run action on url
 		function action_request(url, action) {
 			console.log("RUN ACTION ON " + url + " :: " + action);
 			var xhr = new XMLHttpRequest();
@@ -606,6 +608,7 @@
 			xhr.send(action);
 		}
 
+		// Run action for selected actors from Result
 		function action_start() {
 			var e = $("td.marked");
 			for (var i = 0, i; i < e.length; i++) {
@@ -614,6 +617,7 @@
 			}
 		}
 
+		// Run querys from Query-Textbox
 		function query_start() {
 			var q1 = new Object();
 			q1.query = $("#query-text1").val();
@@ -622,12 +626,11 @@
 			q2.query = $("#query-text2").val();
 			q2.hasActuator = true;
 
-			query_run([q1,q2], success_once, error_once, async_once);
+			run_query_once([q1,q2], success_once, error_once, async_once);
 		}
  
-
-
-		function query_run(query, onsuccess, onerror, onasync, filter) {
+		// Run a query once
+		function run_query_once(query, onsuccess, onerror, onasync, filter) {
 
 			if(query[0].query == null) {
 				alert("You need at least one selection rule to run the query.");
@@ -656,7 +659,6 @@
 			}
 
 			var xhr = function (url, query, onsuccess) {
-
 				var encoded = urlencode(query);
 				var path = url + encoded;
 
@@ -687,6 +689,7 @@
 				xhr.send(null);
 			}
 
+			// Run two queries. 1) on rules 2) on actions
 			if(query[0].query.length > 0) xhr(url, query[0].query, onsuccessRules);
 			if(query[1].query.length > 0) xhr(url, query[1].query, onsuccessAction);
 
