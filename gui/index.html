@@ -90,6 +90,9 @@
 				init_modules();
 				alert("Successful");
 			});
+
+			$("#query-result-rules").html(create_info("No result yet"));
+			$("#query-result-actors").html(create_info("No result yet"));
 		}
 
 		function init_modules() {
@@ -403,7 +406,7 @@
 			div_rules.append(info_msg_rules);
 			div.append(div_rules);		
 
-			div.append("<h4>Actuation</h4>");
+			div.append("<h4>Actors</h4>");
 
 			var input2 = $("<input class=\"btn\" type=\"button\" value=\"+\">");
 			input2.click(function(e) {
@@ -418,7 +421,7 @@
 			div_actuation.append(info_msg_actuation);
 			div.append(div_actuation);		
 
-			div.append("<h4>Run query</h4>");
+			div.append("<h4>Run</h4>");
 
 			// Create a div to keep the save stuff and add it to the content pane
 			var form = $('<form class="form-horizontal">');
@@ -723,9 +726,11 @@
 				-->
 				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
+					<h4>Rules Query</h4>
 					<textarea id="query-text1" style="width:97%;height:150px;"></textarea><br>
+					<h4>Actors Query</h4>
 					<textarea id="query-text2" style="width:97%;height:150px;"></textarea><br>
-					<p><input type="button" id="query-start" value="Run Query"></p>
+					<p><input class="btn" type="button" id="query-start" value="Run Query"></p>
 				</div>
 				<div class="tab-pane" id="tab-storage">
 					<h3>Storage</h3>
@@ -749,7 +754,7 @@
 				</div>
 				<div class="tab-pane" id="tab-result">
 					<h3>Result</h3>
-					<p><input type="button" id="query-restart" value="Run Query"></p>
+					<p><input class="btn" type="button" id="query-restart" value="Rerun Query"></p>
 					<h4>Result rules</h4>
 					<p id="query-result-rules"></p>
 
@@ -762,7 +767,7 @@
 						  <option value="off">off</option>
 						</select>
 						<br>
-						<button type="button" id="action-start">Run Actuation</button>
+						<button class="btn" type="button" id="action-start">Run Actuation</button>
 					</p>
 
 				</div>
