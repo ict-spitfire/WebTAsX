@@ -16,7 +16,10 @@
 	<script src="js/urlencode.js"></script>
 	<script src="js/remove.js"></script>
 	<!-- Sparql GUI Setup-->
+	<script src="js/alert.js"></script>
 	<script src="js/dnd.js"></script>
+	<script src="js/once.js"></script>
+	<script src="js/periodically.js"></script>
 	<script src="js/config.js"></script>
 
 	<script>
@@ -32,7 +35,6 @@
 		// [x][2] Action command, e.g. ON/OFF
 		// [x][3] Interval event
 		var queries = [];
-
 
 
 
@@ -347,7 +349,6 @@
 					q = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + q;
 				}
 				console.log(q);
-				update_log(q);
 			}
 
 			var result = new Object();
@@ -356,12 +357,6 @@
 
 			return result;
 		}
-
-		function update_log(q) {
-			$("#log").val(q);
-		}
-
-
 
 		function addModule(module) {
 			modid++;
@@ -489,7 +484,7 @@
 
 			// Create a div, to keep all rules and add it to the content pane
 			var div_rules = $("<div id=\"rules\" style=\"margin-top:5px;\"></div>");
-			var info_msg_rules = $(info("No selection rule selected yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
+			var info_msg_rules = $(create_info("No selection rule selected yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
 			div_rules.append(info_msg_rules);
 			div.append(div_rules);		
 
@@ -504,7 +499,7 @@
 			div.append(input2);
 
 			var div_actuation = $("<div id=\"actuation\" style=\"margin-top:5px;\"></div>");
-			var info_msg_actuation = $(info("No actuation rules selected yet. Click the [+] button.", "no-rule-msg2", false)); // Empty message
+			var info_msg_actuation = $(create_info("No actuation rules selected yet. Click the [+] button.", "no-rule-msg2", false)); // Empty message
 			div_actuation.append(info_msg_actuation);
 			div.append(div_actuation);		
 
@@ -536,7 +531,7 @@
 			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
 			input_button_once.click(function(e) {
 				update();
-				query_run(query, success_once, error_once, async_once);
+				query_run(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 			});
 
 			form.append(div_button)
@@ -573,7 +568,7 @@
 			}
 
 			var funPerInterval1 = function () {
-				query_run(query, succ1, error_once, function() {})
+				query_run(query, succ1, error_periodically, function() {})
 			}
 			
 			queries[index][3] = setInterval(funPerInterval1, 2000);
@@ -650,8 +645,6 @@
 			localStorage.setItem("query1", query[0].query);
 			localStorage.setItem("query2", query[1].query);
 			
-			update_log(query[0].query + "\n\n==================================================\n\n" + query[1].query);
-
 			var onsuccessRules = function (res) {
 				succData.rules = res;
 				onsuccess(succData);
@@ -702,190 +695,6 @@
 			}
 		}
 
-		function async_once() {
-			$('#query-result-rules').html(info("Query is running..."));  
-			$('#query-result-actors').html(info("Query is running..."));  
-			$("#tab-result-link").click();
-		}
-
-		function error_once(msg) {
-			$('#query-result-rules').html(error(msg));
-			$('#query-result-actors').html(error(msg));
-		}
-
-		function success_once(data) {
-			if(typeof(data.rules) == "string") {
-				generateTable($('#query-result-rules'), data.rules);
-			}
-			if(typeof(data.action) == "string") {
-				generateTable($('#query-result-actors'), data.action);
-			}
-		}
-
-		function generateTable(e, res) {
-			e.html(success("Query successful."));
-			var dom = new DOMParser().parseFromString(res,'text/xml');
-
-			var title = [];
-			var variables = dom.getElementsByTagName("variable");
-			for(var i = 0; i < variables.length; i++) {
-				var variable = variables[i];
-				title.push(variable.getAttribute("name"));
-			}
-		
-			var data = [];
-			var results = dom.getElementsByTagName("result");
-
-			for(var i = 0; i < results.length; i++) {
-				var result = results[i];
-				var bindings = result.getElementsByTagName("binding");
-
-				var tmp = [];
-				for(var k = 0; k < bindings.length; k++) {
-					var binding = bindings[k];
-					var children = binding.childNodes;
-					for(var j = 0; j < children.length; j++) {
-						var child = children[j];
-						if(child.nodeType != 3) {
-							var name = binding.getAttribute("name");
-							var index = title.indexOf(name); 
-							var c = child.firstChild;
-							tmp[index] = c.data;
-						}
-					}
-				}
-				data.push(tmp);
-			}
-
-			var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
-			var thead = $('<thead></thead>');
-			var tr = $('<tr></tr>');
-			for(i=0; i<title.length; i++){
-				var th = $('<th>' + title[i] + '</th>');
-				tr.append(th);
-			}
-			thead.append(tr);
-			table.append(thead);
-
-			var onClick = function(e) {
-				var t = $(this);						
-				if(t.hasClass("marked")) {
-					t.removeClass("marked");
-				} else {
-					t.addClass("marked");
-				}
-			}
-
-			var tbody = $('<tbody></tbody>');
-			for(i=0; i<data.length; i++){
-				tr = $('<tr></tr>');
-				for(j=0; j<data[i].length; j++){
-					var td = null;
-					if(typeof(data[i][j]) === "undefined") {
-						td = $('<td></td>');
-					} else {
-						td = $('<td>' + data[i][j] + '</td>');
-					}
-					td.click(onClick);
-					tr.append(td);
-				}
-				if(data[i].length < title.length) {
-					var diff = title.length - data[i].length;
-					console.log(diff);
-					for(var y = 0; y< diff; y++) {
-						tr.append($('<td></td>'));
-					}
-				}
-
-				tbody.append(tr);
-			}
-			table.append(tbody);
-
-			if(data.length == 0) {
-				e.append(itm_alert("No data are matching the query."));
-			} else {
-				e.append(table);
-			}
-		}
-	
-		function success_periodically(data, action) {
-
-			if(typeof(data.rules) != "string" || typeof(data.action) != "string") {
-				return;
-			}
-
-			var dom1 = new DOMParser().parseFromString(data.rules,'text/xml');
-			var results1 = dom1.getElementsByTagName("result");
-			
-			if(results1.length == 0) {
-				if(action == "on") {
-					action = "off";
-				} else {
-					action = "on";
-				}
-			}	
-			console.log("Data for rules: " + results1.length);
-
-			var dom = new DOMParser().parseFromString(data.action,'text/xml');
-
-			var data = [];
-			var results = dom.getElementsByTagName("result");
-
-			for(var i = 0; i < results.length; i++) {
-				var result = results[i];
-				var bindings = result.getElementsByTagName("binding");un:
-
-				var tmp = [];
-				for(var k = 0; k < bindings.length; k++) {
-					var binding = bindings[k];
-					var children = binding.childNodes;
-					for(var j = 0; j < children.length; j++) {
-						var child = children[j];
-						if(child.nodeType != 3) {
-							var c = child.firstChild;
-							if(typeof(lastAction[c.data]) == "string") {
-								if(lastAction[c.data] != action) {
-									console.log("RUN NEW COMMAND");
-									action_request(c.data, action);
-									lastAction[c.data] = action;
-								} else {
-									console.log("SKIP ACTION (LAST ACTION WAS THE SAME)");
-								}
-								continue;
-							}
-							console.log("RUN ACTION FIRST TIME");
-							lastAction[c.data] = action;
-							action_request(c.data, action);
-						}
-					}
-				}
-			}
-		}
-
-		function success(text) {
-			return '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
-		}
-
-		function info(text, id, showClose) {
-			var x = '<button type="button" class="close" data-dismiss="alert">&times;</button>';
-			if(showClose == false) {
-				x = "";
-			}
-
-			if(typeof(id) == "string") {
-				return '<div id=\"' + id + '\" class="alert alert-info">' + x + text + '</div>';
-			} else {
-				return '<div class="alert alert-info">' + x + text + '</div>';
-			}
-		}
-
-		function itm_alert(text) {
-			return '<div class="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
-		}
-
-		function error(text) {
-			return '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>ERROR!</strong>' + text + '</div>';
-		}
 	</script>
 </head>
 <body>
