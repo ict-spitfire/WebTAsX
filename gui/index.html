@@ -91,8 +91,8 @@
 				alert("Successful");
 			});
 
-			$("#query-result-rules").html(create_info("No result yet"));
-			$("#query-result-actors").html(create_info("No result yet"));
+			$("#query-result-rules").html(create_info("No result yet."));
+			$("#query-result-actors").html(create_info("No result yet."));
 		}
 
 		function init_modules() {
@@ -224,7 +224,7 @@
 
 				del_img.click(onClick(i));
 				li.append(del_img);
-				li.append(q[1]);
+				li.append(" " + q[1]);
 				// Add LI
 				ul.append(li);
 			}
@@ -402,7 +402,7 @@
 
 			// Create a div, to keep all rules and add it to the content pane
 			var div_rules = $("<div id=\"rules\" style=\"margin-top:5px;\"></div>");
-			var info_msg_rules = $(create_info("No selection rule selected yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
+			var info_msg_rules = $(create_info("No selection rule yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
 			div_rules.append(info_msg_rules);
 			div.append(div_rules);		
 
@@ -417,7 +417,7 @@
 			div.append(input2);
 
 			var div_actuation = $("<div id=\"actuation\" style=\"margin-top:5px;\"></div>");
-			var info_msg_actuation = $(create_info("No actuation rules selected yet. Click the [+] button.", "no-rule-msg2", false)); // Empty message
+			var info_msg_actuation = $(create_info("No actuation rules yet. Click the [+] button.", "no-rule-msg2", false)); // Empty message
 			div_actuation.append(info_msg_actuation);
 			div.append(div_actuation);		
 
@@ -461,6 +461,7 @@
 			//var input_save = $();
 
 			function query_save() {
+
 				if(query == null) {
 					alert("You need at least one rule to run the query.");
 					return;
@@ -469,6 +470,8 @@
 					alert("You need a rule name to run the query.");
 					return;
 				}
+
+				$("#tab-storage-link").click();
 
 				var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
@@ -712,7 +715,7 @@
 				-->
 				<li><a href="#tab-config" data-toggle="tab">Config</a></li>
 				<li><a href="#tab-query" data-toggle="tab">Query-Textbox</a></li>
-				<li><a href="#tab-storage" data-toggle="tab">Query-Storage</a></li>
+				<li><a id="tab-storage-link" href="#tab-storage" data-toggle="tab">Query-Storage</a></li>
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
