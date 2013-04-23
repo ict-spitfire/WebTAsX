@@ -9,18 +9,20 @@
 
 	</style>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 	<!-- Page core -->
 	<script src="js/jquery-latest.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+
 	<!-- Help functions-->
 	<script src="js/urlencode.js"></script>
 	<script src="js/remove.js"></script>
+
 	<!-- Sparql GUI Setup-->
 	<script src="js/alert.js"></script>
 	<script src="js/dnd.js"></script>
 	<script src="js/once.js"></script>
 	<script src="js/periodically.js"></script>
-	<script src="js/config.js"></script>
 
 	<script>
 		// Keeps the last action on an actor
@@ -42,14 +44,25 @@
 
 		window.onload = function () {
 
-			// Get the config for the light threshold
-			var threshold = localStorage.getItem("light_threshold");
-			if(threshold != null) {
-				config["light_threshold"] = threshold;
-			} else {
-				config["light_threshold"] = 3000;
+			// Object, which keeps the configuration
+			var config = {};
+			config.lightThreshold = 3000;
+			config.sparqlEndpoint = "http://localhost:8080/openrdf-sesame/repositories/sensors";
+
+			// Load all saved config
+			for (var key in localStorage){
+				// Just set real config values!
+				if(typeof(config[key]) != "undefined") {
+					config[key] = localStorage.getItem(key);
+				}
 			}
-			$("#inputThreshold").val(config["light_threshold"]);
+
+			// set the values in the config window
+			for (var key in config){
+				var id = "config-" + key;
+				var input = $("#" + id);
+				input.val(config[key]);
+			}
 
 			// Get the last SPARQL query
 			var query1 = localStorage.getItem("query1");
@@ -85,8 +98,13 @@
 			document.getElementById('action-start').addEventListener('click', action_start, false);
 
 			$("#saveConfig").click(function() {
-				var val = $("#inputThreshold").val();
-				localStorage.setItem("light_threshold", val);
+				for (var key in config){
+					var id = "config-" + key;
+					var input = $("#" + id);
+					var value = input.val();
+					localStorage.setItem(key, value);
+				}
+
 				init_modules();
 				alert("Successful");
 			});
@@ -108,8 +126,8 @@
 										["measures", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 											[
 												["light ?",  "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue"],
-												["light on",  "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue FILTER(<val_>lightValue >= " + config["light_threshold"] + ")"],
-												["light off", "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue . FILTER(<val_>lightValue <= " + config["light_threshold"] + ")"],
+												["light on",  "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue FILTER(<val_>lightValue >= " + config["lightThreshold"] + ")"],
+												["light off", "<val> .\n\t<val> <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t<val> <http://spitfire-project.eu/ontology/ns/value> <val_>lightValue . FILTER(<val_>lightValue <= " + config["lightThreshold"] + ")"],
 											]
 										],
 										["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
@@ -743,9 +761,15 @@
 					<h3>Configuration</h3>
 					<form class="form-horizontal">
 					  <div class="control-group">
-						<label for="inputThreshold" class="control-label">Light threshold</label>
+						<label for="config-lightThreshold" class="control-label">Light threshold:</label>
 						<div class="controls">
-						  <input type="text" placeholder="Threshold" id="inputThreshold">
+						  <input type="text" placeholder="Threshold" id="config-lightThreshold">
+						</div>
+					  </div>
+					  <div class="control-group">
+						<label for="config-sparqlEndpoint" class="control-label">Sparql endpoint:</label>
+						<div class="controls">
+						  <input type="text" placeholder="http://..." id="config-sparqlEndpoint">
 						</div>
 					  </div>
 					  <div class="control-group">
