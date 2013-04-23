@@ -622,9 +622,9 @@
 			xhr.onload = function(e) {
 				lastStatus = this.status;
 				console.log("onload == " + this.status);
-				if (this.status == 200) {
+				if (this.readyState == 4 && this.status == 200) {
 					console.log(url + " + " + action + " DONE");
-				} else {
+				} else if(this.readyState == 4){
 					console.log(url + " + " + action + " ERROR");
 				}
 			}
@@ -682,7 +682,7 @@
 				onsuccess(succData);
 			}
 
-			var xhr = function (url, query, onsuccess) {
+			var runxhr = function (url, query, onsuccess) {
 				var encoded = urlencode(query);
 				var path = url + encoded;
 
@@ -691,11 +691,14 @@
 				xhr.open('GET', path, true);
 				xhr.setRequestHeader("Accept", "application/xml");
 				xhr.onload = function(e) {
-					if (this.status == 200) {
+
+					if (this.readyState == 4 && this.status == 200) {
 						if(typeof(onsuccess) == "function") {
 							onsuccess(this.response);
 						}
-					} 
+					} else if (this.readyState == 4){
+						consoel.log("Some error...")
+					}
 					/*
 					TODO: Error handling
 					else if (this.status == 504) {
@@ -714,8 +717,8 @@
 			}
 
 			// Run two queries. 1) on rules 2) on actions
-			if(query[0].query.length > 0) xhr(url, query[0].query, onsuccessRules);
-			if(query[1].query.length > 0) xhr(url, query[1].query, onsuccessAction);
+			if(query[0].query.length > 0) runxhr(url, query[0].query, onsuccessRules);
+			if(query[1].query.length > 0) runxhr(url, query[1].query, onsuccessAction);
 
 			if(typeof(onasync) == "function") {
 				onasync();
