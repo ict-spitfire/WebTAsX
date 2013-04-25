@@ -35,14 +35,14 @@ define(
 								]
 							],
 							[
-								"weather", "",
+								"weather", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value>",
 								[
-									["temperatur is", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value>",
+									["temperatur is", "",
 										[
-											["?" , "{sp}", "{sp}"]
+											["?" , "{o}", "{o}"]
 										]
 									],
-									["temperatur is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value> ",
+									["temperatur is greater than", 	"",
 										[
 											["10°C", "{temperatur} . FILTER({temperatur} > 10)", "{temperatur}"],
 											["11°C", "{temperatur} . FILTER({temperatur} > 11)", "{temperatur}"],
@@ -67,7 +67,7 @@ define(
 											["30°C", "{temperatur} . FILTER({temperatur} > 30)", "{temperatur}"],
 										]
 									],
-									["temperatur is smaller than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . \n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} > {startForecast})\n\t {forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} < {endForecast})\n\t {forecast} <http://spitfire-project.eu/ontology/ns/temperatur> ",
+									["temperatur is smaller than", "",
 										[
 											["10°C", "{temperatur} . FILTER({temperatur} < 10)", "{temperatur}"],
 											["11°C", "{temperatur} . FILTER({temperatur} < 11)", "{temperatur}"],
@@ -94,9 +94,9 @@ define(
 									]
 								]
 							],[
-								"calendar", "",
+								"calendar", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{event} <http://spitfire-project.eu/ontology/ns/start> {startCalendar} . FILTER( {time} >= {startCalendar}) .\n\t{event} <http://spitfire-project.eu/ontology/ns/end> {endCalendar} . FILTER( {time} <= {endCalendar} .\n\t{event} <http://spitfire-project.eu/ontology/ns/subject>",
 								[
-									["has event", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t {event} <http://spitfire-project.eu/ontology/ns/start> ?startCalendar . 		FILTER( {time} >= ?startCalendar)\n\t {event} <http://spitfire-project.eu/ontology/ns/end> ?endCalendar . 			FILTER( {time} <= ?endCalendar)\n\t {event} <http://spitfire-project.eu/ontology/ns/subject>", 
+									["has event", "", 
 										[
 											["?", "{event}", "{event}"],
 											["radio","{eventSubject} . FILTER regex({eventSubject}, 'Radio', 'i')"],
