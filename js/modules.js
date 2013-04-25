@@ -20,9 +20,9 @@ define(
 									],
 									["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>",
 										[
-											["?",       "{actor} FILTER regex(str({hasA}), 'actor', 'i')", "{actor}"],
-											["fan",     "{fan} FILTER regex(str({fan}), 'actor', 'i')\n\t{fan} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fan}"],
-											["radio",   "{radio} FILTER regex(str({radio}), 'actor', 'i')\n\t{radio} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radio}"]
+											["?",       "{actor} . FILTER regex(str({hasA}), 'actor', 'i')", "{actor}"],
+											["fan",     "{fan} . FILTER regex(str({fan}), 'actor', 'i') . \n\t{fan} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fan}"],
+											["radio",   "{radio} . FILTER regex(str({radio}), 'actor', 'i') . \n\t{radio} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radio}"]
 										]
 									],
 									["is in","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
