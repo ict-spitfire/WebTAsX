@@ -251,6 +251,8 @@
 
 		function update(x) {
 			console.log("----------------------------------------------------------------------------------")
+			console.log(x);
+			console.log("----------------------------------------------------------------------------------")
 			console.info("SPARQL rules:");
 			var query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
 			console.info("SPARQL actors:");
@@ -333,7 +335,7 @@
 				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
 				del_img.click(function() { 
 					$("#" + spo_id).remove();
-					update();
+					update("del_img.click");
 				});
 				div_del.append(del_img);
 
@@ -356,7 +358,7 @@
 								for(var i = 0; i<p_mapping.length; i++) {
 									if(p_mapping[i][0] == text) {
 										var o_change = function(e){
-											update("oo");
+											update("o_change");
 										};
 										var o_mapping = p_mapping[i][2];
 
@@ -369,7 +371,7 @@
 								}
 								div_o.empty();
 								div_o.append(select_o);
-								update("pp");
+								update("p_change");
 							};
 							var select_p = generate_select(p_mapping, p_change, "actors");
 							div_p.empty();
@@ -382,9 +384,8 @@
 							select_p.trigger('change');
 						}
 					}
-					update("ss");
+					update("s_change");
 				}
-
 
 				// Select for S
 				var select_s = generate_select(mapping, s_change, "actors");
@@ -417,7 +418,7 @@
 			input.click(function(e) {
 				div_rules.append(create(module.mapping, module.s));
 				info_msg_rules.hide();
-				update("line");
+				update("input.click");
 			});
 			div.append(input);
 
@@ -433,7 +434,7 @@
 			input2.click(function(e) {
 				div_actuation.append(create(module.mapping, module.s));
 				info_msg_actuation.hide();
-				update("line");
+				update("nput2.click");
 			});
 			div.append(input2);
 
@@ -469,7 +470,7 @@
 			var input_button_text = $("<button class=\"btn\" type=\"button\">Run query periodically</button>");
 			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
 			input_button_once.click(function(e) {
-				update();
+				update("input_button_once.click");
 				run_query_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 			});
 
