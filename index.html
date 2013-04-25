@@ -250,7 +250,10 @@
 		}
 
 		function update(x) {
+			console.log("----------------------------------------------------------------------------------")
+			console.info("SPARQL rules:");
 			var query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
+			console.info("SPARQL actors:");
 			var query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
 
 			// Update the text field
@@ -594,8 +597,6 @@
                         return a;
                     },[]);
 
-                    console.log(uniq);
-
                     // Replace the vars
                     for(var k = 0; k<matches.length; k++) {
                         var varname = matches[k];
@@ -613,12 +614,7 @@
                         }
                     }
 
-                    /*
-                     * TODO... REPLACE global vars as well...
-                     */
-
                     // Here, one line is complete
-
                     if(tmp.indexOf("<s>") >= 0) {
                         var varx = "?val" + (++valCnt);
                         tmp = tmp.replace(new RegExp("<s>", "g"), "" + varx + " ");
