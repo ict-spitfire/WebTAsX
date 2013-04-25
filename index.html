@@ -4,32 +4,40 @@
 	<title>SPARQL Editor</title>
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/style.css" rel="stylesheet">
-	<style>
-
-
-	</style>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script src="js/require.js"></script>
 
 	<!-- Page core -->
 	<script src="js/jquery-latest.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 
-	<!-- Help functions-->
-	<script src="js/urlencode.js"></script>
-	<script src="js/remove.js"></script>
-
-	<!-- Sparql GUI Setup-->
-	<script src="js/alert.js"></script>
-	<script src="js/dnd.js"></script>
-	<script src="js/once.js"></script>
-	<script src="js/periodically.js"></script>
-
 	<script>
+
+		requirejs.config({
+			baseUrl: 'js',
+			paths: {
+			    jquery : "jquery-latest.min",
+				bootstrap: 'bootstrap.min'
+			},
+			// Dependencies
+			shim: {
+			    jquery: {
+			        exports: "$"
+			    },
+				bootstrap : ['jquery']
+			}
+		});
+
+		require(
+			['config', 'modules', 'jquery', 'urlencode', 'remove', 'alert', 'dnd', 'once', 'periodically'],
+			function(foo, modules) {
+				init(modules);
+			}
+		);
+
 		// Keeps the last action on an actor
 		var lastAction = new Object();
-
-		// Keeps the modules to be loaded.
-		var modules = null;
 
 		// Keeps the last generated queries
 		var query = null;
@@ -41,28 +49,8 @@
 		// [x][3] Interval event
 		var queries = [];
 		var modid = 0;
-		var config = {};
 
-		window.onload = function () {
-
-			// Object, which keeps the configuration
-			config.lightThreshold = 3000;
-			config.sparqlEndpoint = "http://localhost:8080/openrdf-sesame/repositories/sensors";
-
-			// Load all saved config
-			for (var key in localStorage){
-				// Just set real config values!
-				if(typeof(config[key]) != "undefined") {
-					config[key] = localStorage.getItem(key);
-				}
-			}
-
-			// set the values in the config window
-			for (var key in config){
-				var id = "config-" + key;
-				var input = $("#" + id);
-				input.val(config[key]);
-			}
+		function init (modules) {
 
 			// Get the last SPARQL query
 			var query1 = localStorage.getItem("query1");
@@ -85,9 +73,6 @@
 				}
 			}
 
-			// Init all modules
-			init_modules();
-
 			// Add modules
 			addModules([modules]); //weather_module,modul2,modul3
 
@@ -104,8 +89,6 @@
 					var value = input.val();
 					localStorage.setItem(key, value);
 				}
-
-				init_modules();
 				alert("Successful");
 			});
 
@@ -113,115 +96,7 @@
 			$("#query-result-actors").html(create_info("No result yet."));
 		}
 
-		function init_modules() {
 
-			modules = {
-				title : "Query-GUI",
-				mapping :
-							[
-								[
-									"node", "{val}",
-									[
-										["?", "?"],
-										["measures", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
-											[
-												["light ?",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue"],
-												["light on",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue FILTER({val_}lightValue >= " + config["lightThreshold"] + ")"],
-												["light off", "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue . FILTER({val_}lightValue <= " + config["lightThreshold"] + ")"]
-											]
-										],
-										["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>",
-											[
-												["?",       "{actor} FILTER regex(str({hasA}), 'actor', 'i')", "{actor}"],
-												["fan",     "{fan} FILTER regex(str({fan}), 'actor', 'i')\n\t{fan} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fan}"],
-												["radio",   "{radio} FILTER regex(str({radio}), 'actor', 'i')\n\t{radio} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radio}"]
-											]
-										],
-										["is in","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
-											[
-												["?", "{featureOfInterest}", "{featureOfInterest}"],
-												["kitchen", "<http://spitfire-project.eu/foi/kitchen>"],
-												["living room", "<http://spitfire-project.eu/foi/livingroom>"]
-											]
-										]
-									]
-								],
-								[
-									"weather", "",
-									[
-										["temperatur is", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value>",
-											[
-												["?" , "{sp}", "{sp}"]
-											]
-										],
-										["temperatur is greater than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value> ",
-											[
-												["10°C", "{temperatur} . FILTER({temperatur} > 10)", "{temperatur}"],
-												["11°C", "{temperatur} . FILTER({temperatur} > 11)", "{temperatur}"],
-												["12°C", "{temperatur} . FILTER({temperatur} > 12)", "{temperatur}"],
-												["13°C", "{temperatur} . FILTER({temperatur} > 13)", "{temperatur}"],
-												["14°C", "{temperatur} . FILTER({temperatur} > 14)", "{temperatur}"],
-												["15°C", "{temperatur} . FILTER({temperatur} > 15)", "{temperatur}"],
-												["16°C", "{temperatur} . FILTER({temperatur} > 16)", "{temperatur}"],
-												["17°C", "{temperatur} . FILTER({temperatur} > 17)", "{temperatur}"],
-												["18°C", "{temperatur} . FILTER({temperatur} > 18)", "{temperatur}"],
-												["19°C", "{temperatur} . FILTER({temperatur} > 19)", "{temperatur}"],
-												["20°C", "{temperatur} . FILTER({temperatur} > 20)", "{temperatur}", true],
-												["21°C", "{temperatur} . FILTER({temperatur} > 21)", "{temperatur}"],
-												["22°C", "{temperatur} . FILTER({temperatur} > 22)", "{temperatur}"],
-												["23°C", "{temperatur} . FILTER({temperatur} > 23)", "{temperatur}"],
-												["24°C", "{temperatur} . FILTER({temperatur} > 24)", "{temperatur}"],
-												["25°C", "{temperatur} . FILTER({temperatur} > 25)", "{temperatur}"],
-												["26°C", "{temperatur} . FILTER({temperatur} > 26)", "{temperatur}"],
-												["27°C", "{temperatur} . FILTER({temperatur} > 27)", "{temperatur}"],
-												["28°C", "{temperatur} . FILTER({temperatur} > 28)", "{temperatur}"],
-												["29°C", "{temperatur} . FILTER({temperatur} > 29)", "{temperatur}"],
-												["30°C", "{temperatur} . FILTER({temperatur} > 30)", "{temperatur}"],
-											]
-										],
-										["temperatur is smaller than", "<http://www.iti.uni-luebeck.de/time>	<http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> . \n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} > {startForecast})\n\t {forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} < {endForecast})\n\t {forecast} <http://spitfire-project.eu/ontology/ns/temperatur> ",
-											[
-												["10°C", "{temperatur} . FILTER({temperatur} < 10)", "{temperatur}"],
-												["11°C", "{temperatur} . FILTER({temperatur} < 11)", "{temperatur}"],
-												["12°C", "{temperatur} . FILTER({temperatur} < 12)", "{temperatur}"],
-												["13°C", "{temperatur} . FILTER({temperatur} < 13)", "{temperatur}"],
-												["14°C", "{temperatur} . FILTER({temperatur} < 14)", "{temperatur}"],
-												["15°C", "{temperatur} . FILTER({temperatur} < 15)", "{temperatur}"],
-												["16°C", "{temperatur} . FILTER({temperatur} < 16)", "{temperatur}"],
-												["17°C", "{temperatur} . FILTER({temperatur} < 17)", "{temperatur}"],
-												["18°C", "{temperatur} . FILTER({temperatur} < 18)", "{temperatur}"],
-												["19°C", "{temperatur} . FILTER({temperatur} < 19)", "{temperatur}"],
-												["20°C", "{temperatur} . FILTER({temperatur} < 20)", "{temperatur}", true],
-												["21°C", "{temperatur} . FILTER({temperatur} < 21)", "{temperatur}"],
-												["22°C", "{temperatur} . FILTER({temperatur} < 22)", "{temperatur}"],
-												["23°C", "{temperatur} . FILTER({temperatur} < 23)", "{temperatur}"],
-												["24°C", "{temperatur} . FILTER({temperatur} < 24)", "{temperatur}"],
-												["25°C", "{temperatur} . FILTER({temperatur} < 25)", "{temperatur}"],
-												["26°C", "{temperatur} . FILTER({temperatur} < 26)", "{temperatur}"],
-												["27°C", "{temperatur} . FILTER({temperatur} < 27)", "{temperatur}"],
-												["28°C", "{temperatur} . FILTER({temperatur} < 28)", "{temperatur}"],
-												["29°C", "{temperatur} . FILTER({temperatur} < 29)", "{temperatur}"],
-												["30°C", "{temperatur} . FILTER({temperatur} < 30)", "{temperatur}"],
-											]
-										]
-									]
-								],[
-									"calendar", "",
-									[
-										["has event", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t {event} <http://spitfire-project.eu/ontology/ns/start> ?startCalendar . 		FILTER( {time} >= ?startCalendar)\n\t {event} <http://spitfire-project.eu/ontology/ns/end> ?endCalendar . 			FILTER( {time} <= ?endCalendar)\n\t {event} <http://spitfire-project.eu/ontology/ns/subject>", 
-											[
-												["?", "{event}", "{event}"],
-												["radio","{eventSubject} . FILTER regex({eventSubject}, 'Radio', 'i')"],
-												["fan","{eventSubject} . FILTER regex({eventSubject}, 'fan', 'i')"],
-												["meeting","{eventSubject} . FILTER regex({eventSubject}, 'meeting', 'i')"]
-											]
-										]
-									]
-								]
-							], 
-				isActive : true
-			}
-		}
 
 		function update_storage() {
 			var ul = $("<ul>");
