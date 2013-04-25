@@ -120,21 +120,21 @@
 				mapping :
 							[
 								[
-									"node", " \{node}",
+									"node", "{val}",
 									[
 										["?", "?"],
 										["measures", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 											[
-												["light ?",  "{val} .\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue"],
-												["light on",  "{val} .\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue FILTER({val_}lightValue >= " + config["lightThreshold"] + ")"],
-												["light off", "{val} .\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue . FILTER({val_}lightValue <= " + config["lightThreshold"] + ")"]
+												["light ?",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue"],
+												["light on",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue FILTER({val_}lightValue >= " + config["lightThreshold"] + ")"],
+												["light off", "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue . FILTER({val_}lightValue <= " + config["lightThreshold"] + ")"]
 											]
 										],
 										["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>",
 											[
-												["?",       "{actor}  .\n\tFILTER regex(str({hasA}), 'actor', 'i')", "{actor}"],
-												["fan",     "{fan}   .\n\tFILTER regex(str({fan}), 'actor', 'i') \n\t{fan} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fan}"],
-												["radio",   "{radio} .\n\tFILTER regex(str({radio}), 'actor', 'i') \n\t{radio} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radio}"]
+												["?",       "{actor} FILTER regex(str({hasA}), 'actor', 'i')", "{actor}"],
+												["fan",     "{fan} FILTER regex(str({fan}), 'actor', 'i')\n\t{fan} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fan}"],
+												["radio",   "{radio} FILTER regex(str({radio}), 'actor', 'i')\n\t{radio} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radio}"]
 											]
 										],
 										["is in","<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
@@ -536,7 +536,7 @@
 						if(typeof(v) == "string" && (val.indexOf("{val}") >= 0 || val.indexOf("{val_}") >= 0)) {
 
 							if(val.indexOf("{val}") >= 0) {
-								val = val.replace(new RegExp("{val}", "g"), "\t?" + v + " ");
+								val = val.replace(new RegExp("{val}", "g"), "?" + v + " ");
 							}
 
 							if(val.indexOf("{val_}") >= 0) {
@@ -547,13 +547,13 @@
 						}
 
 						if (val == "?") {
-							tmp += "\t?val" + (++valCnt) + " ";
+							tmp += "?val" + (++valCnt) + " ";
 						} else if (typeof(v) != "string" && (val.indexOf("{val}") >= 0 || val.indexOf("{val_}") >= 0)) {
 
 							var varx = "?val" + (++valCnt);
 
 							if(val.indexOf("{val}") >= 0) {
-								val = val.replace(new RegExp("{val}", "g"), "\t" + varx + " ");
+								val = val.replace(new RegExp("{val}", "g"), "" + varx + " ");
 							}
 
 							if(val.indexOf("{val_}") >= 0) {
@@ -562,7 +562,7 @@
 
                             tmp += val;
 						} else {
-                            tmp += "\t" + val + " ";
+                            tmp += "" + val + " ";
 						}
 					}
 
@@ -573,13 +573,13 @@
                         var globalRegex = new RegExp(regex, 'g');
                         var globalMatch = haystack.match(globalRegex);
                         matchArray = new Array();
-                        for(var gmi = 0; gmi < globalMatch.length; gmi++) {
-                            nonGlobalRegex = new RegExp(regex);
-                            nonGlobalMatch = globalMatch[gmi].match(nonGlobalRegex);
-                            matchArray.push(nonGlobalMatch[1]);
-                        }
-                        for (var gm in globalMatch) {
-                        }
+						if(globalMatch != null) {
+		                    for(var gmi = 0; gmi < globalMatch.length; gmi++) {
+		                        nonGlobalRegex = new RegExp(regex);
+		                        nonGlobalMatch = globalMatch[gmi].match(nonGlobalRegex);
+		                        matchArray.push(nonGlobalMatch[1]);
+		                    }
+						}
                         return matchArray;
                     }
 
@@ -621,10 +621,10 @@
 
                     if(tmp.indexOf("<s>") >= 0) {
                         var varx = "?val" + (++valCnt);
-                        tmp = tmp.replace(new RegExp("<s>", "g"), "\t" + varx + " ");
+                        tmp = tmp.replace(new RegExp("<s>", "g"), "" + varx + " ");
                     }
 
-                    q += tmp + ". \n";
+                    q += "\t" + tmp + " . \n";
 				}
 
 				q = "{\n" + q + "}";
