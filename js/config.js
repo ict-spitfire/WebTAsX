@@ -20,9 +20,5 @@ define(
 			var input = $("#" + id);
 			input.val(config[key]);
 		}
-
-		function getConfig(key) {
-			return config[key];
-		}
 	}
 )
