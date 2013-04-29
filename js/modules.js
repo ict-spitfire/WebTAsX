@@ -31,7 +31,7 @@ define(
 											["> 17°C" ,  "{val}tempValue . FILTER({val}tempValue >= 17)"],
 											["> 18°C" ,  "{val}tempValue . FILTER({val}tempValue >= 18)"],
 											["> 19°C" ,  "{val}tempValue . FILTER({val}tempValue >= 19)"],
-											["> 20°C" ,  "{val}tempValue . FILTER({val}tempValue >= 20)", "", true],
+											["> 20°C" ,  "{val}tempValue . FILTER({val}tempValue >= 20)", null, true],
 											["> 21°C" ,  "{val}tempValue . FILTER({val}tempValue >= 21)"],
 											["> 22°C" ,  "{val}tempValue . FILTER({val}tempValue >= 22)"],
 											["> 23°C" ,  "{val}tempValue . FILTER({val}tempValue >= 23)"],

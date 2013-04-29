@@ -404,7 +404,7 @@
 						if(e.is("img")) break;
 						var option = e.find("option:selected");
 						var actor = option.attr("actors");
-						if(typeof(actor) == "string") {
+						if(typeof(actor) == "string" && actor != "") {
 							actors.push(actor);
 						}
 
