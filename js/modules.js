@@ -13,9 +13,13 @@ define(
 									["?", "?"],
 									["measures", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>", 
 										[
-											["light ?",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue"],
-											["light on",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue FILTER({val_}lightValue >= " + config["lightThreshold"] + ")"],
+											["light ?",   "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue"],
+											["light on",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue . FILTER({val_}lightValue >= " + config["lightThreshold"] + ")"],
 											["light off", "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}lightValue . FILTER({val_}lightValue <= " + config["lightThreshold"] + ")"]
+
+											["temperature ?",   "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/???> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}tempValue"],
+											["temperature on",  "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/???> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}tempValue . FILTER({val_}tempValue >= " + config["lightThreshold"] + ")"],
+											["temperature off", "{val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/???> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value> {val_}tempValue . FILTER({val_}tempValue <= " + config["lightThreshold"] + ")"]
 										]
 									],
 									["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>",
