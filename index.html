@@ -150,6 +150,11 @@
 			var select = $('<select></select>');
 
 			for(var j = 0; j<o.length; j++) {
+
+				if(typeof(o[j]) == "undefined") {
+					console.log("ERROR");
+				}
+
 				var option = "<option value=\"" + o[j][1] + "\" ";
 
 				if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
