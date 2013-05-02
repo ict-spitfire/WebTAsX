@@ -23,7 +23,7 @@ function success_periodically(data, action) {
 
 	for(var i = 0; i < results.length; i++) {
 		var result = results[i];
-		var bindings = result.getElementsByTagName("binding");un:
+		var bindings = result.getElementsByTagName("binding");
 
 		var tmp = [];
 		for(var k = 0; k < bindings.length; k++) {
@@ -33,18 +33,6 @@ function success_periodically(data, action) {
 				var child = children[j];
 				if(child.nodeType != 3) {
 					var c = child.firstChild;
-					if(typeof(lastAction[c.data]) == "string") {
-						if(lastAction[c.data] != action) {
-							console.log("RUN NEW COMMAND");
-							action_request(c.data, action);
-							lastAction[c.data] = action;
-						} else {
-							console.log("SKIP ACTION (LAST ACTION WAS THE SAME)");
-						}
-						continue;
-					}
-					console.log("RUN ACTION FIRST TIME");
-					lastAction[c.data] = action;
 					action_request(c.data, action);
 				}
 			}

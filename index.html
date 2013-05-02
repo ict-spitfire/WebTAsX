@@ -36,9 +36,6 @@
 			}
 		);
 
-		// Keeps the last action on an actor
-		var lastAction = new Object();
-
 		// Keeps the last generated queries
 		var query = null;
 		
@@ -77,7 +74,6 @@
 			addModules([modules]); //weather_module,modul2,modul3
 
 			// Add event listeners
-			//document.getElementById('files').addEventListener('change', handleFileSelect, false);
 			document.getElementById('query-start').addEventListener('click', query_start, false);
 			document.getElementById('query-restart').addEventListener('click', query_start, false);
 			document.getElementById('action-start').addEventListener('click', action_start, false);
@@ -318,7 +314,7 @@
 			div_actuation.append(info_msg_actuation);
 			div.append(div_actuation);		
 
-			div.append("<h4>Run</h4>");
+			div.append("<h4>Action</h4>");
 
 			// Create a div to keep the save stuff and add it to the content pane
 			var form = $('<form class="form-horizontal">');
@@ -520,38 +516,49 @@
 			
 			queries[index][3] = setInterval(funPerInterval1, 2000);
 		}
-/*
-		function handleFileSelect(evt) {
-			var files = evt.target.files;
-			var output = [];
-			for (var i = 0, f; f = files[i]; i++) {
-				output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-				f.size, ' bytes, last modified: ',
-				f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-				'</li>');
-			}
-			document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-		}
-*/
 
 		// Run action on url
 		function action_request(url, action) {
-			console.log("RUN ACTION ON " + url + " :: " + action);
-			var xhr = new XMLHttpRequest();
-			xhr.open('POST', url, true);
-			xhr.responsetype = "text";
+			var query = "SELECT DISTINCT ?o WHERE { <" + url + "> <http://spitfire-project.eu/ontology/ns/value> ?o }";
 
-			xhr.onload = function(e) {
-				lastStatus = this.status;
-				console.log("onload == " + this.status);
-				if (this.readyState == 4 && this.status == 200) {
-					console.log(url + " + " + action + " DONE");
-				} else if(this.readyState == 4){
-					console.log(url + " + " + action + " ERROR");
+			var onsuccess = function(res) {
+
+				var dom = new DOMParser().parseFromString(res,'text/xml');
+				var variables = dom.getElementsByTagName("literal");
+				for(var i = 0; i < variables.length; i++) {
+					var variable = variables[i];
+					var value = variable.childNodes[0].data;
+
+					if(
+							parseInt(value) == 1 && action == "off" 
+						|| 	parseInt(value) == 0 && action == "on"
+					  ) {
+						console.log("RUN ACTION ON " + url + " :: " + action);
+						
+						var xhr = new XMLHttpRequest();
+						xhr.open('POST', url, true);
+						xhr.responsetype = "text";
+
+						xhr.onload = function(e) {
+							lastStatus = this.status;
+							console.log("onload == " + this.status);
+
+							// 201 created
+							// 204 non content
+							if (this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204)) {
+								console.log(url + " + " + action + " DONE");
+							} else if(this.readyState == 4){
+								console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
+							}
+						}
+						xhr.send(action);
+					} 
 				}
 			}
 
-			xhr.send(action);
+			var sparql_url = config['sparqlEndpoint'] + "?query=";
+			execute_sparql(sparql_url, query, onsuccess);
+
 		}
 
 		// Run action for selected actors from Result
@@ -604,47 +611,47 @@
 				onsuccess(succData);
 			}
 
-			var runxhr = function (url, query, onsuccess) {
-				var encoded = urlencode(query);
-				var path = url + encoded;
-
-				var xhr = new XMLHttpRequest();
-				xhr.responsetype = "text";
-				xhr.open('GET', path, true);
-				xhr.setRequestHeader("Accept", "application/xml");
-				xhr.onload = function(e) {
-
-					if (this.readyState == 4 && this.status == 200) {
-						if(typeof(onsuccess) == "function") {
-							onsuccess(this.response);
-						}
-					} else if (this.readyState == 4){
-						consoel.log("Some error...")
-					}
-					/*
-					TODO: Error handling
-					else if (this.status == 504) {
-						if(typeof(onerror) == "function") {
-							onerror("CoAP timeout.");
-						}
-					} else {
-						if(typeof(onerror) == "function") {
-							onerror("HTTP-Status: " + this.status);
-						}
-					} 
-					*/
-				}
-
-				xhr.send(null);
-			}
-
 			// Run two queries. 1) on rules 2) on actions
-			if(query[0].query.length > 0) runxhr(url, query[0].query, onsuccessRules);
-			if(query[1].query.length > 0) runxhr(url, query[1].query, onsuccessAction);
+			if(query[0].query.length > 0) execute_sparql(url, query[0].query, onsuccessRules);
+			if(query[1].query.length > 0) execute_sparql(url, query[1].query, onsuccessAction);
 
 			if(typeof(onasync) == "function") {
 				onasync();
 			}
+		}
+
+		function execute_sparql(url, query, onsuccess) {
+			var encoded = urlencode(query);
+			var path = url + encoded;
+
+			var xhr = new XMLHttpRequest();
+			xhr.responsetype = "text";
+			xhr.open('GET', path, true);
+			xhr.setRequestHeader("Accept", "application/xml");
+			xhr.onload = function(e) {
+
+				if (this.readyState == 4 && this.status == 200) {
+					if(typeof(onsuccess) == "function") {
+						onsuccess(this.response);
+					}
+				} else if (this.readyState == 4){
+					console.log("Some error...");
+				}
+				/*
+				TODO: Error handling
+				else if (this.status == 504) {
+					if(typeof(onerror) == "function") {
+						onerror("CoAP timeout.");
+					}
+				} else {
+					if(typeof(onerror) == "function") {
+						onerror("HTTP-Status: " + this.status);
+					}
+				} 
+				*/
+			}
+
+			xhr.send(null);
 		}
 
 	</script>
@@ -662,14 +669,6 @@
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
-				<!--
-				<div class="tab-pane" id="tab-import">
-					<p class="tab-content">
-						<input type="file" id="files" name="files[]" multiple />
-						<output id="list"></output>
-					</p>
-				</div>
-				-->
 				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
 					<h4>Rules Query</h4>
