@@ -71,20 +71,13 @@ define(
 											["?",       "{actor} . FILTER regex(str({actor}), 'actor', 'i')", "{actor}"],
 											["fan",     "{fanActor} . FILTER regex(str({fanActor}), 'actor', 'i') . \n\t{fanActor} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fanActor}"],
 											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radioActor}"]
-/*
-	isoff
-	{actor} 	<http://spitfire-project.eu/ontology/ns/value> 	0
-
-	ison
-	{actor} 	<http://spitfire-project.eu/ontology/ns/value> 	1
-*/
 										]
 									],
 									["is in", "<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
 										[
 											["?", "{featureOfInterest}", "{featureOfInterest}"],
-											["kitchen", "<http://spitfire-project.eu/foi/kitchen>"],
-											["living room", "<http://spitfire-project.eu/foi/livingroom>"]
+											["office", "<http://spitfire-project.eu/foi/office>"],
+											["bedroom", "<http://spitfire-project.eu/foi/bedroom>"]
 										]
 									]
 								]

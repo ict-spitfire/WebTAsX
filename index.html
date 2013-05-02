@@ -541,13 +541,10 @@
 
 						xhr.onload = function(e) {
 							lastStatus = this.status;
-							console.log("onload == " + this.status);
-
+							// 200 ok
 							// 201 created
 							// 204 non content
-							if (this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204)) {
-								console.log(url + " + " + action + " DONE");
-							} else if(this.readyState == 4){
+							if (!(this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204))) {
 								console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
 							}
 						}
