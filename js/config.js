@@ -4,7 +4,7 @@ define(
 	['jquery'],
 	function($) {
 		config.lightThreshold = 3000;
-		config.sparqlEndpoint = "http://localhost:8080/openrdf-sesame/repositories/sensors";
+		config.sparqlEndpoint = "http://192.168.0.100:8080/openrdf-sesame/repositories/sensors";
 
 		// Load all saved config
 		for (var key in localStorage){
