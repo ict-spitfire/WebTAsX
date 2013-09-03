@@ -618,6 +618,32 @@
 		}
 
 		function execute_sparql(url, query, onsuccess) {
+
+			// #################################################################
+			// SSP with Apache Jena/SDB RESTful interface
+			// #################################################################
+
+			var xhr = new XMLHttpRequest();
+			xhr.responsetype = "text";
+			xhr.open('POST', url, true);
+			xhr.onload = function(e) {
+				// The result type is "SPARQL Query Results XML Format (Second Edition)"
+				// http://www.w3.org/TR/rdf-sparql-XMLres/
+				if (this.readyState == 4 && this.status == 200) {
+					if(typeof(onsuccess) == "function") {
+						onsuccess(this.response);
+					}
+				} else if (this.readyState == 4){
+					console.log("Some error...");
+				}
+			}
+
+			xhr.send(query);
+
+			// #################################################################
+			// Sesame RESTful interface
+			// #################################################################
+			/*
 			var encoded = urlencode(query);
 			var path = url + encoded;
 
@@ -627,6 +653,8 @@
 			xhr.setRequestHeader("Accept", "application/xml");
 			xhr.onload = function(e) {
 
+				// The result type is "SPARQL Query Results XML Format (Second Edition)"
+				// http://www.w3.org/TR/rdf-sparql-XMLres/
 				if (this.readyState == 4 && this.status == 200) {
 					if(typeof(onsuccess) == "function") {
 						onsuccess(this.response);
@@ -634,21 +662,23 @@
 				} else if (this.readyState == 4){
 					console.log("Some error...");
 				}
-				/*
-				TODO: Error handling
-				else if (this.status == 504) {
-					if(typeof(onerror) == "function") {
-						onerror("CoAP timeout.");
-					}
-				} else {
-					if(typeof(onerror) == "function") {
-						onerror("HTTP-Status: " + this.status);
-					}
-				} 
-				*/
+				
+//				TODO: Error handling
+//				else if (this.status == 504) {
+//					if(typeof(onerror) == "function") {
+//						onerror("CoAP timeout.");
+//					}
+//				} else {
+//					if(typeof(onerror) == "function") {
+//						onerror("HTTP-Status: " + this.status);
+//					}
+//				} 
+				
 			}
 
 			xhr.send(null);
+			// #################################################################
+			*/
 		}
 
 	</script>
