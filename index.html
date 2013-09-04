@@ -104,7 +104,7 @@
 				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
 				var onClick = function(i) {
 					return function() {
-						clearInterval(queries[i][3]);
+						clearTimeout(queries[i][3]);
 						queries.remove(i);
 						localStorage['saved_queries'] = JSON.stringify(queries);
 						update_storage();
@@ -504,17 +504,41 @@
 			return result;
 		}
 
-		function run_query_periodically(query, action, index) {
+		function run_query_periodically(queries, action, index) {
 
+			var redoTimeout = 2000;
+
+			var start = 0;
 			function succ1(res) {
-				success_periodically(res, action)
+				// console.log(res);
+				// Both results are XML
+				if(typeof(res.rules) == "string" && typeof(res.action) == "string") {
+					success_periodically(res, action);
+
+					var elapsed = new Date().getTime() - start;
+					console.log("elapsed: " + elapsed);
+
+					var rest = redoTimeout - elapsed;
+					console.log("rest: " + rest);
+
+					if(rest <= 0) {
+						console.log("Redo queries NOW!");
+						funPerInterval1();
+					} else {
+						console.log("Redo queries in " + rest + "ms");
+						queries[index][3] = setTimeout(funPerInterval1, rest);
+					}
+				}
 			}
+
 
 			var funPerInterval1 = function () {
-				run_query_once(query, succ1, error_periodically, function() {})
+				start = new Date().getTime();
+				run_query_once(queries, succ1, error_periodically, function() {})
 			}
-			
-			queries[index][3] = setInterval(funPerInterval1, 2000);
+
+			// Initial...
+			funPerInterval1();
 		}
 
 		// Run action on url
@@ -533,6 +557,7 @@
 							parseInt(value) == 1 && action == "off" 
 						|| 	parseInt(value) == 0 && action == "on"
 					  ) {
+						url = config['sparqlEndpoint'] + "/?uri=" + url;
 						console.log("RUN ACTION ON " + url + " :: " + action);
 						
 						var xhr = new XMLHttpRequest();
@@ -553,7 +578,7 @@
 				}
 			}
 
-			var sparql_url = config['sparqlEndpoint'] + "?query=";
+			var sparql_url = config['sparqlEndpoint'];
 			execute_sparql(sparql_url, query, onsuccess);
 
 		}
@@ -594,7 +619,7 @@
 			}
 
 			var succData = new Object();
-			var url = config['sparqlEndpoint'] + "?query=";
+			var url = config['sparqlEndpoint'];
 			localStorage.setItem("query1", query[0].query);
 			localStorage.setItem("query2", query[1].query);
 			
@@ -625,7 +650,7 @@
 
 			var xhr = new XMLHttpRequest();
 			xhr.responsetype = "text";
-			xhr.open('POST', url, true);
+			xhr.open('POST', url + "/sparql", true);
 			xhr.onload = function(e) {
 				// The result type is "SPARQL Query Results XML Format (Second Edition)"
 				// http://www.w3.org/TR/rdf-sparql-XMLres/
@@ -645,7 +670,7 @@
 			// #################################################################
 			/*
 			var encoded = urlencode(query);
-			var path = url + encoded;
+			var path = url + "?query=" + encoded;
 
 			var xhr = new XMLHttpRequest();
 			xhr.responsetype = "text";
