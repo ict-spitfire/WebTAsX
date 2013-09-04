@@ -11,6 +11,13 @@ define(
 								"node", "{val}",
 								[
 									["?", "?"],
+									["measures movement", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Movement> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
+										[
+											["?" ,   "{light}", "{light}"],
+											["on" ,  "{light} . FILTER({light} > 0)"],
+											["off" , "{light} . FILTER({light} < 1)"],
+										]
+									],
 									["measures light", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
 										[
 											["?" ,   "{light}", "{light}"],
