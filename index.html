@@ -66,7 +66,7 @@
 				update_storage();
 				for(var i =0; i<queries.length;i++) {	
 					var q = queries[i];
-					run_query_periodically(q[0], q[2], i);
+					run_queries_periodically(q[0], q[2], i);
 				}
 			}
 
@@ -342,7 +342,7 @@
 			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
 			input_button_once.click(function(e) {
 				update("input_button_once.click");
-				run_query_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+				run_queries_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 			});
 
 			form.append(div_button)
@@ -369,7 +369,7 @@
 				var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
-				run_query_periodically(query, select_action.val(), idx-1);
+				run_queries_periodically(query, select_action.val(), idx-1);
 			}
 			input_button_text.click(query_save);
 
@@ -504,12 +504,14 @@
 			return result;
 		}
 
-		function run_query_periodically(queries, action, index) {
+		function run_queries_periodically(queries, action, index) {
 
 			var redoTimeout = 2000;
 
 			var start = 0;
 			function succ1(res) {
+				clearTimeout(queries[i][3]);
+
 				// console.log(res);
 				// Both results are XML
 				if(typeof(res.rules) == "string" && typeof(res.action) == "string") {
@@ -531,10 +533,9 @@
 				}
 			}
 
-
 			var funPerInterval1 = function () {
 				start = new Date().getTime();
-				run_query_once(queries, succ1, error_periodically, function() {})
+				run_queries_once(queries, succ1, error_periodically, function() {})
 			}
 
 			// Initial...
@@ -579,7 +580,7 @@
 			}
 
 			var sparql_url = config['sparqlEndpoint'];
-			execute_sparql(sparql_url, query, onsuccess);
+			execute_sparql_query(sparql_url, query, onsuccess);
 
 		}
 
@@ -601,27 +602,27 @@
 			q2.query = $("#query-text2").val();
 			q2.hasActuator = true;
 
-			run_query_once([q1,q2], requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+			run_queries_once([q1,q2], requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 		}
  
 		// Run a query once
-		function run_query_once(query, onsuccess, onerror, onasync, filter) {
+		function run_queries_once(queries, onsuccess, onerror, onasync, filter) {
 
-			if(query[0].query == null) {
+			if(queries[0].query == null) {
 				alert("You need at least one selection rule to run the query.");
 				return;				
-			} else if(query[1].query == null) {
+			} else if(queries[1].query == null) {
 				alert("You need at least one actuation rule to run the query.");
 				return;				
-			} else if(!query[1].hasActuator) {
+			} else if(!queries[1].hasActuator) {
 				alert("You need to define at least one actuator.");
 				return;				
 			}
 
 			var succData = new Object();
 			var url = config['sparqlEndpoint'];
-			localStorage.setItem("query1", query[0].query);
-			localStorage.setItem("query2", query[1].query);
+			localStorage.setItem("query1", queries[0].query);
+			localStorage.setItem("query2", queries[1].query);
 			
 			var onsuccessRules = function (res) {
 				succData.rules = res;
@@ -634,25 +635,26 @@
 			}
 
 			// Run two queries. 1) on rules 2) on actions
-			if(query[0].query.length > 0) execute_sparql(url, query[0].query, onsuccessRules);
-			if(query[1].query.length > 0) execute_sparql(url, query[1].query, onsuccessAction);
+			if(queries[0].query.length > 0) execute_sparql_query(url, queries[0].query, onsuccessRules);
+			if(queries[1].query.length > 0) execute_sparql_query(url, queries[1].query, onsuccessAction);
 
 			if(typeof(onasync) == "function") {
 				onasync();
 			}
 		}
 
-		function execute_sparql(url, query, onsuccess) {
+		function execute_sparql_query(url, query, onsuccess) {
 
 			// #################################################################
 			// SSP with Apache Jena/SDB RESTful interface
+			// POST query on /sparql
 			// #################################################################
 
 			var xhr = new XMLHttpRequest();
 			xhr.responsetype = "text";
 			xhr.open('POST', url + "/sparql", true);
 			xhr.onload = function(e) {
-				// The result type is "SPARQL Query Results XML Format (Second Edition)"
+				// The response type is "SPARQL Query Results XML Format (Second Edition)"
 				// http://www.w3.org/TR/rdf-sparql-XMLres/
 				if (this.readyState == 4 && this.status == 200) {
 					if(typeof(onsuccess) == "function") {
@@ -667,6 +669,7 @@
 
 			// #################################################################
 			// Sesame RESTful interface
+			// GET with query in query param
 			// #################################################################
 			/*
 			var encoded = urlencode(query);
@@ -698,14 +701,11 @@
 //						onerror("HTTP-Status: " + this.status);
 //					}
 //				} 
-				
 			}
-
 			xhr.send(null);
 			// #################################################################
 			*/
 		}
-
 	</script>
 </head>
 <body>

@@ -11,18 +11,18 @@ define(
 								"node", "{val}",
 								[
 									["?", "?"],
-									["measures movement", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Movement> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
-										[
-											["?" ,   "{light}", "{light}"],
-											["on" ,  "{light} . FILTER({light} > 0)"],
-											["off" , "{light} . FILTER({light} < 1)"],
-										]
-									],
 									["measures light", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
 										[
 											["?" ,   "{light}", "{light}"],
 											["on" ,  "{light} . FILTER({light} >= " + config["lightThreshold"] + ")"],
 											["off" , "{light} . FILTER({light} < " + config["lightThreshold"] + ")"],
+										]
+									],
+									["measures movement", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Movement> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
+										[
+											["?" ,   "{light}", "{light}"],
+											["on" ,  "{light} . FILTER({light} > 0)"],
+											["off" , "{light} . FILTER({light} < 1)"],
 										]
 									],
 									["measures temperature", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Temperature> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
@@ -80,6 +80,7 @@ define(
 											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radioActor}"]
 										]
 									],
+/*
 									["is in", "<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
 										[
 											["?", "{featureOfInterest}", "{featureOfInterest}"],
@@ -87,8 +88,10 @@ define(
 											["bedroom", "<http://spitfire-project.eu/foi/bedroom>"]
 										]
 									]
+*/
 								]
 							],
+/*
 							[
 								"weather", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value>",
 								[
@@ -153,6 +156,7 @@ define(
 									]
 								]
 							]
+*/
 						], 
 			isActive : true
 		}
