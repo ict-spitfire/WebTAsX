@@ -511,7 +511,13 @@
 			return result;
 		}
 
+		var eval = [];
+
+
 		function run_queries_periodically(queries2, action, index) {
+
+			//eval[index] = [];
+			//eval.push
 
 			var redoTimeout = 2000;
 
@@ -519,6 +525,12 @@
 			function succ1(res) {
 				// console.log(res);
 				// Both results are XML
+				if(typeof(res.rules) == "string") {
+				}
+
+				if(typeof(res.action) == "string") {
+				}
+
 				if(typeof(res.rules) == "string" && typeof(res.action) == "string") {
 					success_periodically(res, action);
 
@@ -575,6 +587,30 @@
 						xhr.responsetype = "text";
 
 						xhr.onload = function(e) {
+
+							// ##############################################
+							// EVALUATION
+							// ##############################################
+
+							var key = "action-" + url + "-" + action;
+							if (this.readyState == 4 && this.status == 200) {
+								var elapsed = new Date().getTime() - start;
+								var e = localStorage.getItem("eval-action");
+								var result = new Object();
+								if(e != null) {
+									result = JSON.parse(e);	
+								}
+								if(typeof(result[key]) == "undefined") {
+									result[key] = [];
+								}
+								result[key].push(elapsed);
+								localStorage.setItem("eval-action", JSON.stringify(result));
+							}
+
+							// ##############################################
+							// EVALUATION
+							// ##############################################
+
 							lastStatus = this.status;
 							// 200 ok
 							// 201 created
@@ -583,6 +619,7 @@
 								console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
 							}
 						}
+						var start = new Date().getTime();
 						xhr.send(action);
 					} 
 				}
@@ -666,6 +703,29 @@
 				// The response type is "SPARQL Query Results XML Format (Second Edition)"
 				// http://www.w3.org/TR/rdf-sparql-XMLres/
 				if (this.readyState == 4 && this.status == 200) {
+
+					// ##############################################
+					// EVALUATION
+					// ##############################################
+
+					var elapsed = new Date().getTime() - start;
+					console.log(query + ":" + elapsed);
+					var e = localStorage.getItem("eval-queries");
+					var result = new Object();
+					if(e != null) {
+						result = JSON.parse(e);	
+					}
+					if(typeof(result[query]) == "undefined") {
+						result[query] = [];
+					}
+					result[query].push(elapsed);
+					localStorage.setItem("eval-queries", JSON.stringify(result));
+
+					// ##############################################
+					// EVALUATION
+					// ##############################################
+
+
 					if(typeof(onsuccess) == "function") {
 						onsuccess(this.response);
 					}
@@ -674,6 +734,7 @@
 				}
 			}
 
+			var start = new Date().getTime();
 			xhr.send(query);
 
 			// #################################################################
