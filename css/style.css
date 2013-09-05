@@ -27,20 +27,8 @@
 		-moz-tab-size:4;
 	}
 
-	#log {
-		font-size:10px;
-	}
-
 	div.query-spo {
 		/*border: 2px solid ;*/
-	}
-
-	#footer {
-		/*border-top: 2px solid darkgray;*/
-		position:absolute;
-		bottom:0;
-		width:100%;
-		height:20px;
 	}
 
 	select {
