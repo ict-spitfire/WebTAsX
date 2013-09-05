@@ -62,12 +62,15 @@
 			// Get all saves queries to rerun them
 			var saved_queries = localStorage.getItem("saved_queries");
 			if(saved_queries != null && saved_queries != "null") {
-				queries = JSON.parse(saved_queries);
-				update_storage();
-				for(var i =0; i<queries.length;i++) {	
-					var q = queries[i];
-					run_queries_periodically(q[0], q[2], i);
+				var queries2 = JSON.parse(saved_queries);
+				for(var i =0; i<queries2.length;i++) {	
+					var q = queries2[i];
+					if(q != null) {
+						queries.push(q);
+						run_queries_periodically(q[0], q[2], queries.length-1);
+					}
 				}
+				update_storage();
 			}
 
 			// Add modules
@@ -98,16 +101,20 @@
 			var ul = $("<ul>");
 			for(var i = 0; i < queries.length; i++) {
 				var q = queries[i];
+				if(q == null) continue;
 
 				// Generate LI
 				var li = $("<li>");
 				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
 				var onClick = function(i) {
 					return function() {
-						clearTimeout(queries[i][3]);
-						queries.remove(i);
-						localStorage['saved_queries'] = JSON.stringify(queries);
-						update_storage();
+						if(queries[i] != null) {
+							clearTimeout(queries[i][3]);
+							//queries.remove(i);
+							queries[i] = null;
+							localStorage['saved_queries'] = JSON.stringify(queries);
+							update_storage();
+						}
 					}
 				};
 
@@ -504,7 +511,7 @@
 			return result;
 		}
 
-		function run_queries_periodically(queries, action, index) {
+		function run_queries_periodically(queries2, action, index) {
 
 			var redoTimeout = 2000;
 
@@ -524,10 +531,14 @@
 					console.log("rest: " + rest);
 
 					if(rest <= 0) {
+						rest = 0;
 						console.log("Redo queries NOW!");
-						funPerInterval1();
 					} else {
 						console.log("Redo queries in " + rest + "ms");
+					}
+
+					// Not stpped yet
+					if(queries[index] != null) {
 						queries[index][3] = setTimeout(funPerInterval1, rest);
 					}
 				}
@@ -535,11 +546,11 @@
 
 			var funPerInterval1 = function () {
 				start = new Date().getTime();
-				run_queries_once(queries, succ1, error_periodically, function() {})
+				run_queries_once(queries2, succ1, error_periodically, function() {})
 			}
 
 			// Initial...
-			funPerInterval1();
+			queries[index][3] = setTimeout(funPerInterval1, 0);
 		}
 
 		// Run action on url
@@ -766,13 +777,12 @@
 					<h3>Actuation</h3>
 					<p>
 						<select id="action-value">
-						  <option value="on">on</option>
-						  <option value="off">off</option>
+							<option value="on">on</option>
+							<option value="off">off</option>
 						</select>
 						<br>
 						<button class="btn" type="button" id="action-start">Run Actuation</button>
 					</p>
-
 				</div>
 			</div>
 	</div>
