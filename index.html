@@ -339,6 +339,7 @@
 			var select_action = $("<select id=\"action-value\"></select>");
 			select_action.append($("<option value=\"on\">on</option>"));
 			select_action.append($("<option value=\"off\">off</option>"));
+			select_action.append($("<option value=\"toggle\">toggle</option>"));
 			form.append(div_action)
 			div_action.append(div_action_controls);
 			div_action_controls.append(select_action);
@@ -563,8 +564,54 @@
 			queries[index][3] = setTimeout(funPerInterval1, 0);
 		}
 
+		function doAction(url, action) {
+			url = config['sparqlEndpoint'] + "/?uri=" + url;
+			console.log("RUN ACTION ON " + url + " :: " + action);
+			
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', url, true);
+			xhr.responsetype = "text";
+
+			xhr.onload = function(e) {
+
+				// ##############################################
+				// EVALUATION
+				// ##############################################
+
+				var key = "action-" + url + "-" + action;
+				if (this.readyState == 4 && this.status == 200) {
+					var elapsed = new Date().getTime() - start;
+					var e = localStorage.getItem("eval-action");
+					var result = new Object();
+					if(e != null) {
+						result = JSON.parse(e);	
+					}
+					if(typeof(result[key]) == "undefined") {
+						result[key] = [];
+					}
+					result[key].push(elapsed);
+					localStorage.setItem("eval-action", JSON.stringify(result));
+				}
+
+				// ##############################################
+				// EVALUATION
+				// ##############################################
+
+				lastStatus = this.status;
+				// 200 ok
+				// 201 created
+				// 204 non content
+				if (!(this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204))) {
+					console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
+				}
+			}
+			var start = new Date().getTime();
+			xhr.send(action);
+		}
+
 		// Run action on url
 		function action_request(url, action) {
+			if(action == null) return;
 			var query = "SELECT DISTINCT ?o WHERE { <" + url + "> <http://spitfire-project.eu/ontology/ns/value> ?o }";
 
 			var onsuccess = function(res) {
@@ -575,52 +622,14 @@
 					var variable = variables[i];
 					var value = variable.childNodes[0].data;
 
-					if(
-							parseInt(value) == 1 && action == "off" 
-						|| 	parseInt(value) == 0 && action == "on"
-					  ) {
-						url = config['sparqlEndpoint'] + "/?uri=" + url;
-						console.log("RUN ACTION ON " + url + " :: " + action);
-						
-						var xhr = new XMLHttpRequest();
-						xhr.open('POST', url, true);
-						xhr.responsetype = "text";
-
-						xhr.onload = function(e) {
-
-							// ##############################################
-							// EVALUATION
-							// ##############################################
-
-							var key = "action-" + url + "-" + action;
-							if (this.readyState == 4 && this.status == 200) {
-								var elapsed = new Date().getTime() - start;
-								var e = localStorage.getItem("eval-action");
-								var result = new Object();
-								if(e != null) {
-									result = JSON.parse(e);	
-								}
-								if(typeof(result[key]) == "undefined") {
-									result[key] = [];
-								}
-								result[key].push(elapsed);
-								localStorage.setItem("eval-action", JSON.stringify(result));
-							}
-
-							// ##############################################
-							// EVALUATION
-							// ##############################################
-
-							lastStatus = this.status;
-							// 200 ok
-							// 201 created
-							// 204 non content
-							if (!(this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204))) {
-								console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
-							}
-						}
-						var start = new Date().getTime();
-						xhr.send(action);
+					if(parseInt(value) == 1 && action == "toggle") {
+						console.log("TOGGLE TO OFF!");
+						doAction(url, "off");
+					} else if(parseInt(value) == 0 && action == "toggle" ) {
+						console.log("TOGGLE TO ON!");
+						doAction(url, "on");
+					} else if(parseInt(value) == 1 && action == "off" || parseInt(value) == 0 && action == "on" ) {
+						doAction(url, action);
 					} 
 				}
 			}
@@ -838,6 +847,7 @@
 						<select id="action-value">
 							<option value="on">on</option>
 							<option value="off">off</option>
+							<option value="toggle">toggle</option>
 						</select>
 						<br>
 						<button class="btn" type="button" id="action-start">Run Actuation</button>

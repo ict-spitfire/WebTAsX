@@ -80,7 +80,6 @@ define(
 											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radioActor}"]
 										]
 									],
-/*
 									["is in", "<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
 										[
 											["?", "{featureOfInterest}", "{featureOfInterest}"],
@@ -88,10 +87,8 @@ define(
 											["bedroom", "<http://spitfire-project.eu/foi/bedroom>"]
 										]
 									]
-*/
 								]
 							],
-/*
 							[
 								"weather", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value>",
 								[
@@ -156,7 +153,6 @@ define(
 									]
 								]
 							]
-*/
 						], 
 			isActive : true
 		}
