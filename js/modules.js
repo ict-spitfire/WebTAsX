@@ -5,27 +5,37 @@ define(
 	function() {
 		var modules = {
 			title : "Query-GUI",
+			prefixes : [
+				["ssn", "http://purl.oclc.org/NET/ssnx/ssn#"],
+				["sf_ns", "http://spitfire-project.eu/ontology/ns/"],
+				["sf_sn", "http://spitfire-project.eu/ontology/ns/sn/"],
+				["sf_p", "http://spitfire-project.eu/property/"],
+				["sf_foi", "http://spitfire-project.eu/foi/"],
+				["w3c_schema", "http://www.w3.org/2000/01/rdf-schema#"],
+				["w3c_rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"],
+				["iti", "http://www.iti.uni-luebeck.de/"]
+			],
 			mapping :
 						[
 							[
 								"node", "{val}",
 								[
 									["?", "?"],
-									["measures light", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Light> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
+									["measures light", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Light .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{light}", "{light}"],
 											["on" ,  "{light} . FILTER({light} >= " + config["lightThreshold"] + ")"],
 											["off" , "{light} . FILTER({light} < " + config["lightThreshold"] + ")"],
 										]
 									],
-									["measures movement", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Movement> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
+									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Movement .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{light}", "{light}"],
 											["on" ,  "{light} . FILTER({light} > 0)"],
 											["off" , "{light} . FILTER({light} < 1)"],
 										]
 									],
-									["measures temperature", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem> {val}.\n\t{val} <http://spitfire-project.eu/ontology/ns/obs> <http://spitfire-project.eu/property/Temperature> .\n\t{val} <http://spitfire-project.eu/ontology/ns/value>", 
+									["measures temperature", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Temperature .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{temperature}", "{temperature}"],
 											[">= 10°C" ,  "{temperature} . FILTER({temperature} >= 10)", "{temperature}"],
@@ -73,24 +83,24 @@ define(
 
 										]
 									],
-									["has actor", "<http://purl.oclc.org/NET/ssnx/ssn#attachedSystem>",
+									["has actor", "ssn:attachedSystem",
 										[
 											["?",       "{actor} . FILTER regex(str({actor}), 'actor', 'i')", "{actor}"],
-											["fan",     "{fanActor} . FILTER regex(str({fanActor}), 'actor', 'i') . \n\t{fanActor} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#fan>", "{fanActor}"],
-											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} <http://www.w3.org/2000/01/rdf-schema#type> <http://purl.oclc.org/NET/ssnx/ssn#switch>", "{radioActor}"]
+											["fan",     "{fanActor} . FILTER regex(str({fanActor}), 'actor', 'i') . \n\t{fanActor} w3c_schema:type ssn:fan>", "{fanActor}"],
+											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} w3c_schema:type ssn:switch>", "{radioActor}"]
 										]
 									],
-									["is in", "<http://purl.oclc.org/NET/ssnx/ssn#featureOfInterest>",
+									["is in", "ssn:featureOfInterest>",
 										[
 											["?", "{featureOfInterest}", "{featureOfInterest}"],
-											["office", "<http://spitfire-project.eu/foi/office>"],
-											["bedroom", "<http://spitfire-project.eu/foi/bedroom>"]
+											["office", "sf_foi:office"],
+											["bedroom", "sf_foi:bedroom"]
 										]
 									]
 								]
 							],
 							[
-								"weather", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{forecast} <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spitfire-project.eu/ontology/ns/sn/temperatureForecast> .\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_start> {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/sn/time_end> {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} <http://spitfire-project.eu/ontology/ns/value>",
+								"weather", "iti:time iti:is {time} .\n\t{forecast} w3c_rdf:type sf_sn:temperatureForecast .\n\t{forecast} sf_sn:time_start {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} sf_sn:time_end {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} sf_ns:value",
 								[
 									["temperature is", "",
 										[
@@ -141,7 +151,7 @@ define(
 									]
 								]
 							],[
-								"calendar", "<http://www.iti.uni-luebeck.de/time> <http://www.iti.uni-luebeck.de/is> {time} .\n\t{event} <http://spitfire-project.eu/ontology/ns/start> {startCalendar} . FILTER( {time} >= {startCalendar}) .\n\t{event} <http://spitfire-project.eu/ontology/ns/end> {endCalendar} . FILTER( {time} < {endCalendar}) .\n\t{event} <http://spitfire-project.eu/ontology/ns/subject>",
+								"calendar", "iti:time iti:is {time} .\n\t{event} sf_ns:start {startCalendar} . FILTER( {time} >= {startCalendar}) .\n\t{event} sf_ns:end {endCalendar} . FILTER( {time} < {endCalendar}) .\n\t{event} sf_ns:subject",
 								[
 									["has event", "", 
 										[

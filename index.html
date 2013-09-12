@@ -30,7 +30,7 @@
 		});
 
 		require(
-			['config', 'modules', 'jquery', 'urlencode', 'remove', 'alert', 'dnd', 'once', 'periodically'],
+			['config', 'modules', 'jquery', 'urlencode', 'remove', 'alert', 'dnd', 'once', 'periodically', 'logic'],
 			function(foo, modules) {
 				init(modules);
 			}
@@ -128,6 +128,7 @@
 		}
 
 		function update(x) {
+			/*
 			console.log("----------------------------------------------------------------------------------")
 			console.log(x);
 			console.log("----------------------------------------------------------------------------------")
@@ -136,12 +137,15 @@
 			console.info("SPARQL actors:");
 			var query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
 
-			// Update the text field
-			$("#query-text1").val(query_rules.query);
-			$("#query-text2").val(query_actions.query);
+			if(query_rules.query.length > 0 && query_actions.query.length > 0) {
+				var q = "SELECT * WHERE { " + query_rules.query + " UNION " + query_actions.query + " }";
+				localStorage.setItem("query", q);
+			}
 
-			// 
-			query = [query_rules, query_actions];
+			// Update the text field
+			$("#query-text1").val(q);
+			query = [q, query_rules, query_actions];
+			*/
 		}
 
 		// o[0] what to show
@@ -279,11 +283,8 @@
 			$("#tab-tabs li:last").after(li);
 
 			// Add new content pane
-			var div = $("<div class=\"tab-pane\" id=\"tab" + modid +  "\"></div>");
+			var div = $("<div class=\"tab-pane\" id=\"tab" + modid +  "\" style=\"min-height:250px;\"></div>");
 			$("#tab-content").append(div);
-
-			// RUles
-			div.append("<h4>Rules</h4>");
 
 			// Set to active, if configured
 			if(module.isActive) {
@@ -291,21 +292,54 @@
 				li.addClass("active");
 			}
 
-			// Add [+]-Button to the content pane
-			var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
-			input.click(function(e) {
-				div_rules.append(create(module.mapping, module.s));
-				info_msg_rules.hide();
-				update("input.click");
-			});
-			div.append(input);
+			// #################################################################
+			// RULES
+			// #################################################################
 
-			// Create a div, to keep all rules and add it to the content pane
-			var div_rules = $("<div id=\"rules\" style=\"margin-top:5px;\"></div>");
-			var info_msg_rules = $(create_info("No selection rule yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
-			div_rules.append(info_msg_rules);
-			div.append(div_rules);		
+			outputRules = $("<span id=\"rules\"></span>");
 
+			var rules = new Logic(outputRules);
+			rules.onsparql = generateSPO;
+			rules.init();
+			div.append("<h4>Rules</h4>");
+			div.append(outputRules);
+			//div.append(divActors);
+			div.append("<p><br></p>");
+
+			var input_generate = $("<button class=\"btn\" type=\"button\">Generate logic</button>");
+			input_generate.click(function() {
+
+				var prefixes = "";
+				for(var i = 0; i<module.prefixes.length; i++) {
+					prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
+				}
+				console.log(prefixes + "\n" + rules.query());
+				//console.log(actuators.query());
+			})
+			div.append(input_generate);
+
+			function generateSPO() {
+				var local = $("<span class=\"spo\"></span>");
+				local.append("<br>");
+				// Add [+]-Button to the content pane
+				var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
+				input.click(function(e) {
+					div_rules.append(create(module.mapping, module.s));
+					info_msg_rules.hide();
+					update("input.click");
+				});
+				local.append(input);
+
+				// Create a div, to keep all rules and add it to the content pane
+				var div_rules = $("<div class=\"rules\" style=\"margin-top:5px;\"></div>");
+				var info_msg_rules = $(create_info("No selection rule yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
+				div_rules.append(info_msg_rules);
+				local.append(div_rules);		
+				div.append(local);
+				return local;
+			}
+
+			/*
 			div.append("<h4>Actors</h4>");
 
 			var input2 = $("<input class=\"btn\" type=\"button\" value=\"+\">");
@@ -350,6 +384,7 @@
 			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
 			input_button_once.click(function(e) {
 				update("input_button_once.click");
+				// XXX
 				run_queries_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 			});
 
@@ -363,6 +398,7 @@
 
 			function query_save() {
 
+				// XXX
 				if(query == null) {
 					alert("You need at least one rule to run the query.");
 					return;
@@ -374,28 +410,32 @@
 
 				$("#tab-storage-link").click();
 
+				// XXX
 				var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
 				localStorage['saved_queries'] = JSON.stringify(queries);
 				update_storage();
+				// XXX
 				run_queries_periodically(query, select_action.val(), idx-1);
 			}
 			input_button_text.click(query_save);
+			*/
 
 		}
 
 		var valCnt = 0;
-		function generate_sparql(spo, e) {
+		function generate_sparql(spo) {
 
 			var q = null;
-			var hasActuator = false;
+			var result = new Object();
 			if(spo.length == 0) {
-				e.show();
+				return null;
 			} else {
 
 				var ids = [];
 				
 				q = "";
-				var actors = []; 
+				var actors = []; 	
+				var variables = [];
 				for(var i = 0; i < spo.length; i++) {
 					var children = spo[i].childNodes;
 
@@ -423,9 +463,12 @@
 							}
                             tmp += val;
 						} else if (val == "?") {
-							tmp += "?val" + (++valCnt);
+							var varx = "?val" + (++valCnt);
+							variables.push(varx);
+							tmp += varx;
 						} else if (typeof(v) != "string" && val.indexOf("{val}") >= 0) {
 							var varx = "?val" + (++valCnt);
+							variables.push(varx);
 							if(val.indexOf("{val}") >= 0) {
 								val = val.replace(new RegExp("{val}", "g"), varx);
 							}
@@ -470,6 +513,7 @@
                     for(var k = 0; k<matches.length; k++) {
                         var varname = matches[k];
                         var varx = "?" + varname + (++valCnt);
+						variables.push(varx);
                         tmp = tmp.replace(new RegExp("{" + varname + "}", "g"), varx);
 
                         // Check, if any actor is a variable as well
@@ -486,6 +530,7 @@
                     // Here, one line is complete
                     if(tmp.indexOf("<s>") >= 0) {
                         var varx = "?val" + (++valCnt);
+						variables.push(varx);
                         tmp = tmp.replace(new RegExp("<s>", "g"), "" + varx + " ");
                     }
 
@@ -493,21 +538,20 @@
 				}
 
 				q = "{\n" + q + "}";
-
+				
 				if(actors.length == 0) {
-					hasActuator = false;
+					result.selections = "*";
+					result.hasActuator = false;
 					console.log("Query does not contain any actor!");
-					q = "SELECT DISTINCT * WHERE " + q;
 				} else {
-					hasActuator = true;
-					q = "SELECT DISTINCT " + actors.join(" ") + " WHERE " + q;
+					result.hasActuator = true;
+					result.selections = actors.join(" ");
 				}
+
+				result.variables = variables;
+				result.query = q;
 				console.log(q);
 			}
-
-			var result = new Object();
-			result.hasActuator = hasActuator;
-			result.query = q;
 
 			return result;
 		}
@@ -524,15 +568,9 @@
 
 			var start = 0;
 			function succ1(res) {
-				// console.log(res);
-				// Both results are XML
-				if(typeof(res.rules) == "string") {
-				}
+				if(typeof(res.res) == "string") {
 
-				if(typeof(res.action) == "string") {
-				}
-
-				if(typeof(res.rules) == "string" && typeof(res.action) == "string") {
+					/*
 					success_periodically(res, action);
 
 					var elapsed = new Date().getTime() - start;
@@ -552,6 +590,7 @@
 					if(queries[index] != null) {
 						queries[index][3] = setTimeout(funPerInterval1, rest);
 					}
+					*/
 				}
 			}
 
@@ -676,22 +715,18 @@
 
 			var succData = new Object();
 			var url = config['sparqlEndpoint'];
-			localStorage.setItem("query1", queries[0].query);
-			localStorage.setItem("query2", queries[1].query);
+
+			if(queries[0].query.length > 0 && queries[1].query.length > 0) {
+				var q = "SELECT * WHERE { " + queries[0].query + " UNION " + queries[1].query + " }";
+				localStorage.setItem("query", q);
+			}
 			
-			var onsuccessRules = function (res) {
-				succData.rules = res;
-				onsuccess(succData);
+			var onsuccessQ = function (res) {
+				succData.res = res;
+				onsuccess(succData, queries);
 			}
-
-			var onsuccessAction = function (res) {
-				succData.action = res;
-				onsuccess(succData);
-			}
-
-			// Run two queries. 1) on rules 2) on actions
-			if(queries[0].query.length > 0) execute_sparql_query(url, queries[0].query, onsuccessRules);
-			if(queries[1].query.length > 0) execute_sparql_query(url, queries[1].query, onsuccessAction);
+			
+			execute_sparql_query(url, q, onsuccessQ);
 
 			if(typeof(onasync) == "function") {
 				onasync();
@@ -855,5 +890,6 @@
 				</div>
 			</div>
 	</div>
+
 </body>
 </html>

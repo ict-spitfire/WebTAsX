@@ -1,11 +1,8 @@
 var requestHandlerOnce = new Object();
 
-requestHandlerOnce.success_once = function(data) {
-	if(typeof(data.rules) == "string") {
-		requestHandlerOnce.generateTable($('#query-result-rules'), data.rules);
-	}
-	if(typeof(data.action) == "string") {
-		requestHandlerOnce.generateTable($('#query-result-actors'), data.action);
+requestHandlerOnce.success_once = function(data, queries) {
+	if(typeof(data.res) == "string") {
+		requestHandlerOnce.prepareTable(data.res, queries[0].variables, queries[1].variables);
 	}
 }
 
@@ -21,42 +18,81 @@ requestHandlerOnce.async_once = function() {
 	$("#tab-result-link").click();
 }
 
-requestHandlerOnce.generateTable = function(e, res) {
-	e.html(create_success("Query successful."));
+requestHandlerOnce.prepareTable = function(res, varRules, varActors) {
 	var dom = new DOMParser().parseFromString(res,'text/xml');
 
-	var title = [];
+	var titleRules = [];
+	var titleActions = [];
+
 	var variables = dom.getElementsByTagName("variable");
 	for(var i = 0; i < variables.length; i++) {
 		var variable = variables[i];
-		title.push(variable.getAttribute("name"));
+		var name = variable.getAttribute("name");
+		
+		var isRule = $.inArray("?" + name, varRules);
+		var isAction = $.inArray("?" + name, varActors);
+
+		if(isRule >= 0) {
+			titleRules.push(name);
+		} else if(isAction >= 0) {
+			titleActions.push(name);
+		} else {
+			console.log("UNKNOWN title: " + name);
+		}
 	}
 
-	var data = [];
+	var dataRules = [];
+	var dataActions = [];
 	var results = dom.getElementsByTagName("result");
 
 	for(var i = 0; i < results.length; i++) {
 		var result = results[i];
 		var bindings = result.getElementsByTagName("binding");
 
-		var tmp = [];
+		var tmpRules = [];
+		var tmpActions = [];
 		for(var k = 0; k < bindings.length; k++) {
 			var binding = bindings[k];
 			var children = binding.childNodes;
 			for(var j = 0; j < children.length; j++) {
 				var child = children[j];
 				if(child.nodeType != 3) {
-					var name = binding.getAttribute("name");
-					var index = title.indexOf(name); 
 					var c = child.firstChild;
-					tmp[index] = c.data;
+					var name = binding.getAttribute("name");
+					var indexRules = titleRules.indexOf(name); 
+					var indexActions = titleActions.indexOf(name); 
+					if(indexRules >= 0) {
+						tmpRules[indexRules] = c.data;
+					} else {
+						tmpActions[indexActions] = c.data;
+					}
 				}
 			}
 		}
-		data.push(tmp);
+		if(tmpRules.length > 0) {
+			dataRules.push(tmpRules);
+		}
+
+		if(tmpActions.length > 0) {
+			dataActions.push(tmpActions);
+		}
 	}
 
-	var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
+	console.log(titleRules.length);
+	console.log(titleActions.length);
+	console.log(dataRules.length);
+	console.log(dataActions.length);
+
+	requestHandlerOnce.generateTable($('#query-result-rules'), titleRules, dataRules);
+	requestHandlerOnce.generateTable($('#query-result-actors'), titleActions, dataActions);
+
+}
+
+requestHandlerOnce.generateTable = function(e, title, data) {
+
+e.html(create_success("Query successful."));
+
+var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
 	var thead = $('<thead></thead>');
 	var tr = $('<tr></tr>');
 	for(i=0; i<title.length; i++){
@@ -105,7 +141,7 @@ requestHandlerOnce.generateTable = function(e, res) {
 	} else {
 		e.append(table);
 	}
-}
 
+}
 
 

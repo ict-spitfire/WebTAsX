@@ -66,3 +66,23 @@
 	.over {
 		border: 1px dashed #000;
 	}
+
+	#rules,
+	#actuators {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+		cursor:default;
+	}
+
+	#rules span,
+	#actuators span {
+		padding:5px;
+	}
+
+	#rules span.highlight,
+	#actuators span.highlight {
+		padding: 4px;
+		border: 1px solid red;
+		background-color: yellow;
+	}
