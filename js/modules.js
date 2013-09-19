@@ -30,9 +30,9 @@ define(
 									],
 									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Movement .\n\t{val} sf_ns:value", 
 										[
-											["?" ,   "{light}", "{light}"],
-											["on" ,  "{light} . FILTER({light} > 0)"],
-											["off" , "{light} . FILTER({light} < 1)"],
+											["?" ,   "{movement}", "{movement}"],
+											["on" ,  "{movement} . FILTER({light} > 0)"],
+											["off" , "{movement} . FILTER({light} < 1)"],
 										]
 									],
 									["measures temperature", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Temperature .\n\t{val} sf_ns:value", 
@@ -83,11 +83,11 @@ define(
 
 										]
 									],
-									["has actor", "ssn:attachedSystem",
+									["has actuator", "ssn:attachedSystem",
 										[
 											["?",       "{actor} . FILTER regex(str({actor}), 'actor', 'i')", "{actor}"],
-											["fan",     "{fanActor} . FILTER regex(str({fanActor}), 'actor', 'i') . \n\t{fanActor} w3c_schema:type ssn:fan>", "{fanActor}"],
-											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} w3c_schema:type ssn:switch>", "{radioActor}"]
+											["air conditioning",     "{fanActor} . FILTER regex(str({fanActor}), 'actor', 'i') . \n\t{fanActor} w3c_schema:type ssn:fan", "{fanActor}"],
+											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} w3c_schema:type ssn:switch", "{radioActor}"]
 										]
 									],
 									["is in", "ssn:featureOfInterest>",
