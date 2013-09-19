@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>SPARQL Editor</title>
+	<title>SPITFIRE WebTAsX</title>
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/style.css" rel="stylesheet">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -297,50 +297,41 @@
 			// #################################################################
 
 			outputRules = $("<span id=\"rules\"></span>");
+			ruleSelection = $("<div></div>");
 
 			var rules = new Logic(outputRules);
 			rules.onsparql = generateSPO;
 			rules.init();
 			div.append("<h4>Rules</h4>");
 			div.append(outputRules);
-			//div.append(divActors);
-			div.append("<p><br></p>");
-
-			var input_generate = $("<button class=\"btn\" type=\"button\">Generate logic</button>");
-			input_generate.click(function() {
-
-				var prefixes = "";
-				for(var i = 0; i<module.prefixes.length; i++) {
-					prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
-				}
-				console.log(prefixes + "\n" + rules.query());
-				//console.log(actuators.query());
-			})
-			div.append(input_generate);
+			div.append(ruleSelection);
 
 			function generateSPO() {
 				var local = $("<span class=\"spo\"></span>");
 				local.append("<br>");
 				// Add [+]-Button to the content pane
 				var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
+				local.append(input);
+
 				input.click(function(e) {
 					div_rules.append(create(module.mapping, module.s));
 					info_msg_rules.hide();
 					update("input.click");
 				});
-				local.append(input);
+
+				var name = $("<input style=\"margin-bottom:0px\" data-name=\"\" type=\"text\">");
+				local.append("&nbsp;", name);
 
 				// Create a div, to keep all rules and add it to the content pane
 				var div_rules = $("<div class=\"rules\" style=\"margin-top:5px;\"></div>");
 				var info_msg_rules = $(create_info("No selection rule yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
 				div_rules.append(info_msg_rules);
 				local.append(div_rules);		
-				div.append(local);
+				ruleSelection.append(local);
 				return local;
 			}
 
-			/*
-			div.append("<h4>Actors</h4>");
+			div.append("<h4>Actuators</h4>");
 
 			var input2 = $("<input class=\"btn\" type=\"button\" value=\"+\">");
 			input2.click(function(e) {
@@ -355,20 +346,13 @@
 			div_actuation.append(info_msg_actuation);
 			div.append(div_actuation);		
 
-			div.append("<h4>Action</h4>");
 
 			// Create a div to keep the save stuff and add it to the content pane
 			var form = $('<form class="form-horizontal">');
 			div.append(form);
-			
-			var div_rule = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Rule Name:</label></div>");
-			var div_rule_controls = $('<div class="controls"></div>');
-			var input_rule_text = $("<input type=\"text\" placeholder=\"Rule name...\" class=\"span6\">");
-			form.append(div_rule)
-			div_rule.append(div_rule_controls);
-			div_rule_controls.append(input_rule_text);
 
-			var div_action = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Action:</label></div>");
+			form.append("<h4>Action</h4>");
+			var div_action = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>"); // <label class=\"control-label\">Action:</label>
 			var div_action_controls = $('<div class="controls"></div>');
 			var select_action = $("<select id=\"action-value\"></select>");
 			select_action.append($("<option value=\"on\">on</option>"));
@@ -378,33 +362,80 @@
 			div_action.append(div_action_controls);
 			div_action_controls.append(select_action);
 
+			form.append("<h4>Task</h4>");
+			
+			var div_rule = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Task Name:</label></div>");
+			var div_rule_controls = $('<div class="controls"></div>');
+			form.append(div_rule)
+			div_rule.append(div_rule_controls);
+			var input_rule_text = $("<input type=\"text\" placeholder=\"Task name...\" class=\"span6\">");
+			div_rule_controls.append(input_rule_text);
+
 			var div_button = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>");
 			var div_button_controls = $('<div class="controls"></div>');
-			var input_button_text = $("<button class=\"btn\" type=\"button\">Run query periodically</button>");
+			var input_button_text = $("<button class=\"btn\" type=\"button\">Start task</button>");
 			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
+
+			function prepare_queries () {
+					
+				try{
+					var prefixes = "";
+					for(var i = 0; i<module.prefixes.length; i++) {
+						prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
+					}
+					var q1 = prefixes + "\n" + rules.query();
+
+					console.info("SPARQL rules:");
+					console.log(q1);
+
+					var query_actions = generate_sparql($("#actuation .query-spo"));
+					if(typeof(query_actions) == "undefined") {
+						throw ("Actuators have no triples!")
+					} else if(typeof(query_actions) == "object" && !query_actions.hasActuator) {
+						throw ("Actuators triples define no actuators!")						
+					} else {
+						var q2 = prefixes + "\n" + "SELECT " + implode(" ", query_actions.selections) + " WHERE {\n " + query_actions.query + " }\n";
+						console.info("SPARQL actors:");
+						console.log(q2);
+					}
+
+					localStorage.setItem("query1", q1);
+					$("#query-text1").val(q1);
+
+					localStorage.setItem("query2", q2);
+					$("#query-text2").val(q2);
+
+				} catch(e) {
+					alert(e);
+				}
+				
+			};
+
 			input_button_once.click(function(e) {
-				update("input_button_once.click");
+				 prepare_queries();
+				//update("input_button_once.click");
 				// XXX
-				run_queries_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+				//run_queries_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 			});
 
 			form.append(div_button)
 			div_button.append(div_button_controls);
 			div_button_controls.append(input_button_text);
-			div_button_controls.append(" ");
-			div_button_controls.append(input_button_once);
+			//div_button_controls.append(" ");
+			//div_button_controls.append(input_button_once);
 
 			//var input_save = $();
 
 			function query_save() {
-
+				 prepare_queries();
+				/*
 				// XXX
 				if(query == null) {
 					alert("You need at least one rule to run the query.");
 					return;
 				}
 				if(input_rule_text.val().length == 0) {
-					alert("You need a rule name to run the query.");
+					alert("You need a task name to run the query.");
 					return;
 				}
 
@@ -416,9 +447,9 @@
 				update_storage();
 				// XXX
 				run_queries_periodically(query, select_action.val(), idx-1);
+				*/
 			}
 			input_button_text.click(query_save);
-			*/
 
 		}
 
@@ -428,7 +459,7 @@
 			var q = null;
 			var result = new Object();
 			if(spo.length == 0) {
-				return null;
+				return;
 			} else {
 
 				var ids = [];
@@ -510,8 +541,8 @@
                     },[]);
 
                     // Replace the vars
-                    for(var k = 0; k<matches.length; k++) {
-                        var varname = matches[k];
+                    for(var k = 0; k<uniq.length; k++) {
+                        var varname = uniq[k];
                         var varx = "?" + varname + (++valCnt);
 						variables.push(varx);
                         tmp = tmp.replace(new RegExp("{" + varname + "}", "g"), varx);
@@ -537,7 +568,7 @@
                     q += "\t" + tmp + " . \n";
 				}
 
-				q = "{\n" + q + "}";
+				//q = "{\n" + q + "}";
 				
 				if(actors.length == 0) {
 					result.selections = "*";
@@ -550,7 +581,7 @@
 
 				result.variables = variables;
 				result.query = q;
-				console.log(q);
+				//console.log(q);
 			}
 
 			return result;
@@ -825,22 +856,23 @@
 <body>
 
 	<div class="container">
+			<h1>SPITFIRE WebTAsX</h1>
 			<ul class="nav nav-tabs" id="tab-tabs">
 				<!--
 				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
-				-->
-				<li><a href="#tab-config" data-toggle="tab">Config</a></li>
-				<li><a href="#tab-query" data-toggle="tab">Query-Textbox</a></li>
-				<li><a id="tab-storage-link" href="#tab-storage" data-toggle="tab">Query-Storage</a></li>
+				<li><a href="#tab-config" data-toggle="tab">Config</a></grepli>
+				<li><a id="tab-storage-link" href="#tab-storage" data-toggle="tab">Storage</a></li>
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
+				-->
+				<li><a href="#tab-query" data-toggle="tab">Query-Textbox</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
 				<div class="tab-pane" id="tab-query">
 					<h3>Query</h3>
 					<h4>Rules Query</h4>
-					<textarea id="query-text1" style="width:97%;height:150px;"></textarea><br>
+					<textarea id="query-text1" style="width:97%;height:250px;"></textarea><br>
 					<h4>Actors Query</h4>
-					<textarea id="query-text2" style="width:97%;height:150px;"></textarea><br>
+					<textarea id="query-text2" style="width:97%;height:250px;"></textarea><br>
 					<p><input class="btn" type="button" id="query-start" value="Run Query"></p>
 				</div>
 				<div class="tab-pane" id="tab-storage">

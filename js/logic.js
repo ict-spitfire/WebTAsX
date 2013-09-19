@@ -79,12 +79,57 @@ Logic.prototype.getArray = function() {
 
 Logic.prototype.parseArray = function(arr) {
 	var that = this;
+
+	var sparqlSelection = null;
+	var showSPO = function() {
+		//console.log("showSPO");
+		$("span.spo").each( function() {
+			$(this).hide();
+		});
+
+		if(sparqlSelection == null) {
+			sparqlSelection = that.onsparql();	
+			var name = "P_" + that.counter++;
+			var nameFiled = sparqlSelection.find("[data-name]");
+			nameFiled.val(name);
+			//console.log(nameFiled);
+			nameFiled.keyup(function(e) {
+				if(e.keyCode == 13) {
+					arr[1] = nameFiled.val();
+					that.init();
+				}
+			});
+
+
+			a.html(name);
+			a.attr("data-toggle", "");
+			a.removeClass("dropdown-toggle");
+			a.click(showSPO);
+			ul.remove();
+			arr[1] = name;
+			arr[2] = sparqlSelection;
+		} else {
+			console.log("SHOW!");
+			sparqlSelection.show();
+		}
+	}
+
 	if(arr[0] == "and") {
 		return this.parseAnd(arr);
 	} else if(arr[0] == "or") {
 		return this.parseOr(arr);
 	} else if(arr[0] == "not") {
 		return this.parseNot(arr);
+	} else if(arr[0] == "?" && typeof(arr[1]) == "string") {
+		var s = $("<span></span>")
+		var a = $('<a href="#">' + arr[1] + '</a>');
+		s.append(a);
+		sparqlSelection = arr[2];
+		a.click(function(e) {
+			e.preventDefault()
+			showSPO();
+		});
+		return s;
 	} else if(arr[0] == "?") {
 //		var q = $("<span>[?]</span>");
 //		q.css("cursor", "pointer");
@@ -116,30 +161,6 @@ Logic.prototype.parseArray = function(arr) {
 
 		var divider = $('<li class="divider"></li>');
 		var sparql = $('<li><a tabindex="-1" href="#">SPARQL</a></li>');
-		var sparqlSelection = null;
-
-		var showSPO = function() {
-			$("span.spo").each( function() {
-				$(this).hide();
-			});
-
-			if(sparqlSelection == null) {
-				var name = "P_" + that.counter++;
-				a.html(name);
-				a.attr("data-toggle", "");
-				a.removeClass("dropdown-toggle");
-				a.click(showSPO);
-				ul.remove();
-				sparqlSelection = that.onsparql();	
-				arr[1] = name;
-				arr[2] = sparqlSelection;
-			} else {
-				console.log("SHOW!");
-				sparqlSelection.show();
-			}
-			
-		}
-
 		sparql.click(showSPO);
 		ul.append(and,or,not,divider,sparql);
 		div.append(a,ul);
@@ -218,13 +239,15 @@ Logic.prototype.queryArray = function(arr) {
 	} else if(arr[0] == "not") {
 		return this.queryNot(arr);
 	} else if(arr[0] == "?") {
+		if(arr[2] == null) {
+			throw (arr[0] + " has no triples!")
+		}
 		var spo = generate_sparql(arr[2].find(".rules").find(".query-spo"));
 		if(spo == null) {
-			alert(arr[1] + " has no triples!");
-			return "ERROR";
+			throw (arr[1] + " has no triples!")
 		}
-		var q = "SELECT " + implode(" ", spo.variables) + " WHERE { " + spo.query + " }";
-		return "SELECT (IF(COUNT(*) > 0, 1, 0) AS ?bool) WHERE {\n" + q + "\n}\n";
+		var q = "SELECT " + implode(" ", spo.variables) + " WHERE {\n " + spo.query + "}\n";
+		return "SELECT (IF(COUNT(*) > 0, 1, 0) AS ?bool) WHERE {\n" + q + "}\n";
 	}
 }
 
