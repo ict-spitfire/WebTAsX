@@ -1,6 +1,6 @@
 define(
-	["SPARQL"],
-	function(SPARQL){
+	["SPARQL", "modules"],
+	function(SPARQL, module){
 
 		var Logic = function(output, ruleSelection) {
 			this.counter = 0;
@@ -42,7 +42,6 @@ define(
 
 			var sparqlSelection = null;
 			var showSPO = function() {
-				//console.log("showSPO");
 				that.ruleSelection.find("span.spo").each( function() {
 					$(this).hide();
 				});
@@ -92,42 +91,38 @@ define(
 				});
 				return s;
 			} else if(arr[0] == "?") {
-		//		var q = $("<span>[?]</span>");
-		//		q.css("cursor", "pointer");
-		//		q.click(function() {
-		//		});
 
 				var div = $('<span class="dropdown"></span>');	
 				var a = $('<a class="dropdown-toggle" data-toggle="dropdown" href="#">[?]</a>');
 				var ul = $('<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel"></ul>');
 				var and = $('<li><a tabindex="-1" href="#">AND</a></li>');
+				var or = $('<li><a tabindex="-1" href="#">OR</a></li>');
+				var not = $('<li><a tabindex="-1" href="#">NOT</a></li>');
+				var divider = $('<li class="divider"></li>');
+				var sparql = $('<li><a tabindex="-1" href="#">SPARQL</a></li>');
+	
 				and.click(function() {
 					arr.splice(0, 1); // Remove first element
 					arr.extend(that.mkand(that.mknone(), that.mknone())) // append new element
 					that.init();
 				}) 
-				var or = $('<li><a tabindex="-1" href="#">OR</a></li>');
+
 				or.click(function() {
 					arr.splice(0, 1); // Remove first element
 					arr.extend(that.mkor(that.mknone(), that.mknone())) // append new element
 					that.init();
 				}) 
 
-				var not = $('<li><a tabindex="-1" href="#">NOT</a></li>');
 				not.click(function() {
 					arr.splice(0, 1); // Remove first element
 					arr.extend(that.mknot(that.mknone())) // append new element
 					that.init();
 				}) 
 
-				var divider = $('<li class="divider"></li>');
-				var sparql = $('<li><a tabindex="-1" href="#">SPARQL</a></li>');
 				sparql.click(showSPO);
 				ul.append(and,or,not,divider,sparql);
 				div.append(a,ul);
-
 				return div
-
 			} 
 		}
 
@@ -251,7 +246,13 @@ define(
 		}
 
 		Logic.prototype.query = function() {
-			return this.queryArray(this.arr)
+
+			var prefixes = "";
+			for(var i = 0; i<module.prefixes.length; i++) {
+				prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
+			}
+
+			return prefixes + "\n" + this.queryArray(this.arr)
 		}
 
 		return Logic;

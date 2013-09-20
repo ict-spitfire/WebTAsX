@@ -1,7 +1,7 @@
 var lineid = 0;
 define(
 	['modules', 'dnd'],
-	function(module,dnd) {
+	function(module, dnd) {
 		var SPARQL = function(e) {
 			this.e = e;
 			this.s_mapping = module.mapping;
