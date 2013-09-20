@@ -14,6 +14,7 @@
 
 	<script>
 
+		// Set up requirejs
 		requirejs.config({
 			baseUrl: 'js',
 			paths: {
@@ -29,12 +30,11 @@
 			}
 		});
 
+		// requirejs init
 		require(
-			['config', 'modules', 'jquery', 'urlencode', 'remove', 'alert', 'dnd', 'once', 'periodically', 'logic'],
-			function(foo, modules) {
-				init(modules);
-			}
-		);
+			['config', 'jquery', 'functions', 'alert', 'once', 'periodically'],
+			function() {
+
 
 		// Keeps the last generated queries
 		var query = null;
@@ -47,7 +47,7 @@
 		var queries = [];
 		var modid = 0;
 
-		function init (modules) {
+		function init () {
 
 			// Get the last SPARQL query
 			var query1 = localStorage.getItem("query1");
@@ -74,7 +74,7 @@
 			}
 
 			// Add modules
-			addModules([modules]); //weather_module,modul2,modul3
+			setUpWebTasx();
 
 			// Add event listeners
 			document.getElementById('query-start').addEventListener('click', query_start, false);
@@ -148,448 +148,150 @@
 			*/
 		}
 
-		// o[0] what to show
-		// o[1] what to map
-		// o[2] 
-		// o[3] preselected
-		// event changeevent
-		function generate_select(o, event, str) {
-			var select = $('<select></select>');
+		function setUpWebTasx() {
 
-			for(var j = 0; j<o.length; j++) {
-				var option = "<option value=\"" + o[j][1] + "\" ";
+			require(
+				['SPARQL', "logic"],
+				function(SPARQL, Logic) {
 
-				if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
-					option += "" + str + "=\"" + o[j][2] + "\" ";			
-				}
+					modid++;
 
-				if(o[j][3] == true) {
-					option += " selected";
-				}
-				option += ">" + o[j][0] + "</option>";
-				select.append(option);
-			}
-			if(typeof(event) == "function") {
-				select.change(event);
-			}
-			return select;
-		}
+					// Add new menu
+					var li = $('<li><a href="#tab' + modid + '" data-toggle="tab">WebTAsX</a></li>');
+					$("#tab-tabs li:last").after(li);
 
-		function addModules(modules) {
-			for(var i = 0; i < modules.length; i++) {
-				addModule(modules[i]);
-			}
-		}
+					// Add new content pane
+					var div = $("<div class=\"tab-pane\" id=\"tabWebTAsX\" style=\"min-height:250px;\"></div>");
+					$("#tab-content").append(div);
 
-		function addModule(module) {
-			modid++;
+					div.addClass("active");
+					li.addClass("active");
 
-			var lineid = 0;
+					// #################################################################
+					// RULES
+					// #################################################################
 
-			var create = function(s_mapping, s) {
+					var outputRules = $("<span id=\"rules\"></span>");
+					var ruleSelection = $("<div></div>");
+					var div_actuation = $("<div id=\"actuation\" style=\"margin-top:5px;\"></div>");
 
-				var spo_id = "spo" + (lineid++);
-				var div_spo = $("<div id=\"" + spo_id + "\" class=\"query-spo\"></div>");
-				
-				createimg = function() {
-					return $("<img class=\"dnd\" src=\"img/arrow_in.png\">");
-				}
+					div.append("<h4>Rules</h4>");
+					div.append(outputRules);
+					div.append(ruleSelection);
 
-				// SPO-divs
-				var div_s = $("<div id=\"s" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid red;\"
-				var div_p = $("<div id=\"p" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
-				var div_o = $("<div id=\"o" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
+					div.append("<h4>Actuators</h4>");
+					div.append(div_actuation);		
 
-				var create_dnd = function(div) {
-					// By dnd.js file
-					div.bind('dragstart', dnd.handleDragStart);
-					div.bind('dragend', dnd.handleDragEnd);
-					div.bind('dragover', dnd.handleDragOver);
-					div.bind('drop', dnd.handleDrop);
-				}  
+					var rules = new Logic(outputRules, ruleSelection);
+					rules.init();
 
-				create_dnd(div_s);
-				create_dnd(div_p);
-				create_dnd(div_o);
-
-				var div_del = $("<span></span>");
-				
-				var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
-				del_img.click(function() { 
-					$("#" + spo_id).remove();
-					update("del_img.click");
-				});
-				div_del.append(del_img);
-
-				// Append SPO-divs to main div
-				div_spo.append(div_s);
-				div_spo.append(div_p);
-				div_spo.append(div_o);
-				div_spo.append(div_del);
-
-				var s_change = function() {
-					var s_text = select_s.find("option:selected").text();
-
-					for(var i = 0; i<s_mapping.length; i++) {
-						if(s_mapping[i][0] == s_text) {
-							var p_mapping = s_mapping[i][2];
-
-							var p_change = function(e){
-								var text = select_p.find("option:selected").text();
-								var select_o = null;
-								for(var i = 0; i<p_mapping.length; i++) {
-									if(p_mapping[i][0] == text) {
-										var o_change = function(e){
-											update("o_change");
-										};
-										var o_mapping = p_mapping[i][2];
-
-										if(typeof(o_mapping) == "undefined") {
-											select_o = generate_select([["?","?"]], o_change);
-										} else {
-											select_o = generate_select(o_mapping, o_change, "actors");
-										}
-									}
-								}
-								div_o.empty();
-								div_o.append(select_o);
-								update("p_change");
-							};
-							var select_p = generate_select(p_mapping, p_change, "actors");
-							div_p.empty();
-							div_p.append(select_p);
-
-							// Empty select for O
-							var select_o = $('<select class="o"></select>');
-							select_o.append("<option value=\"?\">?</option>");
-
-							select_p.trigger('change');
-						}
-					}
-					update("s_change");
-				}
-
-				// Select for S
-				var select_s = generate_select(mapping, s_change, "actors");
-				div_s.append(select_s);
-				select_s.trigger('change');
-				return div_spo;
-			}
-
-			var mapping = module.mapping;
-
-			// Add new menu
-			var li = $('<li><a href="#tab' + modid + '" data-toggle="tab">' + module.title + '</a></li>');
-			$("#tab-tabs li:last").after(li);
-
-			// Add new content pane
-			var div = $("<div class=\"tab-pane\" id=\"tab" + modid +  "\" style=\"min-height:250px;\"></div>");
-			$("#tab-content").append(div);
-
-			// Set to active, if configured
-			if(module.isActive) {
-				div.addClass("active");
-				li.addClass("active");
-			}
-
-			// #################################################################
-			// RULES
-			// #################################################################
-
-			outputRules = $("<span id=\"rules\"></span>");
-			ruleSelection = $("<div></div>");
-
-			var rules = new Logic(outputRules);
-			rules.onsparql = generateSPO;
-			rules.init();
-			div.append("<h4>Rules</h4>");
-			div.append(outputRules);
-			div.append(ruleSelection);
-
-			function generateSPO() {
-				var local = $("<span class=\"spo\"></span>");
-				local.append("<br>");
-				// Add [+]-Button to the content pane
-				var input = $("<input class=\"btn\" type=\"button\" value=\"+\">");
-				local.append(input);
-
-				input.click(function(e) {
-					div_rules.append(create(module.mapping, module.s));
-					info_msg_rules.hide();
-					update("input.click");
-				});
-
-				var name = $("<input style=\"margin-bottom:0px\" data-name=\"\" type=\"text\">");
-				local.append("&nbsp;", name);
-
-				// Create a div, to keep all rules and add it to the content pane
-				var div_rules = $("<div class=\"rules\" style=\"margin-top:5px;\"></div>");
-				var info_msg_rules = $(create_info("No selection rule yet. Click the [+] button.", "no-rule-msg1", false)); // Empty message
-				div_rules.append(info_msg_rules);
-				local.append(div_rules);		
-				ruleSelection.append(local);
-				return local;
-			}
-
-			div.append("<h4>Actuators</h4>");
-
-			var input2 = $("<input class=\"btn\" type=\"button\" value=\"+\">");
-			input2.click(function(e) {
-				div_actuation.append(create(module.mapping, module.s));
-				info_msg_actuation.hide();
-				update("nput2.click");
-			});
-			div.append(input2);
-
-			var div_actuation = $("<div id=\"actuation\" style=\"margin-top:5px;\"></div>");
-			var info_msg_actuation = $(create_info("No actuation rules yet. Click the [+] button.", "no-rule-msg2", false)); // Empty message
-			div_actuation.append(info_msg_actuation);
-			div.append(div_actuation);		
+					var SPARQL_actuators = new SPARQL(div_actuation);
+					SPARQL_actuators.init("actuation", false);
 
 
-			// Create a div to keep the save stuff and add it to the content pane
-			var form = $('<form class="form-horizontal">');
-			div.append(form);
+					// Create a div to keep the save stuff and add it to the content pane
+					var form = $('<form class="form-horizontal">');
+					div.append(form);
 
-			form.append("<h4>Action</h4>");
-			var div_action = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>"); // <label class=\"control-label\">Action:</label>
-			var div_action_controls = $('<div class="controls"></div>');
-			var select_action = $("<select id=\"action-value\"></select>");
-			select_action.append($("<option value=\"on\">on</option>"));
-			select_action.append($("<option value=\"off\">off</option>"));
-			select_action.append($("<option value=\"toggle\">toggle</option>"));
-			form.append(div_action)
-			div_action.append(div_action_controls);
-			div_action_controls.append(select_action);
+					form.append("<h4>Action</h4>");
+					var div_action = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>"); // <label class=\"control-label\">Action:</label>
+					var div_action_controls = $('<div class="controls"></div>');
+					var select_action = $("<select id=\"action-value\"></select>");
+					select_action.append($("<option value=\"on\">on</option>"));
+					select_action.append($("<option value=\"off\">off</option>"));
+					select_action.append($("<option value=\"toggle\">toggle</option>"));
+					form.append(div_action)
+					div_action.append(div_action_controls);
+					div_action_controls.append(select_action);
 
-			form.append("<h4>Task</h4>");
+					form.append("<h4>Task</h4>");
 			
-			var div_rule = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Task Name:</label></div>");
-			var div_rule_controls = $('<div class="controls"></div>');
-			form.append(div_rule)
-			div_rule.append(div_rule_controls);
-			var input_rule_text = $("<input type=\"text\" placeholder=\"Task name...\" class=\"span6\">");
-			div_rule_controls.append(input_rule_text);
+					var div_rule = $("<div style=\"margin-top:5px;\" class=\"control-group\"><label class=\"control-label\">Task Name:</label></div>");
+					var div_rule_controls = $('<div class="controls"></div>');
+					form.append(div_rule)
+					div_rule.append(div_rule_controls);
+					var input_rule_text = $("<input type=\"text\" placeholder=\"Task name...\" class=\"span6\">");
+					div_rule_controls.append(input_rule_text);
 
-			var div_button = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>");
-			var div_button_controls = $('<div class="controls"></div>');
-			var input_button_text = $("<button class=\"btn\" type=\"button\">Start task</button>");
-			var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
+					var div_button = $("<div style=\"margin-top:5px;\" class=\"control-group\"></div>");
+					var div_button_controls = $('<div class="controls"></div>');
+					var input_button_text = $("<button class=\"btn\" type=\"button\">Start task</button>");
+					var input_button_once =    $("<button class=\"btn\" type=\"button\">Run query once</button>");
 
-			function prepare_queries () {
-					
-				try{
-					var prefixes = "";
-					for(var i = 0; i<module.prefixes.length; i++) {
-						prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
-					}
-					var q1 = prefixes + "\n" + rules.query();
+					function prepare_queries () {
+						try{
+							var q1 = rules.prefixes + "\n" + rules.query();
+							console.info("SPARQL rules:");
+							console.log(q1);
 
-					console.info("SPARQL rules:");
-					console.log(q1);
+							var query_actions = SPARQL_actuators.getSparql();
+							if(typeof(query_actions) == "undefined") {
+								throw ("Actuators have no triples!")
+							} else if(typeof(query_actions) == "object" && !query_actions.hasActuator) {
+								throw ("Actuators triples define no actuators!")						
+							} else {
+								var q2 = query_actions.prefixes + "\n" + "SELECT " + implode(" ", query_actions.selections) + " WHERE {\n " + query_actions.query + " }\n";
+								console.info("SPARQL actors:");
+								console.log(q2);
+							}
 
-					var query_actions = generate_sparql($("#actuation .query-spo"));
-					if(typeof(query_actions) == "undefined") {
-						throw ("Actuators have no triples!")
-					} else if(typeof(query_actions) == "object" && !query_actions.hasActuator) {
-						throw ("Actuators triples define no actuators!")						
-					} else {
-						var q2 = prefixes + "\n" + "SELECT " + implode(" ", query_actions.selections) + " WHERE {\n " + query_actions.query + " }\n";
-						console.info("SPARQL actors:");
-						console.log(q2);
-					}
+							localStorage.setItem("query1", q1);
+							$("#query-text1").val(q1);
 
-					localStorage.setItem("query1", q1);
-					$("#query-text1").val(q1);
+							localStorage.setItem("query2", q2);
+							$("#query-text2").val(q2);
 
-					localStorage.setItem("query2", q2);
-					$("#query-text2").val(q2);
-
-				} catch(e) {
-					alert(e);
-				}
+						} catch(e) {
+							alert(e);
+						}
 				
-			};
+					};
 
-			input_button_once.click(function(e) {
-				 prepare_queries();
-				//update("input_button_once.click");
-				// XXX
-				//run_queries_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
-			});
+					input_button_once.click(function(e) {
+						 prepare_queries();
+						//update("input_button_once.click");
+						// XXX
+						//run_queries_once(query, requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+					});
 
-			form.append(div_button)
-			div_button.append(div_button_controls);
-			div_button_controls.append(input_button_text);
-			//div_button_controls.append(" ");
-			//div_button_controls.append(input_button_once);
+					form.append(div_button)
+					div_button.append(div_button_controls);
+					div_button_controls.append(input_button_text);
+					//div_button_controls.append(" ");
+					//div_button_controls.append(input_button_once);
 
-			//var input_save = $();
+					//var input_save = $();
 
-			function query_save() {
-				 prepare_queries();
-				/*
-				// XXX
-				if(query == null) {
-					alert("You need at least one rule to run the query.");
-					return;
+					function query_save() {
+						 prepare_queries();
+						/*
+						// XXX
+						if(query == null) {
+							alert("You need at least one rule to run the query.");
+							return;
+						}
+						if(input_rule_text.val().length == 0) {
+							alert("You need a task name to run the query.");
+							return;
+						}
+
+						$("#tab-storage-link").click();
+
+						// XXX
+						var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
+						localStorage['saved_queries'] = JSON.stringify(queries);
+						update_storage();
+						// XXX
+						run_queries_periodically(query, select_action.val(), idx-1);
+						*/
+					}
+					input_button_text.click(query_save);
 				}
-				if(input_rule_text.val().length == 0) {
-					alert("You need a task name to run the query.");
-					return;
-				}
-
-				$("#tab-storage-link").click();
-
-				// XXX
-				var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
-				localStorage['saved_queries'] = JSON.stringify(queries);
-				update_storage();
-				// XXX
-				run_queries_periodically(query, select_action.val(), idx-1);
-				*/
-			}
-			input_button_text.click(query_save);
-
+			);
 		}
 
-		var valCnt = 0;
-		function generate_sparql(spo) {
-
-			var q = null;
-			var result = new Object();
-			if(spo.length == 0) {
-				return;
-			} else {
-
-				var ids = [];
-				
-				q = "";
-				var actors = []; 	
-				var variables = [];
-				for(var i = 0; i < spo.length; i++) {
-					var children = spo[i].childNodes;
-
-                    var tmp = "";
-
-					for(var j = 0; j < children.length; j++) {
-						var c = children[j];
-						var v = $(c).attr("var");
-						var e = $(c.firstChild);
-						// Skip the dnd-image
-						if(e.is("img")) break;
-						var option = e.find("option:selected");
-						var actor = option.attr("actors");
-						if(typeof(actor) == "string" && actor != "") {
-							actors.push(actor);
-						}
-
-						var val = e.val();
-
-						var cont = false;
-
-						if(typeof(v) == "string" && val.indexOf("{val}") >= 0) {
-							if(val.indexOf("{val}") >= 0) {
-								val = val.replace(new RegExp("{val}", "g"), "?" + v);
-							}
-                            tmp += val;
-						} else if (val == "?") {
-							var varx = "?val" + (++valCnt);
-							variables.push(varx);
-							tmp += varx;
-						} else if (typeof(v) != "string" && val.indexOf("{val}") >= 0) {
-							var varx = "?val" + (++valCnt);
-							variables.push(varx);
-							if(val.indexOf("{val}") >= 0) {
-								val = val.replace(new RegExp("{val}", "g"), varx);
-							}
-                            tmp += val;
-						} else {
-                            tmp += val;
-						}
-						
-						tmp += " ";
-
-					}
-
-                    /*
-                     * http://coding.pressbin.com/16/Javascript-equivalent-of-PHPs-pregmatchall
-                     */
-                    function preg_match_all(regex, haystack) {
-                        var globalRegex = new RegExp(regex, 'g');
-                        var globalMatch = haystack.match(globalRegex);
-                        matchArray = new Array();
-						if(globalMatch != null) {
-		                    for(var gmi = 0; gmi < globalMatch.length; gmi++) {
-		                        nonGlobalRegex = new RegExp(regex);
-		                        nonGlobalMatch = globalMatch[gmi].match(nonGlobalRegex);
-		                        matchArray.push(nonGlobalMatch[1]);
-		                    }
-						}
-                        return matchArray;
-                    }
-
-                    var regex = '{([^"]*?)}';
-                    var matches = preg_match_all(regex, tmp);
-
-                    /*
-                     * http://stackoverflow.com/a/15868720/605890
-                     */
-                    var uniq = matches.reduce(function(a,b){
-                        if (a.indexOf(b) < 0 ) a.push(b);
-                        return a;
-                    },[]);
-
-                    // Replace the vars
-                    for(var k = 0; k<uniq.length; k++) {
-                        var varname = uniq[k];
-                        var varx = "?" + varname + (++valCnt);
-						variables.push(varx);
-                        tmp = tmp.replace(new RegExp("{" + varname + "}", "g"), varx);
-
-                        // Check, if any actor is a variable as well
-                        if(actors.length > 0) {
-                            for(var aidx = 0; aidx < actors.length; aidx++) {
-                                var actor = actors[aidx];
-                                if(actor == "{" + varname + "}") {
-                                    actors[aidx] = varx;
-                                }
-                            }
-                        }
-                    }
-
-                    // Here, one line is complete
-                    if(tmp.indexOf("<s>") >= 0) {
-                        var varx = "?val" + (++valCnt);
-						variables.push(varx);
-                        tmp = tmp.replace(new RegExp("<s>", "g"), "" + varx + " ");
-                    }
-
-                    q += "\t" + tmp + " . \n";
-				}
-
-				//q = "{\n" + q + "}";
-				
-				if(actors.length == 0) {
-					result.selections = "*";
-					result.hasActuator = false;
-					console.log("Query does not contain any actor!");
-				} else {
-					result.hasActuator = true;
-					result.selections = actors.join(" ");
-				}
-
-				result.variables = variables;
-				result.query = q;
-				//console.log(q);
-			}
-
-			return result;
-		}
-
+		
 		var eval = [];
-
-
 		function run_queries_periodically(queries2, action, index) {
 
 			//eval[index] = [];
@@ -851,6 +553,12 @@
 			// #################################################################
 			*/
 		}
+
+
+				init();
+			}
+		);
+
 	</script>
 </head>
 <body>

@@ -4,7 +4,6 @@ define(
 	['config'],
 	function() {
 		var modules = {
-			title : "WebTAsX",
 			prefixes : [
 				["ssn", "http://purl.oclc.org/NET/ssnx/ssn#"],
 				["sf_ns", "http://spitfire-project.eu/ontology/ns/"],
@@ -31,8 +30,8 @@ define(
 									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Movement .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{movement}"],
-											["on" ,  "{movement} . FILTER({light} > 0)"],
-											["off" , "{movement} . FILTER({light} < 1)"],
+											["on" ,  "{movement} . FILTER({movement} > 0)"],
+											["off" , "{movement} . FILTER({movement} < 1)"],
 										]
 									],
 									["measures temperature", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Temperature .\n\t{val} sf_ns:value", 
@@ -164,7 +163,6 @@ define(
 								]
 							]
 						], 
-			isActive : true
 		}
 
 		return modules;

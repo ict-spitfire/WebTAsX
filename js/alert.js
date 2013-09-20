@@ -2,7 +2,7 @@ function create_success(text) {
 	return '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button>' + text + '</div>';
 }
 
-function create_info(text, id, showClose) {
+function create_info(text, showClose, id) {
 	var x = '<button type="button" class="close" data-dismiss="alert">&times;</button>';
 	if(showClose == false) {
 		x = "";
