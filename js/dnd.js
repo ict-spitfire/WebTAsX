@@ -99,7 +99,7 @@ define(
 			arr[3] = col;
 
 			dnd.lines.push(arr);
-			update();
+			//update();
 			return true;
 		};
 

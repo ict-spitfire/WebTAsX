@@ -1,6 +1,9 @@
 var lineid = 0;
 define(
-	['modules', 'dnd'],
+	[
+		"modules",
+		"dnd"
+	],
 	function(module, dnd) {
 		var SPARQL = function(e) {
 			this.e = e;

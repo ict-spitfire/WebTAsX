@@ -1,5 +1,8 @@
 define(
-	["SPARQL", "modules"],
+	[
+		"SPARQL",
+		"modules"
+	],
 	function(SPARQL, module){
 
 		var Logic = function(output, ruleSelection) {

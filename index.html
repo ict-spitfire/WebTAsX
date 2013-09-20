@@ -16,23 +16,23 @@
 
 		// Set up requirejs
 		requirejs.config({
-			baseUrl: 'js',
-			paths: {
-			    jquery : "jquery-latest.min",
-				bootstrap: 'bootstrap.min'
+			"baseUrl": "js",
+			"paths": {
+			    "jquery" : "jquery-latest.min",
+				"bootstrap": "bootstrap.min"
 			},
 			// Dependencies
-			shim: {
-			    jquery: {
-			        exports: "$"
+			"shim": {
+			    "jquery": {
+			        "exports": "$"
 			    },
-				bootstrap : ['jquery']
+				"bootstrap" : ["jquery"]
 			}
 		});
 
 		// requirejs init
 		require(
-			['SPARQL', "logic", 'config', 'jquery', 'functions', 'alert', 'once', 'periodically'],
+			["SPARQL", "logic", "config", "jquery", "functions", "alert", "once", "periodically"],
 			function(SPARQL, Logic) {
 
 				// Keeps the last generated queries
