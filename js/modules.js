@@ -2,7 +2,7 @@ var modules = null;
 
 define(
 	['config'],
-	function() {
+	function(config) {
 		var modules = {
 			prefixes : [
 				["ssn", "http://purl.oclc.org/NET/ssnx/ssn#"],
@@ -23,8 +23,8 @@ define(
 									["measures light", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Light .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{light}"],
-											["on" ,  "{light} . FILTER({light} >= " + config["lightThreshold"] + ")"],
-											["off" , "{light} . FILTER({light} < " + config["lightThreshold"] + ")"],
+											["on" ,  "{light} . FILTER({light} >= " + config.get("lightThreshold") + ")"],
+											["off" , "{light} . FILTER({light} < " + config.get("lightThreshold") + ")"],
 										]
 									],
 									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Movement .\n\t{val} sf_ns:value", 

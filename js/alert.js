@@ -20,5 +20,5 @@ function create_alert(text) {
 }
 
 function create_error(text) {
-	return '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>ERROR!</strong>' + text + '</div>';
+	return '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>ERROR: </strong>' + text + '</div>';
 }

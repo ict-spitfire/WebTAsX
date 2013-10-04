@@ -1,24 +1,24 @@
-var config = {};
 
 define(
 	['jquery'],
 	function($) {
-		config.lightThreshold = 3000;
-		config.sparqlEndpoint = "http://192.168.0.100:8080/openrdf-sesame/repositories/sensors";
+		var config = localStorage.getItem("config");
+		if(config == null) {
+			var config = {};
+			config.lightThreshold = 300;
+			config.sparqlEndpoint = "http://ssp1.wisebed.itm.uni-luebeck.de:8080";
+			config.timeout = 3000;
+			localStorage.setItem("config", JSON.stringify(config));
+		}
 
-		// Load all saved config
-		for (var key in localStorage){
-			// Just set real config values!
-			if(typeof(config[key]) != "undefined") {
-				config[key] = localStorage.getItem(key);
+		return {
+			get : function (id) {
+				var c = localStorage.getItem("config");
+				var v = JSON.parse(c)[id];
+				return v;
 			}
 		}
 
-		// set the values in the config window
-		for (var key in config){
-			var id = "config-" + key;
-			var input = $("#" + id);
-			input.val(config[key]);
-		}
 	}
+	
 )

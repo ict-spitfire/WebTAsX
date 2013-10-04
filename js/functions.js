@@ -83,3 +83,46 @@ function urlencode (str) {
   return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').
   replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
+
+function parseXML(xml) {
+
+	var dom = new DOMParser().parseFromString(xml,'text/xml');
+
+	var o = {};
+	o.title = [];
+	o.data = [];
+
+	var title = [];
+	var variables = dom.getElementsByTagName("variable");
+	for(var i = 0; i < variables.length; i++) {
+		var variable = variables[i];
+		var name = variable.getAttribute("name");
+		o.title.push(name);
+	}
+
+	var results = dom.getElementsByTagName("result");
+	for(var i = 0; i < results.length; i++) {
+		var result = results[i];
+		var bindings = result.getElementsByTagName("binding");
+
+		var tmp = [];
+		for(var k = 0; k < bindings.length; k++) {
+			var binding = bindings[k];
+			var children = binding.childNodes;
+			for(var j = 0; j < children.length; j++) {
+				var child = children[j];
+				if(child.nodeType != 3) {
+					var c = child.firstChild; // type doesnt matter!
+					var name = binding.getAttribute("name");
+					var index = o.title.indexOf(name); 
+					tmp[index] = c.data;
+				}
+			}
+		}
+		if(tmp.length > 0) {
+			o.data.push(tmp);
+		}
+	}
+
+	return o;
+}

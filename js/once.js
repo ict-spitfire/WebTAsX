@@ -1,8 +1,20 @@
 var requestHandlerOnce = new Object();
 
-requestHandlerOnce.success_once = function(data, queries) {
-	if(typeof(data.res) == "string") {
-		requestHandlerOnce.prepareTable(data.res, queries[0].variables, queries[1].variables);
+requestHandlerOnce.success_once = function(data) {
+	if(typeof(data.rules) == "string") {
+		var resultRules = parseXML(data.rules);
+		requestHandlerOnce.generateTable($('#query-result-rules'), resultRules.title, resultRules.data);
+	} else {
+		$('#query-result-rules').empty();
+		$('#query-result-rules').append(create_alert("No data are matching the query."));
+	}
+
+	if(typeof(data.actuators) == "string") {
+		var resultActors = parseXML(data.actuators);
+		requestHandlerOnce.generateTable($('#query-result-actors'), resultActors.title, resultActors.data);
+	} else {
+		$('#query-result-actors').empty();
+		$('#query-result-actors').append(create_alert("No data are matching the query."));
 	}
 }
 
@@ -18,81 +30,11 @@ requestHandlerOnce.async_once = function() {
 	$("#tab-result-link").click();
 }
 
-requestHandlerOnce.prepareTable = function(res, varRules, varActors) {
-	var dom = new DOMParser().parseFromString(res,'text/xml');
-
-	var titleRules = [];
-	var titleActions = [];
-
-	var variables = dom.getElementsByTagName("variable");
-	for(var i = 0; i < variables.length; i++) {
-		var variable = variables[i];
-		var name = variable.getAttribute("name");
-		
-		var isRule = $.inArray("?" + name, varRules);
-		var isAction = $.inArray("?" + name, varActors);
-
-		if(isRule >= 0) {
-			titleRules.push(name);
-		} else if(isAction >= 0) {
-			titleActions.push(name);
-		} else {
-			console.log("UNKNOWN title: " + name);
-		}
-	}
-
-	var dataRules = [];
-	var dataActions = [];
-	var results = dom.getElementsByTagName("result");
-
-	for(var i = 0; i < results.length; i++) {
-		var result = results[i];
-		var bindings = result.getElementsByTagName("binding");
-
-		var tmpRules = [];
-		var tmpActions = [];
-		for(var k = 0; k < bindings.length; k++) {
-			var binding = bindings[k];
-			var children = binding.childNodes;
-			for(var j = 0; j < children.length; j++) {
-				var child = children[j];
-				if(child.nodeType != 3) {
-					var c = child.firstChild;
-					var name = binding.getAttribute("name");
-					var indexRules = titleRules.indexOf(name); 
-					var indexActions = titleActions.indexOf(name); 
-					if(indexRules >= 0) {
-						tmpRules[indexRules] = c.data;
-					} else {
-						tmpActions[indexActions] = c.data;
-					}
-				}
-			}
-		}
-		if(tmpRules.length > 0) {
-			dataRules.push(tmpRules);
-		}
-
-		if(tmpActions.length > 0) {
-			dataActions.push(tmpActions);
-		}
-	}
-
-	console.log(titleRules.length);
-	console.log(titleActions.length);
-	console.log(dataRules.length);
-	console.log(dataActions.length);
-
-	requestHandlerOnce.generateTable($('#query-result-rules'), titleRules, dataRules);
-	requestHandlerOnce.generateTable($('#query-result-actors'), titleActions, dataActions);
-
-}
-
 requestHandlerOnce.generateTable = function(e, title, data) {
 
-e.html(create_success("Query successful."));
+	e.html(create_success("Query successful."));
 
-var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
+	var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
 	var thead = $('<thead></thead>');
 	var tr = $('<tr></tr>');
 	for(i=0; i<title.length; i++){

@@ -10,6 +10,7 @@ define(
 			this.output = output;
 			this.ruleSelection = ruleSelection;
 			this.arr = this.mknone();
+			this.boolCnt = 0;
 		}
 
 		Logic.prototype.init = function() {
@@ -73,7 +74,11 @@ define(
 					arr[2] = sparql;
 				} else {
 					console.log("SHOW!");
-					sparqlSelection.show();
+					if(typeof(sparqlSelection.show) == "function") {
+						sparqlSelection.show();
+					} else if(typeof(sparqlSelection.spo.show) == "function") {
+						sparqlSelection.spo.show();
+					}
 				}
 			}
 
@@ -190,6 +195,7 @@ define(
 		}
 
 		Logic.prototype.queryArray = function(arr) {
+			var cnt = this.boolCnt;
 			var that = this;
 			if(arr[0] == "and") {
 				return this.queryAnd(arr);
@@ -206,7 +212,7 @@ define(
 					throw (arr[1] + " has no triples!")
 				}
 				var q = "SELECT " + implode(" ", spo.variables) + " WHERE {\n " + spo.query + "}\n";
-				return "SELECT (IF(COUNT(*) > 0, 1, 0) AS ?bool) WHERE {\n" + q + "}\n";
+				return "SELECT (IF(COUNT(*) > 0, 1, 0) AS ?bool" + cnt + ") WHERE {\n" + q + "}\n";
 			}
 		}
 
@@ -223,7 +229,8 @@ define(
 		}
 
 		Logic.prototype.queryAnd = function(and) {
-			var q1 = "SELECT (IF(SUM(?bool) = 2, 1, 0) AS ?bool) WHERE {{\n";
+			var cnt = (this.boolCnt == 0) ? "" : this.boolCnt;
+			var q1 = "SELECT (IF(SUM(?bool" + (++this.boolCnt) + ") = 2, 1, 0) AS ?bool" + cnt + ") WHERE {{\n";
 			var q2 = this.queryElement(and[1]);
 			var q3 = "} UNION {";
 			var q4 = this.queryElement(and[2]);
@@ -232,7 +239,8 @@ define(
 		}
 
 		Logic.prototype.queryOr = function(or) {
-			var q1 = "\nSELECT (IF(SUM(?bool) > 0, 1, 0) AS ?bool) WHERE {{\n";
+			var cnt = (this.boolCnt == 0) ? "" : this.boolCnt;
+			var q1 = "\nSELECT (IF(SUM(?bool" + (++this.boolCnt) + ") > 0, 1, 0) AS ?bool" + cnt + ") WHERE {{\n";
 			var q2 = this.queryElement(or[1]);
 			var q3 = "} UNION {";
 			var q4 = this.queryElement(or[2]);
@@ -242,7 +250,8 @@ define(
 		}
 
 		Logic.prototype.queryNot = function(not) {
-			var q1 = "SELECT (IF(?bool = 0, 1, 0) AS ?bool) WHERE {\n";
+			var cnt = (this.boolCnt == 0) ? "" : this.boolCnt;
+			var q1 = "SELECT (IF(?bool" + (++this.boolCnt) + " = 0, 1, 0) AS ?bool" + cnt + ") WHERE {\n";
 			var q2 = this.queryElement(not[1]);
 			var q3 = "\n}\n";
 			return q1 + q2 + q3;

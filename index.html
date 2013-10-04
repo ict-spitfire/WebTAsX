@@ -33,18 +33,27 @@
 		// requirejs init
 		require(
 			["SPARQL", "logic", "config", "jquery", "functions", "alert", "once", "periodically"],
-			function(SPARQL, Logic) {
+			function(SPARQL, Logic, config) {
 
 				// Keeps the last generated queries
 				var query = null;
-	
-				// Keeps all queries
-				// [x][0] The SPARQL query
-				// [x][1] Textual description
-				// [x][2] Action command, e.g. ON/OFF
-				// [x][3] Interval event
+
+
+				/*
+					Keeps all queries in the format:
+					{
+						"query_rules" : ...,     // Query for the rules
+						"query_actuators" : ..., // Query for the actuators
+						"task_name" : ...,       // Textual description
+						"action" : ...,          // Action command, e.g. ON/OFF
+						"timeout" : ...          // Timeout interval
+					}
+				*/
 				var queries = [];
 
+				/*
+				 * Init the application
+				 */
 				function init () {
 
 					// Get the last SPARQL queries
@@ -66,10 +75,10 @@
 							var q = queries2[i];
 							if(q != null) {
 								queries.push(q);
-								run_queries_periodically(q[0], q[2], queries.length-1);
+								run_queries_periodically(q);
 							}
 						}
-						update_storage();
+						updateStorageTab();
 					}
 
 					// Set up tab
@@ -82,21 +91,28 @@
 
 					// Handle click on saveconfig button
 					$("#saveConfig").click(function() {
-						for (var key in config){
-							var id = "config-" + key;
-							var input = $("#" + id);
-							var value = input.val();
-							localStorage.setItem(key, value);
-						}
-						alert("Successful");
+						// Generate config object
+						var config = {}
+						config['lightThreshold'] = $("#config-lightThreshold").val();
+						config['sparqlEndpoint'] = $("#config-sparqlEndpoint").val();
+						config['timeout'] = $("#config-timeout").val();
+						
+						localStorage.setItem("config", JSON.stringify(config));
+						$("#log").html(create_success("Successful"));
 					});
+
+					$("#config-lightThreshold").val(config.get("lightThreshold"));
+					$("#config-sparqlEndpoint").val(config.get("sparqlEndpoint"));
 
 					// Results
 					$("#query-result-rules").html(create_info("No result yet."));
 					$("#query-result-actors").html(create_info("No result yet."));
 				}
 
-				function update_storage() {
+				/*
+				 * Updates the storage Tab with the currens stored queries
+				 */
+				function updateStorageTab() {
 					var ul = $("<ul>");
 					for(var i = 0; i < queries.length; i++) {
 						var q = queries[i];
@@ -108,56 +124,35 @@
 						var onClick = function(i) {
 							return function() {
 								if(queries[i] != null) {
-									clearTimeout(queries[i][3]);
-									//queries.remove(i);
+									clearTimeout(queries[i].timeout);
 									queries[i] = null;
 									localStorage['saved_queries'] = JSON.stringify(queries);
-									update_storage();
+									updateStorageTab();
 								}
 							}
 						};
 
 						del_img.click(onClick(i));
 						li.append(del_img);
-						li.append(" " + q[1]);
+						li.append(" " + q.task_name);
 						// Add LI
 						ul.append(li);
 					}
 					$("#storage").html(ul);
 				}
 
-				function update(x) {
-					/*
-					console.log("----------------------------------------------------------------------------------")
-					console.log(x);
-					console.log("----------------------------------------------------------------------------------")
-					console.info("SPARQL rules:");
-					var query_rules = generate_sparql($("#rules .query-spo"), $("#no-rule-msg1"));
-					console.info("SPARQL actors:");
-					var query_actions = generate_sparql($("#actuation .query-spo"), $("#no-rule-msg2"));
-
-					if(query_rules.query.length > 0 && query_actions.query.length > 0) {
-						var q = "SELECT * WHERE { " + query_rules.query + " UNION " + query_actions.query + " }";
-						localStorage.setItem("query", q);
-					}
-
-					// Update the text field
-					$("#query-text1").val(q);
-					query = [q, query_rules, query_actions];
-					*/
-				}
-
 				/*
-				 * This function creates the WebTAsX-tab
+				 * Creates the WebTAsX-tab
 				 */
 				function createTabWebTasx() {
 					// Add new menu
 					var li = $('<li><a href="#tabWebTAsX" data-toggle="tab">WebTAsX</a></li>');
-					$("#tab-tabs li:last").after(li);
+					$("#tab-tabs li:first").before(li);
 
 					// Add new content pane
 					var div = $("<div class=\"tab-pane\" id=\"tabWebTAsX\" style=\"min-height:250px;\"></div>");
 					$("#tab-content").append(div);
+					div.append("<span id=\"log\"></span>")
 
 					// set active
 					div.addClass("active");
@@ -228,116 +223,72 @@
 					div_button.append(div_button_controls);
 					div_button_controls.append(input_button_start_task);
 
+					function periodically_start() {
+						if(input_rule_text.val().length == 0) {
+							throw("You need a task name to run the query.");
+						}
+
+						var q = {
+							"query_rules" : $("#query-text1").val(),
+							"query_actuators" : $("#query-text2").val(),
+							"task_name" : input_rule_text.val(),
+							"action" : select_action.val(),
+							"timeout" : null
+						}
+
+						var idx = queries.push(q);
+						localStorage['saved_queries'] = JSON.stringify(queries);
+						run_queries_periodically(q);
+					
+						// Add and go to the query storage
+						updateStorageTab();
+						$("#tab-storage-link").click();
+					}
+
 					input_button_start_task.click(function() {
-						 save_queries_to_localstorage();
-							/*
-							// XXX
-							if(query == null) {
-								alert("You need at least one rule to run the query.");
-								return;
+							try {
+								save_queries_to_localstorage();
+								periodically_start()
+							} catch(e) {
+								$("#log").html(create_error(e))
 							}
-							if(input_rule_text.val().length == 0) {
-								alert("You need a task name to run the query.");
-								return;
-							}
-
-							$("#tab-storage-link").click();
-
-							// XXX
-							var idx = queries.push([query, input_rule_text.val(), select_action.val(), null]);
-							localStorage['saved_queries'] = JSON.stringify(queries);
-							update_storage();
-							// XXX
-							run_queries_periodically(query, select_action.val(), idx-1);
-							*/
 						}
 					);
 					
 					// Generates the queries
 					function save_queries_to_localstorage() {
-						try{
-							// RULES query
-							var q1 = rules.query();
-							console.info("SPARQL rules:");
-							console.log(q1);
+						// RULES query
+						var q1 = rules.query();
+						console.info("SPARQL rules:");
+						console.log(q1);
 
-							// ACTUATORS query
-							var query_actuators = SPARQL_actuators.getSparql();
-							if(typeof(query_actuators) == "undefined") {
-								throw ("Actuators have no triples!")
-							} else if(typeof(query_actuators) == "object" && !query_actuators.hasActuator) {
-								throw ("Actuators triples define no actuators!")						
-							} else {
-								var q2 = query_actuators.prefixes + "\n" + "SELECT " + implode(" ", query_actuators.selections) + " WHERE {\n " + query_actuators.query + " }\n";
-								console.info("SPARQL actuators:");
-								console.log(q2);
-							}
-
-							// Save the queries to the localStorage
-							localStorage.setItem("query1", q1);
-							$("#query-text1").val(q1);
-
-							localStorage.setItem("query2", q2);
-							$("#query-text2").val(q2);
-
-						} catch(e) {
-							alert(e);
+						// ACTUATORS query
+						var query_actuators = SPARQL_actuators.getSparql();
+						if(typeof(query_actuators) == "undefined") {
+							throw ("Actuators have no triples!")
+						} else if(typeof(query_actuators) == "object" && !query_actuators.hasActuator) {
+							throw ("Actuators triples define no actuators!")						
+						} else {
+							var q2 = query_actuators.prefixes + "\n" + "SELECT " + implode(" ", query_actuators.selections) + " WHERE {\n " + query_actuators.query + " }\n";
+							console.info("SPARQL actuators:");
+							console.log(q2);
 						}
 
+						// Save the queries to the localStorage
+						localStorage.setItem("query1", q1);
+						$("#query-text1").val(q1);
+
+						localStorage.setItem("query2", q2);
+						$("#query-text2").val(q2);
 					}
 				}
 
-				// #############################################################
-				// Todo from here!
-				// #############################################################
-	
-				var eval = [];
-				function run_queries_periodically(queries2, action, index) {
-
-					//eval[index] = [];
-					//eval.push
-
-					var redoTimeout = 2000;
-
-					var start = 0;
-					function succ1(res) {
-						if(typeof(res.res) == "string") {
-
-							/*
-							success_periodically(res, action);
-
-							var elapsed = new Date().getTime() - start;
-							console.log("elapsed: " + elapsed);
-
-							var rest = redoTimeout - elapsed;
-							console.log("rest: " + rest);
-
-							if(rest <= 0) {
-								rest = 0;
-								console.log("Redo queries NOW!");
-							} else {
-								console.log("Redo queries in " + rest + "ms");
-							}
-
-							// Not stpped yet
-							if(queries[index] != null) {
-								queries[index][3] = setTimeout(funPerInterval1, rest);
-							}
-							*/
-						}
-					}
-
-					var funPerInterval1 = function () {
-						start = new Date().getTime();
-						run_queries_once(queries2, succ1, error_periodically, function() {})
-					}
-
-					// Initial...
-					queries[index][3] = setTimeout(funPerInterval1, 0);
-				}
-
+				/*
+				 * Runs an HTTP-POST-request on an url
+				 */
 				function doAction(url, action) {
-					url = config['sparqlEndpoint'] + "/?uri=" + url;
+
+					url = config.get("sparqlEndpoint") + "/?uri=" + url;
 					console.log("RUN ACTION ON " + url + " :: " + action);
 		
 					var xhr = new XMLHttpRequest();
@@ -345,34 +296,10 @@
 					xhr.responsetype = "text";
 
 					xhr.onload = function(e) {
+						var elapsed = new Date().getTime() - start;
+						console.log("Action elapsed: " + elapsed + "ms");
 
-						// ##############################################
-						// EVALUATION
-						// ##############################################
-
-						var key = "action-" + url + "-" + action;
-						if (this.readyState == 4 && this.status == 200) {
-							var elapsed = new Date().getTime() - start;
-							var e = localStorage.getItem("eval-action");
-							var result = new Object();
-							if(e != null) {
-								result = JSON.parse(e);	
-							}
-							if(typeof(result[key]) == "undefined") {
-								result[key] = [];
-							}
-							result[key].push(elapsed);
-							localStorage.setItem("eval-action", JSON.stringify(result));
-						}
-
-						// ##############################################
-						// EVALUATION
-						// ##############################################
-
-						lastStatus = this.status;
-						// 200 ok
-						// 201 created
-						// 204 non content
+						// 200 ok/201 created/204 non content
 						if (!(this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204))) {
 							console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
 						}
@@ -381,7 +308,9 @@
 					xhr.send(action);
 				}
 
-				// Run action on url
+				/*
+				 * Runs an HTTP-POST-request on an url, if the value is the opposite
+				 */
 				function action_request(url, action) {
 					if(action == null) return;
 					var query = "SELECT DISTINCT ?o WHERE { <" + url + "> <http://spitfire-project.eu/ontology/ns/value> ?o }";
@@ -406,8 +335,8 @@
 						}
 					}
 
-					var sparql_url = config['sparqlEndpoint'];
-					execute_sparql_query(sparql_url, query, onsuccess);
+					var sparql_url = config.get("sparqlEndpoint");
+					doSparqlQuery(sparql_url, query, onsuccess);
 
 				}
 
@@ -422,51 +351,99 @@
 
 				// Run querys from Query-Textbox
 				function query_start() {
-					var q1 = new Object();
-					q1.query = $("#query-text1").val();
+					run_queries_once(getQueries(), requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+				}
 
-					var q2 = new Object();
-					q2.query = $("#query-text2").val();
-					q2.hasActuator = true;
+				function run_queries_periodically(q) {
+					var start = 0;
+					var onsucc = function(res) {
+						console.log("onsucc");
+						console.log(res);
 
-					run_queries_once([q1,q2], requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
+						success_periodically(res, q.action);
+						// enable Debugging
+						// requestHandlerOnce.success_once(res);
+
+						var elapsed = new Date().getTime() - start;
+						var rest = config.get("timeout") - elapsed;
+
+						if(rest <= 0) {
+							rest = 0;
+							console.log("Redo queries NOW!");
+						} else {
+							console.log("Redo queries in " + rest + "ms");
+						}
+
+						// Not stopped yet
+						if(q.timeout != null) {
+							q.timeout = setTimeout(funPerInterval, rest);
+						}
+					}
+
+					var onerror = function() {
+						console.log("onerror");
+					}
+
+					var funPerInterval = function () {
+						start = new Date().getTime();
+						run_queries_once([q.query_rules, q.query_actuators], onsucc, onerror);
+					}
+
+					// Initial...
+					q.timeout = setTimeout(funPerInterval, 0);
+					console.log(queries);
+				}
+
+				// Get the queries from the query textbox
+				function getQueries() {
+					var q1 = $("#query-text1").val();
+					var q2 = $("#query-text2").val();
+					return [q1,q2];
 				}
 		 
 				// Run a query once
 				function run_queries_once(queries, onsuccess, onerror, onasync, filter) {
 
-					if(queries[0].query == null) {
-						alert("You need at least one selection rule to run the query.");
+					if(queries[0] == null || queries[0].length == 0) {
+						$("#log").html("Rules query is empty!")
 						return;				
-					} else if(queries[1].query == null) {
-						alert("You need at least one actuation rule to run the query.");
-						return;				
-					} else if(!queries[1].hasActuator) {
-						alert("You need to define at least one actuator.");
+					} else if(queries[1] == null || queries[1].length == 0) {
+						$("#log").html("Actuators query is empty!")
 						return;				
 					}
 
-					var succData = new Object();
-					var url = config['sparqlEndpoint'];
+					var result = {};
+					var url = config.get("sparqlEndpoint");
 
-					if(queries[0].query.length > 0 && queries[1].query.length > 0) {
-						var q = "SELECT * WHERE { " + queries[0].query + " UNION " + queries[1].query + " }";
-						localStorage.setItem("query", q);
+					function runRules () {
+						doSparqlQuery(url, queries[0], function(res) {
+							// on success
+							result.rules = res;
+							runActuators();
+						}, function() {
+							result.rules = null;
+							runActuators();
+						});
 					}
-		
-					var onsuccessQ = function (res) {
-						succData.res = res;
-						onsuccess(succData, queries);
-					}
-		
-					execute_sparql_query(url, q, onsuccessQ);
 
+					function runActuators () {
+						doSparqlQuery(url, queries[1], function(res) {
+							// on success
+							result.actuators = res;
+							onsuccess(result);
+						}, function() {
+							result.actuators = null;
+							onsuccess(result);
+						});
+					}
+
+					runRules();
 					if(typeof(onasync) == "function") {
 						onasync();
 					}
 				}
 
-				function execute_sparql_query(url, query, onsuccess) {
+				function doSparqlQuery(url, query, onsuccess, onerror) {
 
 					// #################################################################
 					// SSP with Apache Jena/SDB RESTful interface
@@ -480,80 +457,20 @@
 						// The response type is "SPARQL Query Results XML Format (Second Edition)"
 						// http://www.w3.org/TR/rdf-sparql-XMLres/
 						if (this.readyState == 4 && this.status == 200) {
-
-							// ##############################################
-							// EVALUATION
-							// ##############################################
-
 							var elapsed = new Date().getTime() - start;
-							console.log(query + ":" + elapsed);
-							var e = localStorage.getItem("eval-queries");
-							var result = new Object();
-							if(e != null) {
-								result = JSON.parse(e);	
-							}
-							if(typeof(result[query]) == "undefined") {
-								result[query] = [];
-							}
-							result[query].push(elapsed);
-							localStorage.setItem("eval-queries", JSON.stringify(result));
-
-							// ##############################################
-							// EVALUATION
-							// ##############################################
-
+							console.log("Query elapsed: " + elapsed);
 
 							if(typeof(onsuccess) == "function") {
 								onsuccess(this.response);
 							}
 						} else if (this.readyState == 4){
-							console.log("Some error...");
+							onerror();
 						}
 					}
 
 					var start = new Date().getTime();
 					xhr.send(query);
-
-					// #################################################################
-					// Sesame RESTful interface
-					// GET with query in query param
-					// #################################################################
-					/*
-					var encoded = urlencode(query);
-					var path = url + "?query=" + encoded;
-
-					var xhr = new XMLHttpRequest();
-					xhr.responsetype = "text";
-					xhr.open('GET', path, true);
-					xhr.setRequestHeader("Accept", "application/xml");
-					xhr.onload = function(e) {
-
-						// The result type is "SPARQL Query Results XML Format (Second Edition)"
-						// http://www.w3.org/TR/rdf-sparql-XMLres/
-						if (this.readyState == 4 && this.status == 200) {
-							if(typeof(onsuccess) == "function") {
-								onsuccess(this.response);
-							}
-						} else if (this.readyState == 4){
-							console.log("Some error...");
-						}
-			
-		//				TODO: Error handling
-		//				else if (this.status == 504) {
-		//					if(typeof(onerror) == "function") {
-		//						onerror("CoAP timeout.");
-		//					}
-		//				} else {
-		//					if(typeof(onerror) == "function") {
-		//						onerror("HTTP-Status: " + this.status);
-		//					}
-		//				} 
-					}
-					xhr.send(null);
-					// #################################################################
-					*/
 				}
-
 
 				init();
 			}
@@ -565,13 +482,11 @@
 
 	<div class="container">
 			<h1>SPITFIRE WebTAsX</h1>
+			<span id="log"></span>
 			<ul class="nav nav-tabs" id="tab-tabs">
-				<!--
-				<li><a href="#tab-import" data-toggle="tab">Module Import</a></li>
-				<li><a href="#tab-config" data-toggle="tab">Config</a></grepli>
 				<li><a id="tab-storage-link" href="#tab-storage" data-toggle="tab">Storage</a></li>
+				<li><a href="#tab-config" data-toggle="tab">Config</a></li>
 				<li><a id="tab-result-link" href="#tab-result" data-toggle="tab">Result</a></li>
-				-->
 				<li><a href="#tab-query" data-toggle="tab">Query-Textbox</a></li>
 			</ul>
 			<div class="tab-content" id="tab-content">
@@ -593,13 +508,19 @@
 					  <div class="control-group">
 						<label for="config-lightThreshold" class="control-label">Light threshold:</label>
 						<div class="controls">
-						  <input type="text" placeholder="Threshold" id="config-lightThreshold">
+						  <input type="text" placeholder="" id="config-lightThreshold" style="width:400px;">
 						</div>
 					  </div>
 					  <div class="control-group">
 						<label for="config-sparqlEndpoint" class="control-label">Sparql endpoint:</label>
 						<div class="controls">
-						  <input type="text" placeholder="http://..." id="config-sparqlEndpoint">
+						  <input type="text" placeholder="" id="config-sparqlEndpoint" style="width:400px;">
+						</div>
+					  </div>
+					  <div class="control-group">
+						<label for="config-timeout" class="control-label">Continous query timeout:</label>
+						<div class="controls">
+						  <input type="number" placeholder="" id="config-timeout" style="width:400px;">
 						</div>
 					  </div>
 					  <div class="control-group">

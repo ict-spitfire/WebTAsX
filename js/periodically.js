@@ -2,14 +2,16 @@ var lastResult = {};
 
 function success_periodically(data, action) {
 
-	if(typeof(data.rules) != "string" || typeof(data.action) != "string") {
-		return;
-	}
+	var resultRules = parseXML(data.rules);
+	var resultActors = parseXML(data.actuators);
+	requestHandlerOnce.generateTable($('#query-result-actors'), resultActors.title, resultActors.data);
 
-	var dom1 = new DOMParser().parseFromString(data.rules,'text/xml');
-	var results1 = dom1.getElementsByTagName("result");
-	
-	if(results1.length == 0) {
+	var bool = resultRules.data[0][0];
+	console.log("Bool: " + bool);
+
+
+	// change the action on FALSE!
+	if(bool == 0) {
 		if(action == "on") {
 			action = "off";
 		} else if(action == "toggle") {
@@ -19,45 +21,31 @@ function success_periodically(data, action) {
 		}
 	}
 
-	console.log("Data for rules: " + results1.length);
-
-	var dom = new DOMParser().parseFromString(data.action,'text/xml');
-
-	var data = [];
-	var results = dom.getElementsByTagName("result");
-
-	for(var i = 0; i < results.length; i++) {
-		var result = results[i];
-		var bindings = result.getElementsByTagName("binding");
-
-		var tmp = [];
-		for(var k = 0; k < bindings.length; k++) {
-			var binding = bindings[k];
-			var children = binding.childNodes;
-			for(var j = 0; j < children.length; j++) {
-				var child = children[j];
-				if(child.nodeType != 3) {
-					var c = child.firstChild;
-
-					// ##############################################
-					if(lastResult[c.data] == undefined) {
-						lastResult[c.data] = {};
-					}
-
-					if(lastResult[c.data].cnt > 0 && results1.length > 0 && action == "toggle") {
-						lastResult[c.data].cnt = results1.length;
-						return;
-					}
-					lastResult[c.data].cnt = results1.length;
-					// ##############################################
-
-					action_request(c.data, action);
-				}
-			}
+	for(var i = 0; i < resultActors.data.length; i++) {
+		var uri = resultActors.data[i][0];
+		// ##############################################
+		// TOGGLE
+		// ##############################################
+		if(lastResult[uri] == undefined) {
+			lastResult[uri] = {};
 		}
-	}
+
+		if(lastResult[uri].cnt > 0 && bool == 1 && action == "toggle") {
+			lastResult[uri].cnt = bool;
+			return;
+		}
+		lastResult[uri].cnt = bool;
+
+		// ##############################################
+		// All other commands
+		// ##############################################
+
+		action_request(uri, action);
+	}	
+
 }
 
+// TODO
 function error_periodically(msg) {
 	$("#tab-result-link").click();
 	$('#query-result-rules').html(error(msg));
