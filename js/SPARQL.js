@@ -47,16 +47,16 @@ define(
 			console.log("create");
 
 			var spo_id = "spo" + (lineid++);
-			var div_spo = $("<div id=\"" + spo_id + "\" class=\"query-spo\"></div>");
+			var div_spo = $("<div data-id=\"" + spo_id + "\" class=\"query-spo\"></div>");
 	
 			createimg = function() {
 				return $("<img class=\"dnd\" src=\"img/arrow_in.png\">");
 			}
 
 			// SPO-divs
-			var div_s = $("<div id=\"s" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid red;\"
-			var div_p = $("<div id=\"p" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
-			var div_o = $("<div id=\"o" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
+			var div_s = $("<div data-id=\"s" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid red;\"
+			var div_p = $("<div data-id=\"p" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid blue;\"
+			var div_o = $("<div data-id=\"o" + lineid + "\" draggable=\"true\" class=\"box\"></div>"); //  style=\"padding:2px; border: 2px solid green;\"
 
 			var map_dnd = function(div) {
 				// By dnd.js file
@@ -182,7 +182,7 @@ define(
 
 					for(var j = 0; j < children.length; j++) {
 						var c = children[j];
-						var v = $(c).attr("var");
+						var v = $(c).attr("data-var");
 						var e = $(c.firstChild);
 						// Skip the dnd-image
 						if(e.is("img")) break;
@@ -217,7 +217,6 @@ define(
 						}
 					
 						tmp += " ";
-
 					}
 
 		            // http://coding.pressbin.com/16/Javascript-equivalent-of-PHPs-pregmatchall

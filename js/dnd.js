@@ -39,13 +39,14 @@ define(
 		};
 
 		dnd.handleDrop = function (e) {
-			var from_ = dnd.dragedObject.obj.getAttribute("id");
-			var to_ = this.getAttribute("id");
+			var id_from = $(dnd.dragedObject.obj);
+			var id_to = $(this);
+
+			var from_ = id_from.attr("data-id");
+			var to_ = id_to.attr("data-id");
 
 			if(from_ == to_) return;
 
-			var id_from = $('#' + from_);
-			var id_to = $('#' + to_);
 
 			console.log("CONNECT " + from_ + " with " + to_);
 
@@ -80,15 +81,15 @@ define(
 				v = l[2];
 				id_from.css("background-color", col);
 				id_to.css("background-color", col);
-				id_from.attr("var",v);
-				id_to.attr("var",v);
+				id_from.attr("data-var",v);
+				id_to.attr("data-var",v);
 			} else {
 				col = dnd.colors[dnd.colorID++];
 				v = "var" + (dnd.varIndex++);
 				id_from.css("background-color", col);
 				id_to.css("background-color", col);
-				id_from.attr("var",v);
-				id_to.attr("var",v);
+				id_from.attr("data-var",v);
+				id_to.attr("data-var",v);
 				if(dnd.colorID == dnd.colors.length) dnd.colorID = 0;
 			}
 
