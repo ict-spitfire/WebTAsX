@@ -89,7 +89,7 @@ define(
 											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} w3c_schema:type ssn:switch", "{radioActor}"]
 										]
 									],
-									["is in", "ssn:featureOfInterest>",
+									["is in", "ssn:featureOfInterest",
 										[
 											["?", "{featureOfInterest}"],
 											["office", "sf_foi:office"],
