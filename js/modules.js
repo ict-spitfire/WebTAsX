@@ -20,6 +20,8 @@ define(
 								"node", "{val}",
 								[
 									["?", "?"],
+// Light, Movement, Temperature, PowerConsumption
+
 									["measures light", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Light .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{light}"],
