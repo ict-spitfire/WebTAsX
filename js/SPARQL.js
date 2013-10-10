@@ -73,9 +73,8 @@ define(
 			var div_del = $("<span></span>");
 	
 			var del_img = $("<img style=\"cursor:pointer;\" src=\"img/cancel.png\">");
-			del_img.click(function() { 
-				$("#" + spo_id).remove();
-				//update("del_img.click");
+			del_img.click(function() {
+				div_spo.remove();
 			});
 			div_del.append(del_img);
 
