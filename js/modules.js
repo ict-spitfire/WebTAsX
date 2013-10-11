@@ -84,6 +84,7 @@ define(
 
 										]
 									],
+/*
 									["has actuator", "ssn:attachedSystem",
 										[
 											["?",       "{actor} . FILTER regex(str({actor}), 'actor', 'i')", "{actor}"],
@@ -91,6 +92,15 @@ define(
 											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} w3c_schema:type ssn:switch", "{radioActor}"]
 										]
 									],
+*/
+									["has actuator", "ssn:attachedSystem",
+										[
+											["?",       "{actor} .		\n\t{actor} 		w3c_schema:type {_tmpActor}		. \n\t{_tmptmpActor}	    w3c_schema:subClassOf   sf_ns:Actuator",	"{actor}"],
+											["Fan",		"{fanActor} . 	\n\t{fanActor} 		w3c_schema:type sf_sn:Fan		. \n\tsf_sn:Fan	    w3c_schema:subClassOf   sf_ns:Actuator", 	"{fanActor}"],
+											["Switch",  "{radioActor} . \n\t{radioActor} 	w3c_schema:type sf_sn:Switch	. \n\tsf_sn:Switch	w3c_schema:subClassOf   sf_ns:Actuator", 	"{radioActor}"]
+										]
+									],
+
 									["is in", "ssn:featureOfInterest",
 										[
 											["?", "{featureOfInterest}"],

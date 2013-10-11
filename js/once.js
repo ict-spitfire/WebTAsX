@@ -54,6 +54,7 @@ requestHandlerOnce.generateTable = function(e, title, data) {
 	}
 
 	var tbody = $('<tbody></tbody>');
+	console.log("Results: " + data.length)
 	for(i=0; i<data.length; i++){
 		tr = $('<tr></tr>');
 		for(j=0; j<data[i].length; j++){

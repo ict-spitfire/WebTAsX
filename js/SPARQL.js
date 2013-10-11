@@ -43,9 +43,6 @@ define(
 		SPARQL.prototype.create = function() {
 
 			var that = this;
-
-			console.log("create");
-
 			var spo_id = "spo" + (lineid++);
 			var div_spo = $("<div data-id=\"" + spo_id + "\" class=\"query-spo\"></div>");
 	
