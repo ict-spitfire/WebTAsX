@@ -32,7 +32,7 @@
 
 		// requirejs init
 		require(
-			["SPARQL", "logic", "config", "jquery", "functions", "alert", "once", "periodically"],
+			["SPARQL", "logic", "config", "jquery", "functions", "alert"],
 			function(SPARQL, Logic, config) {
 
 				// Keeps the last generated queries
@@ -82,6 +82,7 @@
 					}
 
 					// Set up tab
+					createTabQueryGenerator();
 					createTabWebTasx();
 
 					// Add event listeners
@@ -141,6 +142,60 @@
 					$("#storage").html(ul);
 				}
 
+				function createTabQueryGenerator() {
+
+					// Add new menu
+					var li = $('<li><a href="#tabQueryTester" data-toggle="tab">Query Tester</a></li>');
+					$("#tab-tabs li:first").before(li);
+
+					// Add new content pane
+					var div = $("<div class=\"tab-pane\" id=\"tabQueryTester\" style=\"min-height:250px;\"></div>");
+					$("#tab-content").append(div);
+
+					var log = $("<span></span>");
+					div.append(log);
+
+					var outputRules = $("<div></div>");
+					var div_rules = $("<div style=\"margin-top:5px;\"></div>");
+
+					div.append("<h3>Rules</h3>");
+					div.append(div_rules);
+					div_rules.append(outputRules);
+
+					var sparql = new SPARQL(div_rules);
+					sparql.init("test", false);
+
+					var run_query = $("<button class=\"btn\" type=\"button\">Run query</button>");
+					div.append(run_query);
+
+					div.append("<h5>Query</h5>");
+
+					var textAreaQuery = $("<textarea style=\"width:97%;height:250px;\"></textarea>")
+					div.append(textAreaQuery);
+
+					div.append("<h5>Result</h5>");
+					var queryResult = $("<div>")
+					div.append(queryResult);
+
+					run_query.click(function() {
+						console.log("CLICK");	
+						try {
+							console.log("Generate & run query!");
+							var query = sparql.getSparql()
+							var q = query.prefixes + "\n" + "SELECT " + implode(" ", query.selections) + " WHERE {\n " + query.query + " }\n";
+							textAreaQuery.val(q);
+							var url = config.get("sparqlEndpoint");
+							doSparqlQuery(url, q, function(res) {
+								generateResultTable(queryResult, res);
+							}, function() {
+								generateResultTable(queryResult, null);
+							});
+						} catch(e) {
+							log.html(create_error(e))
+						}
+					});
+				}
+
 				/*
 				 * Creates the WebTAsX-tab
 				 */
@@ -152,7 +207,8 @@
 					// Add new content pane
 					var div = $("<div class=\"tab-pane\" id=\"tabWebTAsX\" style=\"min-height:250px;\"></div>");
 					$("#tab-content").append(div);
-					div.append("<span id=\"log\"></span>")
+					var log = $("<span></span>");
+					div.append(log)
 
 					// set active
 					div.addClass("active");
@@ -250,7 +306,7 @@
 								save_queries_to_localstorage();
 								periodically_start()
 							} catch(e) {
-								$("#log").html(create_error(e))
+								log.html(create_error(e))
 							}
 						}
 					);
@@ -352,6 +408,26 @@
 
 				// Run querys from Query-Textbox
 				function query_start() {
+
+					var requestHandlerOnce = new Object();
+
+					requestHandlerOnce.success_once = function(data) {
+						generateResultTable($('#query-result-rules'), data.rules);
+						generateResultTable($('#query-result-actors'), data.actuators);
+					}
+
+					requestHandlerOnce.error_once = function(msg) {
+						$('#query-result-rules').html(create_error(msg));
+						$('#query-result-actors').html(create_error(msg));
+						$("#tab-result-link").click();
+					}
+
+					requestHandlerOnce.async_once = function() {
+						$('#query-result-rules').html(create_info("Query is running..."));  
+						$('#query-result-actors').html(create_info("Query is running..."));  
+						$("#tab-result-link").click();
+					}
+
 					run_queries_once(getQueries(), requestHandlerOnce.success_once, requestHandlerOnce.error_once, requestHandlerOnce.async_once);
 				}
 

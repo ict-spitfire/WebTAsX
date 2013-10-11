@@ -126,3 +126,70 @@ function parseXML(xml) {
 
 	return o;
 }
+
+function generateResultTable (e, data) {
+
+	if(typeof(data) == "string") {
+		var resultRules = parseXML(data);
+		title = resultRules.title;
+		data = resultRules.data;
+
+		e.html(create_success("Query successful."));
+
+		var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
+		var thead = $('<thead></thead>');
+		var tr = $('<tr></tr>');
+		for(i=0; i<title.length; i++){
+			var th = $('<th>' + title[i] + '</th>');
+			tr.append(th);
+		}
+		thead.append(tr);
+		table.append(thead);
+
+		var onClick = function(e) {
+			var t = $(this);						
+			if(t.hasClass("marked")) {
+				t.removeClass("marked");
+			} else {
+				t.addClass("marked");
+			}
+		}
+
+		var tbody = $('<tbody></tbody>');
+		console.log("Results: " + data.length)
+		for(i=0; i<data.length; i++){
+			tr = $('<tr></tr>');
+			for(j=0; j<data[i].length; j++){
+				var td = null;
+				if(typeof(data[i][j]) === "undefined") {
+					td = $('<td></td>');
+				} else {
+					td = $('<td>' + data[i][j] + '</td>');
+				}
+				td.click(onClick);
+				tr.append(td);
+			}
+			if(data[i].length < title.length) {
+				var diff = title.length - data[i].length;
+				console.log(diff);
+				for(var y = 0; y< diff; y++) {
+					tr.append($('<td></td>'));
+				}
+			}
+
+			tbody.append(tr);
+		}
+		table.append(tbody);
+
+		if(data.length == 0) {
+			e.append(create_alert("No data are matching the query."));
+		} else {
+			e.append(table);
+		}
+
+	} else {
+		e.empty();
+		e.append(create_alert("Error with the requested data."));
+	}
+
+}

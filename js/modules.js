@@ -12,7 +12,8 @@ define(
 				["sf_foi", "http://spitfire-project.eu/foi/"],
 				["w3c_schema", "http://www.w3.org/2000/01/rdf-schema#"],
 				["w3c_rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"],
-				["iti", "http://www.iti.uni-luebeck.de/"]
+				["iti", "http://www.iti.uni-luebeck.de/"],
+				["dul", "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl/"]
 			],
 			mapping :
 						[
@@ -21,7 +22,11 @@ define(
 								[
 									["?", "?"],
 // Light, Movement, Temperature, PowerConsumption
-
+									["measures", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs {type} .\n\t{val} sf_ns:value", 
+										[
+											["?" ,   "{value}"],
+										]
+									],
 									["measures light", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Light .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{light}"],
@@ -34,6 +39,13 @@ define(
 											["?" ,   "{movement}"],
 											["on" ,  "{movement} . FILTER({movement} > 0)"],
 											["off" , "{movement} . FILTER({movement} < 1)"],
+										]
+									],
+									["measures power consumption (mA)", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:PowerConsumption .\n\t{val} sf_ns:value", 
+										[
+											["?" ,   		"{powerConsumption}"],
+											["plugged" ,	"{powerConsumption} . FILTER({powerConsumption} >= 100)"],
+											["unplugged" ,  "{powerConsumption} . FILTER({powerConsumption} < 100)"],
 										]
 									],
 									["measures temperature", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Temperature .\n\t{val} sf_ns:value", 
@@ -95,17 +107,41 @@ define(
 */
 									["has actuator", "ssn:attachedSystem",
 										[
-											["?",       "{actor} .		\n\t{actor} 		w3c_schema:type {_tmpActor}		. \n\t{_tmptmpActor}	    w3c_schema:subClassOf   sf_ns:Actuator",	"{actor}"],
-											["Fan",		"{fanActor} . 	\n\t{fanActor} 		w3c_schema:type sf_sn:Fan		. \n\tsf_sn:Fan	    w3c_schema:subClassOf   sf_ns:Actuator", 	"{fanActor}"],
-											["Switch",  "{radioActor} . \n\t{radioActor} 	w3c_schema:type sf_sn:Switch	. \n\tsf_sn:Switch	w3c_schema:subClassOf   sf_ns:Actuator", 	"{radioActor}"]
+											["?",       "{actor} .		\n\t{actor} 		w3c_rdf:type sf_ns:Actuator",	"{actor}"],
+											["Fan",		"{fanActor} . 	\n\t{fanActor} 		w3c_rdf:type sf_sn:Fan", 		"{fanActor}"],
+											["Switch",  "{radioActor} . \n\t{radioActor} 	w3c_rdf:type sf_sn:Switch", 	"{radioActor}"]
 										]
 									],
 
 									["is in", "ssn:featureOfInterest",
 										[
-											["?", "{featureOfInterest}"],
+											["?", 			"{room}	. {room} w3c_rdf:type sf_foi:Room"],
+											["Room 0.I.1", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.1', 'i')"],
+											["Room 0.I.2", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.2', 'i')"],
+											["Room 0.I.3", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.3', 'i')"],
+											["Room 0.I.4", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.4', 'i')"],
+											["Room 0.I.5", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.5', 'i')"],
+											["Room 0.I.6", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.6', 'i')"],
+											["Room 0.I.7", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.7', 'i')"],
+											["Room 0.I.8", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.8', 'i')"],
+											["Room 0.I.9", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.9', 'i')"],
+											["Room 0.I.10", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.10', 'i')"],
+											["Room 0.I.11", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.11', 'i')"],
+/*
 											["office", "sf_foi:office"],
 											["bedroom", "sf_foi:bedroom"]
+*/
+										]
+									],
+									["has location", "dul:hasLocation",
+										[
+											["?", 				"{hasLocation}"],
+											["CTI Testbed", 	"'CTI Testbed'"],
+											["amaxilat House",	"'amaxilat House'"],
+/*
+											["office", "sf_foi:office"],
+											["bedroom", "sf_foi:bedroom"]
+*/
 										]
 									]
 								]

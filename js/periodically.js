@@ -4,7 +4,7 @@ function success_periodically(data, action) {
 
 	var resultRules = parseXML(data.rules);
 	var resultActors = parseXML(data.actuators);
-	requestHandlerOnce.generateTable($('#query-result-actors'), resultActors.title, resultActors.data);
+	generateResultTable($('#query-result-actors'), resultActors.title, resultActors.data);
 
 	var bool = resultRules.data[0][0];
 	console.log("Bool: " + bool);
