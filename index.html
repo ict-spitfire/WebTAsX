@@ -179,6 +179,8 @@
 					var outputRules = $("<div></div>");
 					var div_rules = $("<div style=\"margin-top:5px;\"></div>");
 
+					div.append("<h2>Query Tester</h2>");
+
 					div.append("<h3>Rules</h3>");
 					div.append(div_rules);
 					div_rules.append(outputRules);
@@ -213,7 +215,6 @@
 
 					run_query.click(function() {
 						console.log("RUN QUERY");
-						queryResult.empty();
 						queryResult.html(create_info("Query is running..."));  
 						try {
 							doSparqlQuery(textAreaQuery.val(), function(res) {
@@ -278,7 +279,8 @@
 					var div = $("<div class=\"tab-pane\" id=\"tabWebTAsX\" style=\"min-height:250px;\"></div>");
 					$("#tab-content").append(div);
 					var log = $("<span></span>");
-					div.append(log)
+					div.append(log);
+					div.append("<h2>WebTAsX</h2>");
 
 					// #################################################################
 					// RULES
@@ -603,7 +605,7 @@
 			</ul>
 			<div class="tab-content" id="tab-content">
 				<div class="tab-pane" id="tab-query">
-					<h3>Query</h3>
+					<h2>Query</h2>
 					<h4>Rules Query</h4>
 					<textarea id="query-text1" style="width:97%;height:250px;"></textarea><br>
 					<h4>Actors Query</h4>
@@ -611,11 +613,11 @@
 					<p><input class="btn" type="button" id="query-start" value="Run Query"></p>
 				</div>
 				<div class="tab-pane" id="tab-storage">
-					<h3>Storage</h3>
+					<h2>Storage</h2>
 					<p id="storage">...</p>
 				</div>
 				<div class="tab-pane" id="tab-config">
-					<h3>Configuration</h3>
+					<h2>Configuration</h2>
 					<form class="form-horizontal">
 					  <div class="control-group">
 						<label for="config-sparqlEndpoint" class="control-label">Server:<br>(must support <code>/sparql</code>)</label>
@@ -643,14 +645,14 @@
 					</form>					
 				</div>
 				<div class="tab-pane" id="tab-result">
-					<h3>Result</h3>
+					<h2>Result</h2>
 					<p><input class="btn" type="button" id="query-restart" value="Rerun Query"></p>
 					<h4>Result rules</h4>
 					<p id="query-result-rules"></p>
 
 					<h4>Result actors</h4>
 					<p id="query-result-actors"></p>
-					<h3>Actuation</h3>
+					<h4>Actuation</h4>
 					<p>
 						<select id="action-value">
 							<option value="on">on</option>

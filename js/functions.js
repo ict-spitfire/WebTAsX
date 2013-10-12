@@ -134,10 +134,14 @@ function parseSparqlXML(xml) {
 			for(var j = 0; j < children.length; j++) {
 				var child = children[j];
 				if(child.nodeType != 3) {
-					var c = child.firstChild; // type doesnt matter!
 					var name = binding.getAttribute("name");
 					var index = o.title.indexOf(name); 
-					tmp[index] = c.data;
+					var c = child.firstChild; // type doesnt matter!
+					if(c == null) {
+						tmp[index] = "";
+					} else {
+						tmp[index] = c.data;
+					}
 				}
 			}
 		}

@@ -1,19 +1,27 @@
 var modules = null;
 
+/*
+*/
+
 define(
 	['config'],
 	function(config) {
 		var modules = {
 			prefixes : [
+				["xsd", "http://www.w3.org/2001/XMLSchema#"],
 				["ssn", "http://purl.oclc.org/NET/ssnx/ssn#"],
 				["sf_ns", "http://spitfire-project.eu/ontology/ns/"],
 				["sf_sn", "http://spitfire-project.eu/ontology/ns/sn/"],
 				["sf_p", "http://spitfire-project.eu/property/"],
 				["sf_foi", "http://spitfire-project.eu/foi/"],
-				["w3c_schema", "http://www.w3.org/2000/01/rdf-schema#"],
-				["w3c_rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"],
+				["rdfs", "http://www.w3.org/2000/01/rdf-schema#"],
+				["rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"],
 				["iti", "http://www.iti.uni-luebeck.de/"],
-				["dul", "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl/"]
+				["dul", "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl/"],
+				//["owl", "http://www.w3.org/2002/07/owl#"],
+				["cal", "http://calendar/resource/"],
+				["vocab", "http://calendar/resource/vocab/"]
+				//#PREFIX map: <http://calendar/resource/#>
 			],
 			mapping :
 						[
@@ -21,7 +29,6 @@ define(
 								"node", "{val}",
 								[
 									["?", "?"],
-// Light, Movement, Temperature, PowerConsumption
 									["measures", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs {type} .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{value}"],
@@ -96,20 +103,11 @@ define(
 
 										]
 									],
-/*
 									["has actuator", "ssn:attachedSystem",
 										[
-											["?",       "{actor} . FILTER regex(str({actor}), 'actor', 'i')", "{actor}"],
-											["air conditioning",     "{fanActor} . FILTER regex(str({fanActor}), 'actor', 'i') . \n\t{fanActor} w3c_schema:type ssn:fan", "{fanActor}"],
-											["radio",   "{radioActor} . FILTER regex(str({radioActor}), 'actor', 'i') . \n\t{radioActor} w3c_schema:type ssn:switch", "{radioActor}"]
-										]
-									],
-*/
-									["has actuator", "ssn:attachedSystem",
-										[
-											["?",       "{actor} .		\n\t{actor} 		w3c_rdf:type sf_ns:Actuator",	"{actor}"],
-											["Fan",		"{fanActor} . 	\n\t{fanActor} 		w3c_rdf:type sf_sn:Fan", 		"{fanActor}"],
-											["Switch",  "{radioActor} . \n\t{radioActor} 	w3c_rdf:type sf_sn:Switch", 	"{radioActor}"]
+											["?",       "{actor} .		\n\t{actor} rdf:type sf_ns:Actuator",	"{actor}"],
+											["Fan",		"{fanActor} . 	\n\t{fanActor} rdf:type sf_sn:Fan", 		"{fanActor}"],
+											["Switch",  "{radioActor} . \n\t{radioActor} rdf:type sf_sn:Switch", 	"{radioActor}"]
 										]
 									],
 
@@ -145,7 +143,7 @@ define(
 														callback(result);
 													});
 												},0)
-												return [["?", 			"{room}	. {room} w3c_rdf:type sf_foi:Room"]];
+												return [["?", "{room}.\n\t{room} rdf:type sf_foi:Room"]];
 											}
 										]
 									],
@@ -176,14 +174,14 @@ define(
 														callback(result);
 													});
 												},0)
-												return [["?", 			"{hasLocation}"]];
+												return [["?", "{hasLocation}"]];
 											}
 										]
 									]
 								]
 							],
-							[
-								"weather", "iti:time iti:is {time} .\n\t{forecast} w3c_rdf:type sf_sn:temperatureForecast .\n\t{forecast} sf_sn:time_start {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} sf_sn:time_end {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} sf_ns:value",
+/*
+							["weather", "iti:time iti:is {time} .\n\t{forecast} rdf:type sf_sn:temperatureForecast .\n\t{forecast} sf_sn:time_start {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} sf_sn:time_end {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} sf_ns:value",
 								[
 									["temperature is", "",
 										[
@@ -233,15 +231,39 @@ define(
 										]
 									]
 								]
-							],[
-								"calendar", "iti:time iti:is {time} .\n\t{event} sf_ns:start {startCalendar} . FILTER( {time} >= {startCalendar}) .\n\t{event} sf_ns:end {endCalendar} . FILTER( {time} < {endCalendar}) .\n\t{event} sf_ns:subject",
+							],
+*/
+							["calendar", "?evt vocab:occurrencesid ?occ  .\n\t?occ vocab:occurrences_start_ts ?start .\n\t?occ vocab:occurrences_end_ts ?end .\n\t?evt vocab:events_subject",
 								[
 									["has event", "", 
 										[
-											["?", "{event}"],
-											["radio","{eventSubject} . FILTER regex({eventSubject}, 'Radio', 'i')"],
-											["fan","{eventSubject} . FILTER regex({eventSubject}, 'fan', 'i')"],
-											["meeting","{eventSubject} . FILTER regex({eventSubject}, 'meeting', 'i')"]
+											function(callback, div_spo, sparql) {
+												setTimeout(function() {
+													var q = sparql.getSparql(div_spo);
+													doSparqlQuery(q.sparql, function(res) {
+														var result = [];
+														var data = parseSparqlXML(res);
+														var i = 0;
+														for(i=0;i<data.title.length;i++) {
+															if(data.title[i].indexOf("title") >= 0) {
+																break;
+															}
+														}
+														console.log(i);
+														var rooms = [];
+														for(var j=0;j<data.data.length;j++) {
+															var d = data.data[j][i];
+															if(rooms.contains(d)) {
+																continue;
+															}
+															rooms.push(d);
+															result.push([d, "'" + d + "' . FILTER(?start < now! && ?end > now!)"]);
+														}
+														callback(result);
+													});
+												},0)
+												return [["?", "{title}"]];
+											}
 										]
 									]
 								]
