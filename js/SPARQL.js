@@ -99,9 +99,9 @@ define(
 									var o_mapping = p_mapping[i][2];
 
 									if(typeof(o_mapping) == "undefined") {
-										select_o = that.generate_select([["?","?"]], o_change);
+										select_o = that.generate_select(div_spo, [["?","?"]], o_change);
 									} else {
-										select_o = that.generate_select(o_mapping, o_change, "actors");
+										select_o = that.generate_select(div_spo, o_mapping, o_change, "actors");
 									}
 								}
 							}
@@ -109,7 +109,7 @@ define(
 							div_o.append(select_o);
 							//update("p_change");
 						};
-						var select_p = that.generate_select(p_mapping, p_change, "actors");
+						var select_p = that.generate_select(div_spo, p_mapping, p_change, "actors");
 						div_p.empty();
 						div_p.append(select_p);
 
@@ -124,7 +124,7 @@ define(
 			}
 
 			// Select for S
-			var select_s = this.generate_select(this.s_mapping, s_change, "actors");
+			var select_s = this.generate_select(div_spo, this.s_mapping, s_change, "actors");
 			div_s.append(select_s);
 			select_s.trigger('change');
 			return div_spo;
@@ -135,11 +135,10 @@ define(
 		// o[2] 
 		// o[3] preselected
 		// event changeevent
-		SPARQL.prototype.generate_select = function (o, event, str) {
+		SPARQL.prototype.generate_select = function (div_spo, o, event, str) {
 			var select = $('<select></select>');
 
 			var handle = function(o,str) {
-				select.empty();
 				for(var j = 0; j<o.length; j++) {
 					var option = "<option value=\"" + o[j][1] + "\" ";
 
@@ -156,10 +155,9 @@ define(
 			}
 
 			if(typeof o[0] === "function") {
-				console.log("IS FUNCTION!")
-				var option = $("<option>...loading</option>");
-				select.append(option);	
-				o[0](handle);			
+				// Default value for the SELECT
+				var oDefault = o[0](handle, div_spo, this);
+				handle(oDefault,str);			
 			} else {
 				handle(o,str);
 			}
@@ -169,8 +167,11 @@ define(
 			return select;
 		}
 
-		SPARQL.prototype.getSparql = function () {
-			var spo = this.spo.find(".query-spo");
+		SPARQL.prototype.getSparql = function (spo) {
+			if(typeof spo === "undefined") {
+				spo = this.spo.find(".query-spo");
+			}
+
 			var valCnt = 0;
 			var q = null;
 			var result = new Object();
@@ -201,7 +202,9 @@ define(
 						}
 
 						var val = e.val();
-
+						if(val.startsWith("[") && val.endsWith("]")) {
+							val = "<" + val.substring(1,val.length-1) + ">";
+						}
 						var cont = false;
 
 						if(typeof(v) == "string" && val.indexOf("{val}") >= 0) {
@@ -299,6 +302,7 @@ define(
 			for(var i = 0; i<module.prefixes.length; i++) {
 				result.prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
 			}
+			result.sparql = result.prefixes + "\n" + "SELECT DISTINCT " + implode(" ", result.selections) + " WHERE {\n " + result.query + " }\n";
 			return result;
 		}
 

@@ -193,3 +193,50 @@ function generateResultTable (e, result) {
 	}
 
 }
+
+function doSparqlQuery(query, onsuccess, onerror) {
+
+	var url = config.get("sparqlEndpoint");
+
+	// #################################################################
+	// SSP with Apache Jena/SDB RESTful interface
+	// POST query on /sparql
+	// #################################################################
+
+	var xhr = new XMLHttpRequest();
+	xhr.responsetype = "text";
+	xhr.open('POST', url + "/sparql", true);
+	xhr.onload = function(e) {
+		// The response type is "SPARQL Query Results XML Format (Second Edition)"
+		// http://www.w3.org/TR/rdf-sparql-XMLres/
+		if (this.readyState == 4 && this.status == 200) {
+			var elapsed = new Date().getTime() - start;
+			console.log("Query elapsed: " + elapsed);
+
+			if(typeof(onsuccess) == "function") {
+				onsuccess(this.response);
+			}
+		} else if (this.readyState == 4){
+			onerror();
+		}
+	}
+
+	var start = new Date().getTime();
+	xhr.send(query);
+}
+
+// http://stackoverflow.com/questions/280634/endswith-in-javascript
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
+// http://stackoverflow.com/questions/237104/array-containsobj-in-javascript
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}

@@ -30,10 +30,13 @@
 			}
 		});
 
+		var config = null;
+
 		// requirejs init
 		require(
 			["SPARQL", "logic", "config", "jquery", "functions", "alert"],
-			function(SPARQL, Logic, config) {
+			function(SPARQL, Logic, _config) {
+				config = _config;
 				// Keeps the last generated queries
 				var query = null;
 
@@ -183,8 +186,7 @@
 						console.log("GENERATE QUERY");
 						try {
 							var query = sparql.getSparql()
-							var q = query.prefixes + "\n" + "SELECT " + implode(" ", query.selections) + " WHERE {\n " + query.query + " }\n";
-							textAreaQuery.val(q);
+							textAreaQuery.val(query.sparql);
 						} catch(e) {
 							log.html(create_error(e))
 						}
@@ -193,8 +195,7 @@
 					run_query.click(function() {
 						console.log("RUN QUERY");
 						try {
-							var url = config.get("sparqlEndpoint");
-							doSparqlQuery(url, textAreaQuery.val(), function(res) {
+							doSparqlQuery(textAreaQuery.val(), function(res) {
 								generateResultTable(queryResult, res);
 							}, function() {
 								generateResultTable(queryResult, null);
@@ -203,6 +204,10 @@
 							log.html(create_error(e))
 						}
 					});
+
+					// set active
+					div.addClass("active");
+					li.addClass("active");
 				}
 
 				/*
@@ -218,10 +223,6 @@
 					$("#tab-content").append(div);
 					var log = $("<span></span>");
 					div.append(log)
-
-					// set active
-					div.addClass("active");
-					li.addClass("active");
 
 					// #################################################################
 					// RULES
@@ -334,7 +335,7 @@
 						} else if(typeof(query_actuators) == "object" && !query_actuators.hasActuator) {
 							throw ("Actuators triples define no actuators!")						
 						} else {
-							var q2 = query_actuators.prefixes + "\n" + "SELECT " + implode(" ", query_actuators.selections) + " WHERE {\n " + query_actuators.query + " }\n";
+							var q2 = query_actuators.sparql;
 							console.info("SPARQL actuators:");
 							console.log(q2);
 						}
@@ -401,8 +402,7 @@
 						}
 					}
 
-					var sparql_url = config.get("sparqlEndpoint");
-					doSparqlQuery(sparql_url, query, onsuccess);
+					doSparqlQuery(query, onsuccess);
 
 				}
 
@@ -499,10 +499,9 @@
 					}
 
 					var result = {};
-					var url = config.get("sparqlEndpoint");
 
 					function runRules () {
-						doSparqlQuery(url, queries[0], function(res) {
+						doSparqlQuery(queries[0], function(res) {
 							// on success
 							result.rules = res;
 							runActuators();
@@ -513,7 +512,7 @@
 					}
 
 					function runActuators () {
-						doSparqlQuery(url, queries[1], function(res) {
+						doSparqlQuery(queries[1], function(res) {
 							// on success
 							result.actuators = res;
 							onsuccess(result);
@@ -527,35 +526,6 @@
 					if(typeof(onasync) == "function") {
 						onasync();
 					}
-				}
-
-				function doSparqlQuery(url, query, onsuccess, onerror) {
-
-					// #################################################################
-					// SSP with Apache Jena/SDB RESTful interface
-					// POST query on /sparql
-					// #################################################################
-
-					var xhr = new XMLHttpRequest();
-					xhr.responsetype = "text";
-					xhr.open('POST', url + "/sparql", true);
-					xhr.onload = function(e) {
-						// The response type is "SPARQL Query Results XML Format (Second Edition)"
-						// http://www.w3.org/TR/rdf-sparql-XMLres/
-						if (this.readyState == 4 && this.status == 200) {
-							var elapsed = new Date().getTime() - start;
-							console.log("Query elapsed: " + elapsed);
-
-							if(typeof(onsuccess) == "function") {
-								onsuccess(this.response);
-							}
-						} else if (this.readyState == 4){
-							onerror();
-						}
-					}
-
-					var start = new Date().getTime();
-					xhr.send(query);
 				}
 
 				init();

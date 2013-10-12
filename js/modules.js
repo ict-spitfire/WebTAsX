@@ -115,38 +115,69 @@ define(
 
 									["is in", "ssn:featureOfInterest",
 										[
-											function(callback) {
-												var result = [
-													["?", 			"{room}	. {room} w3c_rdf:type sf_foi:Room"],
-													["Room 0.I.1", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.1', 'i')"],
-													["Room 0.I.2", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.2', 'i')"],
-													["Room 0.I.3", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.3', 'i')"],
-													["Room 0.I.4", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.4', 'i')"],
-													["Room 0.I.5", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.5', 'i')"],
-													["Room 0.I.6", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.6', 'i')"],
-													["Room 0.I.7", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.7', 'i')"],
-													["Room 0.I.8", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.8', 'i')"],
-													["Room 0.I.9", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.9', 'i')"],
-													["Room 0.I.10", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.10', 'i')"],
-													["Room 0.I.11", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.11', 'i')"],
-												]
-												callback(result);
+											function(callback, div_spo, sparql) {
+												setTimeout(function() {
+													var q = sparql.getSparql(div_spo);
+													doSparqlQuery(q.sparql, function(res) {
+														var result = [];
+														var data = parseXML(res);
+														var i = 0;
+														for(i=0;i<data.title.length;i++) {
+															if(data.title[i].indexOf("room") >= 0) {
+																break;
+															}
+														}
+														console.log(i);
+														var rooms = [];
+														for(var j=0;j<data.data.length;j++) {
+															var d = data.data[j][i];
+															if(rooms.contains(d)) {
+																continue;
+															}
+															rooms.push(d);
+															var last = d.lastIndexOf(":");
+															var room = d.substring(last+1, d.length);
+															if(room.endsWith("/")) {
+																room = room.substring(0, room.length-1);
+															}
+															result.push([room, "[" + d + "]"]);
+														}
+														callback(result);
+													});
+												},0)
+												return [["?", 			"{room}	. {room} w3c_rdf:type sf_foi:Room"]];
 											}
-/*
-											["office", "sf_foi:office"],
-											["bedroom", "sf_foi:bedroom"]
-*/
 										]
 									],
 									["has location", "dul:hasLocation",
 										[
-											["?", 				"{hasLocation}"],
-											["CTI Testbed", 	"'CTI Testbed'"],
-											["amaxilat House",	"'amaxilat House'"],
-/*
-											["office", "sf_foi:office"],
-											["bedroom", "sf_foi:bedroom"]
-*/
+											function(callback, div_spo, sparql) {
+												setTimeout(function() {
+													var q = sparql.getSparql(div_spo);
+													doSparqlQuery(q.sparql, function(res) {
+														var result = [];
+														var data = parseXML(res);
+														var i = 0;
+														for(i=0;i<data.title.length;i++) {
+															if(data.title[i].indexOf("hasLocation") >= 0) {
+																break;
+															}
+														}
+														console.log(i);
+														var rooms = [];
+														for(var j=0;j<data.data.length;j++) {
+															var d = data.data[j][i];
+															if(rooms.contains(d)) {
+																continue;
+															}
+															rooms.push(d);
+															result.push([d, "'" + d + "'"]);
+														}
+														callback(result);
+													});
+												},0)
+												return [["?", 			"{hasLocation}"]];
+											}
 										]
 									]
 								]
