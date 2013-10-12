@@ -34,7 +34,6 @@
 		require(
 			["SPARQL", "logic", "config", "jquery", "functions", "alert"],
 			function(SPARQL, Logic, config) {
-
 				// Keeps the last generated queries
 				var query = null;
 
@@ -165,27 +164,37 @@
 					var sparql = new SPARQL(div_rules);
 					sparql.init("test", false);
 
-					var run_query = $("<button class=\"btn\" type=\"button\">Run query</button>");
-					div.append(run_query);
+					var generate_query = $("<button class=\"btn\" type=\"button\">Generate query</button>");
+					div.append(generate_query);
 
 					div.append("<h5>Query</h5>");
 
 					var textAreaQuery = $("<textarea style=\"width:97%;height:250px;\"></textarea>")
 					div.append(textAreaQuery);
 
+					var run_query = $("<button class=\"btn\" type=\"button\">Run query</button>");
+					div.append(run_query)
+
 					div.append("<h5>Result</h5>");
 					var queryResult = $("<div>")
 					div.append(queryResult);
 
-					run_query.click(function() {
-						console.log("CLICK");	
+					generate_query.click(function() {
+						console.log("GENERATE QUERY");
 						try {
-							console.log("Generate & run query!");
 							var query = sparql.getSparql()
 							var q = query.prefixes + "\n" + "SELECT " + implode(" ", query.selections) + " WHERE {\n " + query.query + " }\n";
 							textAreaQuery.val(q);
+						} catch(e) {
+							log.html(create_error(e))
+						}
+					});
+
+					run_query.click(function() {
+						console.log("RUN QUERY");
+						try {
 							var url = config.get("sparqlEndpoint");
-							doSparqlQuery(url, q, function(res) {
+							doSparqlQuery(url, textAreaQuery.val(), function(res) {
 								generateResultTable(queryResult, res);
 							}, function() {
 								generateResultTable(queryResult, null);

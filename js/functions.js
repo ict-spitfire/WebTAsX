@@ -127,10 +127,10 @@ function parseXML(xml) {
 	return o;
 }
 
-function generateResultTable (e, data) {
+function generateResultTable (e, result) {
 
-	if(typeof(data) == "string") {
-		var resultRules = parseXML(data);
+	if(typeof(result) == "string") {
+		var resultRules = parseXML(result);
 		title = resultRules.title;
 		data = resultRules.data;
 

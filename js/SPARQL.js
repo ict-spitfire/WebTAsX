@@ -138,18 +138,30 @@ define(
 		SPARQL.prototype.generate_select = function (o, event, str) {
 			var select = $('<select></select>');
 
-			for(var j = 0; j<o.length; j++) {
-				var option = "<option value=\"" + o[j][1] + "\" ";
+			var handle = function(o,str) {
+				select.empty();
+				for(var j = 0; j<o.length; j++) {
+					var option = "<option value=\"" + o[j][1] + "\" ";
 
-				if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
-					option += "" + str + "=\"" + o[j][2] + "\" ";			
-				}
+					if(typeof(str) == "string" && typeof(o[j][2]) == "string") {
+						option += "" + str + "=\"" + o[j][2] + "\" ";			
+					}
 
-				if(o[j][3] == true) {
-					option += " selected";
+					if(o[j][3] == true) {
+						option += " selected";
+					}
+					option += ">" + o[j][0] + "</option>";
+					select.append(option);
 				}
-				option += ">" + o[j][0] + "</option>";
-				select.append(option);
+			}
+
+			if(typeof o[0] === "function") {
+				console.log("IS FUNCTION!")
+				var option = $("<option>...loading</option>");
+				select.append(option);	
+				o[0](handle);			
+			} else {
+				handle(o,str);
 			}
 			if(typeof(event) == "function") {
 				select.change(event);

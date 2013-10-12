@@ -115,18 +115,23 @@ define(
 
 									["is in", "ssn:featureOfInterest",
 										[
-											["?", 			"{room}	. {room} w3c_rdf:type sf_foi:Room"],
-											["Room 0.I.1", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.1', 'i')"],
-											["Room 0.I.2", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.2', 'i')"],
-											["Room 0.I.3", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.3', 'i')"],
-											["Room 0.I.4", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.4', 'i')"],
-											["Room 0.I.5", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.5', 'i')"],
-											["Room 0.I.6", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.6', 'i')"],
-											["Room 0.I.7", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.7', 'i')"],
-											["Room 0.I.8", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.8', 'i')"],
-											["Room 0.I.9", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.9', 'i')"],
-											["Room 0.I.10", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.10', 'i')"],
-											["Room 0.I.11", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.11', 'i')"],
+											function(callback) {
+												var result = [
+													["?", 			"{room}	. {room} w3c_rdf:type sf_foi:Room"],
+													["Room 0.I.1", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.1', 'i')"],
+													["Room 0.I.2", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.2', 'i')"],
+													["Room 0.I.3", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.3', 'i')"],
+													["Room 0.I.4", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.4', 'i')"],
+													["Room 0.I.5", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.5', 'i')"],
+													["Room 0.I.6", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.6', 'i')"],
+													["Room 0.I.7", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.7', 'i')"],
+													["Room 0.I.8", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.8', 'i')"],
+													["Room 0.I.9", 	"{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.9', 'i')"],
+													["Room 0.I.10", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.10', 'i')"],
+													["Room 0.I.11", "{room}	. {room} w3c_rdf:type sf_foi:Room . FILTER regex(str({room}), 'room:0.I.11', 'i')"],
+												]
+												callback(result);
+											}
 /*
 											["office", "sf_foi:office"],
 											["bedroom", "sf_foi:bedroom"]
