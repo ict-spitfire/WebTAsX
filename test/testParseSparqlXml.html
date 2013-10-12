@@ -1,0 +1,23 @@
+<script src="js/functions.js"></script>
+<script>
+
+var xml = "<?xml version=\"1.0\"?> \
+<sparql xmlns=\"http://www.w3.org/2005/sparql-results#\"> \
+  <head> \
+    <variable name=\"val1\"/> \
+    <variable name=\"room2\"/> \
+  </head> \
+  <results> \
+  <result> \
+    <binding name=\"val1\"> \
+      <literal>http://foo.bar/sensor123</literal> \
+    </binding> \
+    <binding name=\"room2\"> \
+      <literal>http://foo.bar/room456</literal> \
+    </binding> \
+  </result> \
+  </results> \
+</sparql>";
+var o = parseSparqlXML(xml);
+console.log(o);
+</script>

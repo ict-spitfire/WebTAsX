@@ -84,7 +84,7 @@ function urlencode (str) {
   replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
 
-function parseXML(xml) {
+function parseSparqlXML(xml) {
 
 	var dom = new DOMParser().parseFromString(xml,'text/xml');
 
@@ -130,7 +130,7 @@ function parseXML(xml) {
 function generateResultTable (e, result) {
 
 	if(typeof(result) == "string") {
-		var resultRules = parseXML(result);
+		var resultRules = parseSparqlXML(result);
 		title = resultRules.title;
 		data = resultRules.data;
 

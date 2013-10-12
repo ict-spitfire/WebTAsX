@@ -120,7 +120,7 @@ define(
 													var q = sparql.getSparql(div_spo);
 													doSparqlQuery(q.sparql, function(res) {
 														var result = [];
-														var data = parseXML(res);
+														var data = parseSparqlXML(res);
 														var i = 0;
 														for(i=0;i<data.title.length;i++) {
 															if(data.title[i].indexOf("room") >= 0) {
@@ -156,7 +156,7 @@ define(
 													var q = sparql.getSparql(div_spo);
 													doSparqlQuery(q.sparql, function(res) {
 														var result = [];
-														var data = parseXML(res);
+														var data = parseSparqlXML(res);
 														var i = 0;
 														for(i=0;i<data.title.length;i++) {
 															if(data.title[i].indexOf("hasLocation") >= 0) {

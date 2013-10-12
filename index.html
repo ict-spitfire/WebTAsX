@@ -92,8 +92,7 @@
 					document.getElementById('query-restart').addEventListener('click', query_start, false);
 					document.getElementById('action-start').addEventListener('click', action_start, false);
 
-					// Handle click on saveconfig button
-					$("#saveConfig").click(function() {
+					var saveConfig = function() {
 						// Generate config object
 						var config = {}
 						config['lightThreshold'] = $("#config-lightThreshold").val();
@@ -102,10 +101,29 @@
 						
 						localStorage.setItem("config", JSON.stringify(config));
 						$("#log").html(create_success("Successful"));
-					});
+					};
+					
+					// Handle click on saveconfig button + config textfields
+					$("#saveConfig").click(saveConfig);
+					$("#config-lightThreshold").keyup(function(e) {
+						if(e.keyCode == 13) {
+							saveConfig();
+						}
+					})
+					$("#config-sparqlEndpoint").keyup(function(e) {
+						if(e.keyCode == 13) {
+							saveConfig();
+						}
+					})
+					$("#config-timeout").keyup(function(e) {
+						if(e.keyCode == 13) {
+							saveConfig();
+						}
+					})
 
 					$("#config-lightThreshold").val(config.get("lightThreshold"));
 					$("#config-sparqlEndpoint").val(config.get("sparqlEndpoint"));
+					$("#config-timeout").val(config.get("timeout"));
 
 					// Results
 					$("#query-result-rules").html(create_info("No result yet."));

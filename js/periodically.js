@@ -2,8 +2,8 @@ var lastResult = {};
 
 function success_periodically(data, action) {
 
-	var resultRules = parseXML(data.rules);
-	var resultActors = parseXML(data.actuators);
+	var resultRules = parseSparqlXML(data.rules);
+	var resultActors = parseSparqlXML(data.actuators);
 	generateResultTable($('#query-result-actors'), resultActors.title, resultActors.data);
 
 	var bool = resultRules.data[0][0];
