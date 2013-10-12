@@ -84,6 +84,7 @@
 					}
 
 					// Set up tab
+					createTabSE();
 					createTabQueryGenerator();
 					createTabWebTasx();
 
@@ -212,9 +213,11 @@
 
 					run_query.click(function() {
 						console.log("RUN QUERY");
+						queryResult.empty();
+						queryResult.html(create_info("Query is running..."));  
 						try {
 							doSparqlQuery(textAreaQuery.val(), function(res) {
-								generateResultTable(queryResult, res);
+								generateResultTable(queryResult, parseSparqlXML(res));
 							}, function() {
 								generateResultTable(queryResult, null);
 							});
@@ -226,6 +229,41 @@
 					// set active
 					div.addClass("active");
 					li.addClass("active");
+				}
+
+
+				function createTabSE() {
+
+					// Add new menu
+					var li = $('<li><a href="#tabSE" data-toggle="tab">Semanitc Entities</a></li>');
+					$("#tab-tabs li:first").before(li);
+
+					// Add new content pane
+					var div = $("<div class=\"tab-pane\" id=\"tabSE\" style=\"min-height:250px;\"></div>");
+					$("#tab-content").append(div);
+
+					var log = $("<span></span>");
+					div.append(log);
+
+					var outputRules = $("<div></div>");
+					var div_rules = $("<div style=\"margin-top:5px;\"></div>");
+
+					div.append("<h2>Semantic Entities</h2>");
+					var update = $("<button class=\"btn\" type=\"button\">Update List</button>");
+					var resultDiv = $("<div></div>");
+					div.append(update,"<br><br>", resultDiv);
+
+					update.click(function() {
+						try {
+							doSeQuery(function(res) {
+								generateResultTable(resultDiv, parseSeXML(res));
+							}, function() {
+								generateResultTable(resultDiv, null);
+							});
+						} catch(e) {
+							log.html(create_error(e))
+						}
+					});
 				}
 
 				/*
@@ -439,8 +477,8 @@
 					var requestHandlerOnce = new Object();
 
 					requestHandlerOnce.success_once = function(data) {
-						generateResultTable($('#query-result-rules'), data.rules);
-						generateResultTable($('#query-result-actors'), data.actuators);
+						generateResultTable($('#query-result-rules'), parseSparqlXML(data.rules));
+						generateResultTable($('#query-result-actors'), parseSparqlXML(data.actuators));
 					}
 
 					requestHandlerOnce.error_once = function(msg) {

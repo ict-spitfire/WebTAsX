@@ -84,6 +84,29 @@ function urlencode (str) {
   replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
 
+function parseSeXML(xml) {
+var dom = new DOMParser().parseFromString(xml,'text/xml');
+
+	var o = {};
+	o.title = ["se_id", "se_uri", "se_uom", "se_type", "min", "max"];
+	o.data = [];
+
+	var results = dom.getElementsByTagName("se");
+	for(var i = 0; i < results.length; i++) {
+		var result = results[i];
+
+		var se_id =   result.getElementsByTagName("se_id")[0].childNodes[0].data;
+		var se_uri =  result.getElementsByTagName("se_uri")[0].childNodes[0].data;
+		var se_uom =  result.getElementsByTagName("se_uom")[0].childNodes[0].data;
+		var se_type = result.getElementsByTagName("se_type")[0].childNodes[0].data;
+		var min =     result.getElementsByTagName("min")[0].childNodes[0].data;
+		var max =     result.getElementsByTagName("max")[0].childNodes[0].data;
+		o.data.push([se_id, se_uri, se_uom, se_type, min, max]);
+	}
+
+	return o;
+}
+
 function parseSparqlXML(xml) {
 
 	var dom = new DOMParser().parseFromString(xml,'text/xml');
@@ -92,7 +115,6 @@ function parseSparqlXML(xml) {
 	o.title = [];
 	o.data = [];
 
-	var title = [];
 	var variables = dom.getElementsByTagName("variable");
 	for(var i = 0; i < variables.length; i++) {
 		var variable = variables[i];
@@ -129,12 +151,11 @@ function parseSparqlXML(xml) {
 
 function generateResultTable (e, result) {
 
-	if(typeof(result) == "string") {
-		var resultRules = parseSparqlXML(result);
-		title = resultRules.title;
-		data = resultRules.data;
+	if(typeof(result) == "object") {
+		title = result.title;
+		data = result.data;
 
-		e.html(create_success("Query successful."));
+		//e.html(create_success("Query successful."));
 
 		var table = $('<table class="table table-striped table-hover table-condensed table-bordered"></table>');
 		var thead = $('<thead></thead>');
@@ -223,6 +244,36 @@ function doSparqlQuery(query, onsuccess, onerror) {
 
 	var start = new Date().getTime();
 	xhr.send(query);
+}
+
+function doSeQuery(onsuccess, onerror) {
+
+	var url = config.get("sparqlEndpoint");
+
+	// #################################################################
+	// SSP with Apache Jena/SDB RESTful interface
+	// POST query on /sparql
+	// #################################################################
+
+	var xhr = new XMLHttpRequest();
+	xhr.responsetype = "text";
+	xhr.open('GET', url + "/se", true);
+	xhr.onload = function(e) {
+		// The response type is simple XML
+		if (this.readyState == 4 && this.status == 200) {
+			var elapsed = new Date().getTime() - start;
+			console.log("Get SE elapsed: " + elapsed);
+
+			if(typeof(onsuccess) == "function") {
+				onsuccess(this.response);
+			}
+		} else if (this.readyState == 4){
+			onerror();
+		}
+	}
+
+	var start = new Date().getTime();
+	xhr.send();
 }
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
