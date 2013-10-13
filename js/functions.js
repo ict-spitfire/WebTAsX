@@ -206,15 +206,13 @@ function generateResultTable (e, result) {
 		}
 		table.append(tbody);
 
+		e.html(table);
 		if(data.length == 0) {
 			e.append(create_alert("No data are matching the query."));
-		} else {
-			e.append(table);
 		}
 
 	} else {
-		e.empty();
-		e.append(create_alert("Error with the requested data."));
+		e.html(create_alert("Error with the requested data."));
 	}
 
 }

@@ -203,10 +203,17 @@
 					var queryResult = $("<div>")
 					div.append(queryResult);
 
+					var query = localStorage.getItem("tmp-query");
+					if(query != null) {
+						$(textAreaQuery).val(query);
+					}
+
 					generate_query.click(function() {
+
 						console.log("GENERATE QUERY");
 						try {
 							var query = sparql.getSparql()
+							localStorage.setItem("tmp-query", query.sparql);
 							textAreaQuery.val(query.sparql);
 						} catch(e) {
 							log.html(create_error(e))
@@ -217,7 +224,9 @@
 						console.log("RUN QUERY");
 						queryResult.html(create_info("Query is running..."));  
 						try {
-							doSparqlQuery(textAreaQuery.val(), function(res) {
+							var query = textAreaQuery.val();
+							localStorage.setItem("tmp-query", query);
+							doSparqlQuery(query, function(res) {
 								generateResultTable(queryResult, parseSparqlXML(res));
 							}, function() {
 								generateResultTable(queryResult, null);
