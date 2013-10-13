@@ -143,7 +143,10 @@ define(
 														callback(result);
 													});
 												},0)
-												return [["?", "{room}.\n\t{room} rdf:type sf_foi:Room"]];
+												return [
+													["?", "{room}.\n\t{room} rdf:type sf_foi:Room"],
+													["dummyRoom", "[http://dummyRoom]"]
+												];
 											}
 										]
 									],
@@ -174,65 +177,15 @@ define(
 														callback(result);
 													});
 												},0)
-												return [["?", "{hasLocation}"]];
+												return [
+													["?", "{hasLocation}"],
+													["dummyLocation", "[http://dummyLocation]"]
+													];
 											}
 										]
 									]
 								]
 							],
-/*
-							["weather", "iti:time iti:is {time} .\n\t{forecast} rdf:type sf_sn:temperatureForecast .\n\t{forecast} sf_sn:time_start {startForecast} . FILTER({time} >= {startForecast})\n\t{forecast} sf_sn:time_end {endForecast} . FILTER({time} <= {endForecast})\n\t{forecast} sf_ns:value",
-								[
-									["temperature is", "",
-										[
-											["?" ],
-											[">= 10°C", "{temperature} . FILTER({temperature} >= 10)"],
-											[">= 11°C", "{temperature} . FILTER({temperature} >= 11)"],
-											[">= 12°C", "{temperature} . FILTER({temperature} >= 12)"],
-											[">= 13°C", "{temperature} . FILTER({temperature} >= 13)"],
-											[">= 14°C", "{temperature} . FILTER({temperature} >= 14)"],
-											[">= 15°C", "{temperature} . FILTER({temperature} >= 15)"],
-											[">= 16°C", "{temperature} . FILTER({temperature} >= 16)"],
-											[">= 17°C", "{temperature} . FILTER({temperature} >= 17)"],
-											[">= 18°C", "{temperature} . FILTER({temperature} >= 18)"],
-											[">= 19°C", "{temperature} . FILTER({temperature} >= 19)"],
-											[">= 20°C", "{temperature} . FILTER({temperature} >= 20)", null, true],
-											[">= 21°C", "{temperature} . FILTER({temperature} >= 21)"],
-											[">= 22°C", "{temperature} . FILTER({temperature} >= 22)"],
-											[">= 23°C", "{temperature} . FILTER({temperature} >= 23)"],
-											[">= 24°C", "{temperature} . FILTER({temperature} >= 24)"],
-											[">= 25°C", "{temperature} . FILTER({temperature} >= 25)"],
-											[">= 26°C", "{temperature} . FILTER({temperature} >= 26)"],
-											[">= 27°C", "{temperature} . FILTER({temperature} >= 27)"],
-											[">= 28°C", "{temperature} . FILTER({temperature} >= 28)"],
-											[">= 29°C", "{temperature} . FILTER({temperature} >= 29)"],
-                                            [">= 30°C", "{temperature} . FILTER({temperature} >= 30)"],
-											["< 10°C", "{temperature} . FILTER({temperature} < 10)"],
-											["< 11°C", "{temperature} . FILTER({temperature} < 11)"],
-											["< 12°C", "{temperature} . FILTER({temperature} < 12)"],
-											["< 13°C", "{temperature} . FILTER({temperature} < 13)"],
-											["< 14°C", "{temperature} . FILTER({temperature} < 14)"],
-											["< 15°C", "{temperature} . FILTER({temperature} < 15)"],
-											["< 16°C", "{temperature} . FILTER({temperature} < 16)"],
-											["< 17°C", "{temperature} . FILTER({temperature} < 17)"],
-											["< 18°C", "{temperature} . FILTER({temperature} < 18)"],
-											["< 19°C", "{temperature} . FILTER({temperature} < 19)"],
-											["< 20°C", "{temperature} . FILTER({temperature} < 20)"],
-											["< 21°C", "{temperature} . FILTER({temperature} < 21)"],
-											["< 22°C", "{temperature} . FILTER({temperature} < 22)"],
-											["< 23°C", "{temperature} . FILTER({temperature} < 23)"],
-											["< 24°C", "{temperature} . FILTER({temperature} < 24)"],
-											["< 25°C", "{temperature} . FILTER({temperature} < 25)"],
-											["< 26°C", "{temperature} . FILTER({temperature} < 26)"],
-											["< 27°C", "{temperature} . FILTER({temperature} < 27)"],
-											["< 28°C", "{temperature} . FILTER({temperature} < 28)"],
-											["< 29°C", "{temperature} . FILTER({temperature} < 29)"],
-											["< 30°C", "{temperature} . FILTER({temperature} < 30)"],
-										]
-									]
-								]
-							],
-*/
 							["calendar", "?evt vocab:occurrencesid ?occ  .\n\t?occ vocab:occurrences_start_ts ?start .\n\t?occ vocab:occurrences_end_ts ?end .\n\t?evt vocab:events_subject",
 								[
 									["has event", "", 
@@ -262,7 +215,10 @@ define(
 														callback(result);
 													});
 												},0)
-												return [["?", "{title}"]];
+												return [
+													["?", "{title}"],
+													["dummyEvent", "'dummy' . FILTER(?start < now! && ?end > now!)"]
+												];
 											}
 										]
 									]
