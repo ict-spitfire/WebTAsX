@@ -137,8 +137,12 @@ define(
 		// event changeevent
 		SPARQL.prototype.generate_select = function (div_spo, o, event, str) {
 			var select = $('<select></select>');
-
+			var that = this;
+			var isOpened = false;
 			var handle = function(o,str) {
+				// Remove all, except the first one
+				select.find("option:gt(0)").remove();
+
 				for(var j = 0; j<o.length; j++) {
 					var option = "<option value=\"" + o[j][1] + "\" ";
 
@@ -157,7 +161,14 @@ define(
 			if(typeof o[0] === "function") {
 				// Default value for the SELECT
 				var oDefault = o[0](handle, div_spo, this);
-				handle(oDefault,str);			
+				handle(oDefault, str);	
+				// Reload on click!
+				select.click(function() {
+					isOpened = !isOpened;
+					if(isOpened) {
+						o[0](handle, div_spo, that);
+					}
+				})
 			} else {
 				handle(o,str);
 			}
