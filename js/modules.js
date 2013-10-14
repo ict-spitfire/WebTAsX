@@ -179,8 +179,8 @@ define(
 												},0)
 												return [
 													["?", "{hasLocation}"],
-													["Dummy Location", "[http://dummyLocation]"]
-													];
+													["Dummy Location", 'Dummy Location'"]
+												];
 											}
 										]
 									]
