@@ -41,7 +41,7 @@ define(
 											["off" , "{light} . FILTER({light} < " + config.get("lightThreshold") + ")"],
 										]
 									],
-									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Movement .\n\t{val} sf_ns:value", 
+									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_sn:Movement .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{movement}"],
 											["on" ,  "{movement} . FILTER({movement} > 0)"],
