@@ -179,7 +179,7 @@ define(
 												},0)
 												return [
 													["?", "{hasLocation}"],
-													["Dummy Location", 'Dummy Location'"]
+													["Dummy Location", "'Dummy Location'"]
 												];
 											}
 										]
