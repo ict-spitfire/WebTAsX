@@ -145,7 +145,7 @@ define(
 												},0)
 												return [
 													["?", "{room}.\n\t{room} rdf:type sf_foi:Room"],
-													["dummyRoom", "[http://dummyRoom]"]
+													["Room Dummy", "[http://dummyRoom]"]
 												];
 											}
 										]
@@ -179,7 +179,7 @@ define(
 												},0)
 												return [
 													["?", "{hasLocation}"],
-													["dummyLocation", "[http://dummyLocation]"]
+													["Dummy Location", "[http://dummyLocation]"]
 													];
 											}
 										]
@@ -217,7 +217,7 @@ define(
 												},0)
 												return [
 													["?", "{title}"],
-													["dummyEvent", "'dummy' . FILTER(?start < now! && ?end > now!)"]
+													["Dummy Event", "'dummyEventTitle' . FILTER(?start < now! && ?end > now!)"]
 												];
 											}
 										]

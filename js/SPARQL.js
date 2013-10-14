@@ -313,7 +313,7 @@ define(
 			for(var i = 0; i<module.prefixes.length; i++) {
 				result.prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
 			}
-			result.sparql = result.prefixes + "\n" + "SELECT DISTINCT " + implode(" ", result.selections) + " WHERE {\n " + result.query + " }\n";
+			result.sparql = result.prefixes + "\n" + "SELECT DISTINCT " + implode(" ", result.selections) + " WHERE {\n " + result.query + "}\n";
 			return result;
 		}
 
