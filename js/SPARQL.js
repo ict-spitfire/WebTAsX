@@ -103,6 +103,7 @@ define(
 									} else {
 										select_o = that.generate_select(div_spo, o_mapping, o_change, "actors");
 									}
+									select_o.blur();
 								}
 							}
 							div_o.empty();
