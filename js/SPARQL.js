@@ -303,6 +303,7 @@ define(
 				var d = (new Date()+'').split(' ');
 				var now = ymd + "T" + d[4];
 		        q = q.replace(new RegExp("now!", "g"), "\"" + now + "\"^^xsd:dateTime");
+		        q = q.replace(new RegExp("lightThreshold!", "g"), config.get("lightThreshold"));
 
 				//q = "{\n" + q + "}";
 			

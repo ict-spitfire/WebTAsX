@@ -308,3 +308,59 @@ if (typeof String.prototype.endsWith != 'function') {
     return this.slice(-str.length) == str;
   };
 }
+
+
+
+/*
+ * Runs an HTTP-POST-request on an url, if the value is the opposite
+ */
+function action_request(url, action) {
+	if(action == null) return;
+	var query = "SELECT DISTINCT ?o WHERE { <" + url + "> <http://spitfire-project.eu/ontology/ns/value> ?o }";
+
+	var onsuccess = function(res) {
+
+		var dom = new DOMParser().parseFromString(res,'text/xml');
+		var variables = dom.getElementsByTagName("literal");
+		for(var i = 0; i < variables.length; i++) {
+			var variable = variables[i];
+			var value = variable.childNodes[0].data;
+
+			if(parseInt(value) == 1 && action == "toggle") {
+				console.log("TOGGLE TO OFF!");
+				doAction(url, "off");
+			} else if(parseInt(value) == 0 && action == "toggle" ) {
+				console.log("TOGGLE TO ON!");
+				doAction(url, "on");
+			} else if(parseInt(value) == 1 && action == "off" || parseInt(value) == 0 && action == "on" ) {
+				doAction(url, action);
+			} 
+		}
+	}
+	doSparqlQuery(query, onsuccess);
+}
+
+
+/*
+ * Runs an HTTP-POST-request on an url
+ */
+function doAction(url, action) {
+
+	url = config.get("sparqlEndpoint") + "/?uri=" + url;
+	console.log("RUN ACTION ON " + url + " :: " + action);
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', url, true);
+	xhr.responsetype = "text";
+
+	xhr.onload = function(e) {
+		var elapsed = new Date().getTime() - start;
+		console.log("Action elapsed: " + elapsed + "ms");
+
+		// 200 ok/201 created/204 non content
+		if (!(this.readyState == 4 && (this.status == 200 || this.status == 201 || this.status == 204))) {
+			console.log(url + " + " + action + " ERROR - STATUS: " + this.status);
+		}
+	}
+	var start = new Date().getTime();
+	xhr.send(action);
+}

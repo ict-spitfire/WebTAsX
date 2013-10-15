@@ -37,8 +37,8 @@ define(
 									["measures light", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_p:Light .\n\t{val} sf_ns:value", 
 										[
 											["?" ,   "{light}"],
-											["on" ,  "{light} . FILTER({light} >= " + config.get("lightThreshold") + ")"],
-											["off" , "{light} . FILTER({light} < " + config.get("lightThreshold") + ")"],
+											["on" ,  "{light} . FILTER({light} >= lightThreshold!)"],
+											["off" , "{light} . FILTER({light} < lightThreshold!)"],
 										]
 									],
 									["measures movement", "ssn:attachedSystem {val}.\n\t{val} sf_ns:obs sf_sn:Movement .\n\t{val} sf_ns:value", 
