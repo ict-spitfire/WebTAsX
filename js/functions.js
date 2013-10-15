@@ -373,3 +373,7 @@ function doAction(url, action) {
 	var start = new Date().getTime();
 	xhr.send(action);
 }
+
+function isArray(arr) {
+	return (arr != null && typeof(arr) == "object" && arr.constructor.name.indexOf("Array") >= 0);
+};

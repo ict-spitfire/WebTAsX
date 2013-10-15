@@ -141,9 +141,6 @@ define(
 			var that = this;
 			var isOpened = false;
 			var handle = function(o,str) {
-				// Remove all, except the first one
-				select.find("option:gt(0)").remove();
-
 				for(var j = 0; j<o.length; j++) {
 					var option = "<option value=\"" + o[j][1] + "\" ";
 
@@ -159,20 +156,23 @@ define(
 				}
 			}
 
-			if(typeof o[0] === "function") {
-				// Default value for the SELECT
-				var oDefault = o[0](handle, div_spo, this);
-				handle(oDefault, str);	
-				// Reload on click!
-				select.click(function() {
-					isOpened = !isOpened;
-					if(isOpened) {
-						o[0](handle, div_spo, that);
-					}
-				})
-			} else {
+			if(isArray(o)) {
 				handle(o,str);
+			} else {
+				// Default value for the SELECT
+				handle(o.data, str);
+				var onClick = function(o, div_spo, that) {
+					return function() {
+						//isOpened = !isOpened;
+						//if(isOpened) {
+							select.find("option:gt(0)").remove();
+							o.handler(handle, div_spo, that);
+						//}
+					}
+				}
+				select.focusin(onClick(o, div_spo, that))
 			}
+
 			if(typeof(event) == "function") {
 				select.change(event);
 			}

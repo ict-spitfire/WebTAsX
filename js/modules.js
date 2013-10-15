@@ -112,117 +112,110 @@ define(
 									],
 
 									["is in", "ssn:featureOfInterest",
-										[
-											function(callback, div_spo, sparql) {
-												setTimeout(function() {
-													var q = sparql.getSparql(div_spo);
-													doSparqlQuery(q.sparql, function(res) {
-														var result = [];
-														var data = parseSparqlXML(res);
-														var i = 0;
-														for(i=0;i<data.title.length;i++) {
-															if(data.title[i].indexOf("room") >= 0) {
-																break;
-															}
+										{
+											handler : function(callback, div_spo, sparql) {
+												var q = sparql.getSparql(div_spo);
+												doSparqlQuery(q.sparql, function(res) {
+													var result = [];
+													var data = parseSparqlXML(res);
+													var i = 0;
+													for(i=0;i<data.title.length;i++) {
+														if(data.title[i].indexOf("room") >= 0) {
+															break;
 														}
-														console.log(i);
-														var rooms = [];
-														for(var j=0;j<data.data.length;j++) {
-															var d = data.data[j][i];
-															if(rooms.contains(d)) {
-																continue;
-															}
-															rooms.push(d);
-															var last = d.lastIndexOf(":");
-															var room = d.substring(last+1, d.length);
-															if(room.endsWith("/")) {
-																room = room.substring(0, room.length-1);
-															}
-															result.push([room, "[" + d + "]"]);
+													}
+													console.log(i);
+													var rooms = [];
+													for(var j=0;j<data.data.length;j++) {
+														var d = data.data[j][i];
+														if(rooms.contains(d)) {
+															continue;
 														}
-														callback(result);
-													});
-												},0)
-												return [
-													["?", "{room}.\n\t{room} rdf:type sf_foi:Room"],
-													["Room Dummy", "[http://dummyRoom]"]
-												];
-											}
-										]
+														rooms.push(d);
+														var last = d.lastIndexOf(":");
+														var room = d.substring(last+1, d.length);
+														if(room.endsWith("/")) {
+															room = room.substring(0, room.length-1);
+														}
+														result.push([room, "[" + d + "]"]);
+													}
+													callback(result);
+												});
+											}, 
+											data : [
+												["?", "{room}.\n\t{room} rdf:type sf_foi:Room"],
+//												["Room Dummy", "[http://dummyRoom]"]
+											]
+										}
 									],
-									["has location", "dul:hasLocation",
-										[
-											function(callback, div_spo, sparql) {
-												setTimeout(function() {
-													var q = sparql.getSparql(div_spo);
-													doSparqlQuery(q.sparql, function(res) {
-														var result = [];
-														var data = parseSparqlXML(res);
-														var i = 0;
-														for(i=0;i<data.title.length;i++) {
-															if(data.title[i].indexOf("hasLocation") >= 0) {
-																break;
-															}
+									["has location", "dul:hasLocation", 
+										{
+											handler : function(callback, div_spo, sparql) {
+												var q = sparql.getSparql(div_spo);
+												doSparqlQuery(q.sparql, function(res) {
+													var result = [];
+													var data = parseSparqlXML(res);
+													var i = 0;
+													for(i=0;i<data.title.length;i++) {
+														if(data.title[i].indexOf("hasLocation") >= 0) {
+															break;
 														}
-														console.log(i);
-														var rooms = [];
-														for(var j=0;j<data.data.length;j++) {
-															var d = data.data[j][i];
-															if(rooms.contains(d)) {
-																continue;
-															}
-															rooms.push(d);
-															result.push([d, "'" + d + "'"]);
+													}
+													console.log(i);
+													var rooms = [];
+													for(var j=0;j<data.data.length;j++) {
+														var d = data.data[j][i];
+														if(rooms.contains(d)) {
+															continue;
 														}
-														callback(result);
-													});
-												},0)
-												return [
-													["?", "{hasLocation}"],
-													["Dummy Location", "'Dummy Location'"]
-												];
-											}
-										]
+														rooms.push(d);
+														result.push([d, "'" + d + "'"]);
+													}
+													callback(result);
+												});
+											}, 
+											data : [
+												["?", "{hasLocation}"],
+//												["Dummy Location", "'Dummy Location'"]
+											]
+										}
 									]
 								]
 							],
 							["calendar", "?evt vocab:occurrencesid ?occ  .\n\t?occ vocab:occurrences_start_ts ?start .\n\t?occ vocab:occurrences_end_ts ?end .\n\t?evt vocab:events_subject",
 								[
-									["has event", "", 
-										[
-											function(callback, div_spo, sparql) {
-												setTimeout(function() {
-													var q = sparql.getSparql(div_spo);
-													doSparqlQuery(q.sparql, function(res) {
-														var result = [];
-														var data = parseSparqlXML(res);
-														var i = 0;
-														for(i=0;i<data.title.length;i++) {
-															if(data.title[i].indexOf("title") >= 0) {
-																break;
-															}
+									["has event", "", {
+											handler : function(callback, div_spo, sparql) {
+												var q = sparql.getSparql(div_spo);
+												doSparqlQuery(q.sparql, function(res) {
+													var result = [];
+													var data = parseSparqlXML(res);
+													var i = 0;
+													for(i=0;i<data.title.length;i++) {
+														if(data.title[i].indexOf("title") >= 0) {
+															break;
 														}
-														console.log(i);
-														var rooms = [];
-														for(var j=0;j<data.data.length;j++) {
-															var d = data.data[j][i];
-															if(rooms.contains(d)) {
-																continue;
-															}
-															rooms.push(d);
-															//result.push([d, "'" + d + "' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]);
-															result.push([d, "'" + d + "' .\n\tFILTER(?start < now()) .\n\tFILTER(?end > now())"]);
+													}
+													console.log(i);
+													var rooms = [];
+													for(var j=0;j<data.data.length;j++) {
+														var d = data.data[j][i];
+														if(rooms.contains(d)) {
+															continue;
 														}
-														callback(result);
-													});
-												},0)
-												return [
+														rooms.push(d);
+														//result.push([d, "'" + d + "' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]);
+														result.push([d, "'" + d + "' .\n\tFILTER(?start < now()) .\n\tFILTER(?end > now())"]);
+													}
+													callback(result);
+												});
+											}, 
+											data : [
 													["?", "{title}"],
 													//["Dummy Event", "'dummyEventTitle' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]
-													["Dummy Event", "'dummyEventTitle' .\n\tFILTER(?start < now()) .\n\tFILTER(?end > now())"]
-												];
-											}
-										]
+//													["Dummy Event", "'dummyEventTitle' .\n\tFILTER(?start < now()) .\n\tFILTER(?end > now())"]
+												]
+										}
 									]
 								]
 							]
