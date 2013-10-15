@@ -210,14 +210,16 @@ define(
 																continue;
 															}
 															rooms.push(d);
-															result.push([d, "'" + d + "' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]);
+															//result.push([d, "'" + d + "' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]);
+															result.push([d, "'" + d + "' .\n\tFILTER(?start < now() && ?end > now())"]);
 														}
 														callback(result);
 													});
 												},0)
 												return [
 													["?", "{title}"],
-													["Dummy Event", "'dummyEventTitle' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]
+													//["Dummy Event", "'dummyEventTitle' .\n\tFILTER(?start < ?nowDate && ?end > ?nowDate) .\n\tBIND(SUBSTR( xsd:string(now()), 0, 20) AS ?now) .\n\tBIND(xsd:dateTime(?now) AS ?nowDate)"]
+													["Dummy Event", "'dummyEventTitle' .\n\tFILTER(?start < now() && ?end > now())"]
 												];
 											}
 										]

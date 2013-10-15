@@ -214,10 +214,19 @@ function generateResultTable (e, result) {
 	} else {
 		e.html(create_alert("Error with the requested data."));
 	}
-
 }
 
 function doSparqlQuery(query, onsuccess, onerror) {
+
+	// Replace now() by the current date...
+	var date = new Date();
+	var curr_day = date.getDate();
+	var curr_month = date.getMonth() + 1; //Months are zero based
+	var curr_year = date.getFullYear();
+	var ymd = curr_year + "-" + curr_month + "-" + curr_day;
+	var d = (new Date()+'').split(' ');
+	var now = ymd + "T" + d[4];
+	query = query.replace(new RegExp("now\\(\\)", "g"), "\"" + now + "\"^^xsd:dateTime"); 
 
 	var url = config.get("sparqlEndpoint");
 

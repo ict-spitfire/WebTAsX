@@ -295,15 +295,6 @@ define(
 		            q += "\t" + tmp + " . \n";
 				}
 
-				// Replace now() by current date...
-				var date = new Date();
-				var curr_day = date.getDate();
-				var curr_month = date.getMonth() + 1; //Months are zero based
-				var curr_year = date.getFullYear();
-				var ymd = curr_year + "-" + curr_month + "-" + curr_day;
-				var d = (new Date()+'').split(' ');
-				var now = ymd + "T" + d[4];
-		        q = q.replace(new RegExp("now!", "g"), "\"" + now + "\"^^xsd:dateTime");
 		        q = q.replace(new RegExp("lightThreshold!", "g"), config.get("lightThreshold"));
 
 				//q = "{\n" + q + "}";
