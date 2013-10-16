@@ -173,7 +173,7 @@ define(
 						}
 					}
 				}
-				select.focusin(onClick(o, div_spo, that));
+				select.click(onClick(o, div_spo, that));
 
 				/*
 				var selected = false;
