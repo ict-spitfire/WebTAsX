@@ -258,10 +258,10 @@ define(
 						}
 
 						if(j == 0) {
-							s = varx;						
+							s = val;						
 						}
 						if(j == 2) {
-							o = varx;						
+							o = val;						
 						}
 						tmp += " ";
 					}
@@ -311,11 +311,13 @@ define(
 					tmp = tmp.replace(new RegExp("!s", "g"), s); 
 
 		            // Here, one line is complete
+					/*
 		            if(tmp.indexOf("<s>") >= 0) {
 		                var varx = "?val" + (++valCnt);
 						variables.push(varx);
 		                tmp = tmp.replace(new RegExp("<s>", "g"), "" + varx + " ");
 		            }
+					*/
 
 		            q += "\t" + tmp + " . \n";
 				}
@@ -340,7 +342,9 @@ define(
 
 			result.prefixes = "";
 			for(var i = 0; i<module.prefixes.length; i++) {
-				result.prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
+				if(result.query.indexOf(module.prefixes[i][0]) >= 0) {
+					result.prefixes += "PREFIX " + module.prefixes[i][0] + ":<" + module.prefixes[i][1] + ">\n";
+				}
 			}
 			result.sparql = result.prefixes + "\n" + "SELECT DISTINCT " + implode(" ", result.selections) + " WHERE {\n " + result.query + "}\n";
 			return result;
