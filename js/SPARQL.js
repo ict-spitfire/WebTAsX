@@ -24,6 +24,7 @@ define(
 				div_rules.append(that.create());
 				info_msg_rules.hide();
 				//update("input.click");
+				//console.log("INPUT CLICKED!");
 			});
 
 			if(showName) {
@@ -162,15 +163,30 @@ define(
 				// Default value for the SELECT
 				handle(o.data, str);
 				var onClick = function(o, div_spo, that) {
+					// Reload the data
 					return function() {
-						//isOpened = !isOpened;
-						//if(isOpened) {
+						isOpened = !isOpened;
+						if(isOpened) {
+							console.log("Load data!");
 							select.find("option:gt(0)").remove();
 							o.handler(handle, div_spo, that);
-						//}
+						}
 					}
 				}
-				select.focusin(onClick(o, div_spo, that))
+				select.focusin(onClick(o, div_spo, that));
+
+				/*
+				var selected = false;
+				select.mousedown( function(){ console.log( 'down' ); selected = $( this ).val() } )
+		  			.blur( function(){ console.log( 'out' ) } )
+		  			.change( function(){ console.log( 'out' ) } )
+		  			.mouseleave( function(){ console.log( 'out' ) } )
+		  			.mouseup( function(){ 
+		    			if( $( this ).val() == selected ) {
+		       				console.log( 'out' )
+						}
+					});
+				*/
 			}
 
 			if(typeof(event) == "function") {
