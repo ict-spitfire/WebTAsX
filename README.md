@@ -6,4 +6,5 @@ WebTAsX is a simple GUI for the Internet of Things (IoT), developed within the
 With WebTAsX you can generate SPARQL queries, which fit the 
 [SPITFIRE ontology](http://spitfire-project.eu/ontology.owl).
 
-
+A published version can be found
+[here](http://media.itm.uni-luebeck.de/people/boldt/WebTAsX/)
