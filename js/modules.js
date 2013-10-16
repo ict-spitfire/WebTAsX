@@ -20,7 +20,10 @@ define(
 				["dul", "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#"],
 				//["owl", "http://www.w3.org/2002/07/owl#"],
 				["cal", "http://calendar/resource/"],
-				["vocab", "http://calendar/resource/vocab/"]
+				["vocab", "http://calendar/resource/vocab/"],
+				["geo", "http://www.w3.org/2003/01/geo/wgs84_pos#"]
+
+
 				//#PREFIX map: <http://calendar/resource/#>
 			],
 			mapping :
@@ -143,11 +146,18 @@ define(
 												});
 											}, 
 											data : [
-												["?", "{room}.\n\t{room} rdf:type sf_foi:Room"],
+												["?", "{feature}.\n\t{feature} rdf:type sf_foi:Room"],
 //												["Room Dummy", "[http://dummyRoom]"]
 											]
 										}
 									],
+									["has latitude", "ssn:featureOfInterest {feature} .\n\t{feature} geo:lat {latitude} .\n\t!s geo:lat", 
+										[
+											["?" ,   "{latitude}"],
+										]
+									],
+
+
 									["has location", "dul:hasLocation", 
 										{
 											handler : function(callback, div_spo, sparql) {

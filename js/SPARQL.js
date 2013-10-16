@@ -217,7 +217,8 @@ define(
 					var children = spo[i].childNodes;
 
 		            var tmp = "";
-
+					var s = null;
+					var p = null;
 					for(var j = 0; j < children.length; j++) {
 						var c = children[j];
 						var v = $(c).attr("data-var");
@@ -255,7 +256,13 @@ define(
 						} else {
 		                    tmp += val;
 						}
-					
+
+						if(j == 0) {
+							s = varx;						
+						}
+						if(j == 2) {
+							o = varx;						
+						}
 						tmp += " ";
 					}
 
@@ -300,6 +307,8 @@ define(
 		                    }
 		                }
 		            }
+
+					tmp = tmp.replace(new RegExp("!s", "g"), s); 
 
 		            // Here, one line is complete
 		            if(tmp.indexOf("<s>") >= 0) {
