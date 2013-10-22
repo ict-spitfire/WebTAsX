@@ -22,8 +22,6 @@ define(
 				["cal", "http://calendar/resource/"],
 				["vocab", "http://calendar/resource/vocab/"],
 				["geo", "http://www.w3.org/2003/01/geo/wgs84_pos#"]
-
-
 				//#PREFIX map: <http://calendar/resource/#>
 			],
 			mapping :

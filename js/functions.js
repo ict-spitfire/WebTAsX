@@ -1,21 +1,3 @@
-// @see: http://stackoverflow.com/a/9815010
-// Array Remove - By John Resig (MIT Licensed)
-Array.prototype.remove = function(from, to) {
-  var rest = this.slice((to || from) + 1 || this.length);
-  this.length = from < 0 ? this.length + from : from;
-  return this.push.apply(this, rest);
-};
-
-Array.prototype.extend = function(array) {
-	if (array.length < 150000) {
-		this.push.apply(this, array)
-	} else {
-		for (var i = 0, len = array.length; i < len; ++i) {
-		    this.push(array[i]);
-		};
-	}  
-}
-
 function implode (glue, pieces) {
   // http://kevin.vanzonneveld.net
   // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -286,39 +268,6 @@ function doSeQuery(onsuccess, onerror) {
 	var start = new Date().getTime();
 	xhr.send();
 }
-
-// http://stackoverflow.com/questions/280634/endswith-in-javascript
-String.prototype.endsWith = function(suffix) {
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-};
-
-// http://stackoverflow.com/questions/237104/array-containsobj-in-javascript
-Array.prototype.contains = function(obj) {
-    var i = this.length;
-    while (i--) {
-        if (this[i] === obj) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-// @see: http://stackoverflow.com/questions/646628/javascript-startswith
-if (typeof String.prototype.startsWith != 'function') {
-  String.prototype.startsWith = function (str){
-    return this.slice(0, str.length) == str;
-  };
-}
-
-// @see: http://stackoverflow.com/questions/646628/javascript-startswith
-if (typeof String.prototype.endsWith != 'function') {
-  String.prototype.endsWith = function (str){
-    return this.slice(-str.length) == str;
-  };
-}
-
-
 
 /*
  * Runs an HTTP-POST-request on an url, if the value is the opposite
