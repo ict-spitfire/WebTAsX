@@ -1,4 +1,4 @@
-# SPITFIRE WebTAsX
+# ![SPITFIRE](https://raw.github.com/ict-spitfire/WebTAsX/master/img/spitfire.200.jpg) WebTAsX
 
 WebTAsX is a simple GUI for the Internet of Things (IoT), developed within the
 [SPITFIRE project](http://spitfire-project.eu).
