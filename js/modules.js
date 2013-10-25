@@ -121,7 +121,7 @@ define(
 													var data = parseSparqlXML(res);
 													var i = 0;
 													for(i=0;i<data.title.length;i++) {
-														if(data.title[i].indexOf("room") >= 0) {
+														if(data.title[i].indexOf("feature") >= 0) {
 															break;
 														}
 													}
@@ -133,7 +133,7 @@ define(
 															continue;
 														}
 														rooms.push(d);
-														var last = d.lastIndexOf(":");
+														var last = d.lastIndexOf("/");
 														var room = d.substring(last+1, d.length);
 														if(room.endsWith("/")) {
 															room = room.substring(0, room.length-1);
